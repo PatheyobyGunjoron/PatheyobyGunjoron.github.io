@@ -1,7 +1,12 @@
 {
-  "version_code": 1,
-  "version_name": "1.0.0",
-  "apk_url": "https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/download/v1.0.0/app-release.apk",
-  "changelog": "১. পাথেয় অ্যাপের প্রথম রিলিজ।\n২. সমস্ত মূল ফিচার অন্তর্ভুক্ত করা হয়েছে।",
-  "force_update": false
+  "versionCode": 0,
+  "versionName": "1.0.0",
+  "apk_url": "https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/releases/download/v1.0.1/Patheyo-1.0.1.apk",
+  "size_mb": 100,
+  "mandatory": false,
+  "release_notes": [
+    "নতুন ডিজাইন ও দ্রুত পারফরম্যান্স",
+    "বিভিন্ন বাগ ফিক্স",
+    "নতুন ফিচার যুক্ত করা হয়েছে"
+  ]
 }
