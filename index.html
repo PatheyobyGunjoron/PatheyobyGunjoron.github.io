@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>পাথেয় — Patheyo by Gunjoron</title>
+<meta name="description" content="ক্ষণস্থায়ী জীবনের প্রতিটি বাঁকে, চিরস্থায়ী সফরের পরম সঙ্গী।">
+<style>html{background:#fff}@media(prefers-color-scheme:dark){html{background:#06101f}}</style>
+<noscript><meta http-equiv="refresh" content="0;url=patheyo/"></noscript>
+</head>
+<body>
+<!-- এই ফাইলটি রুটে থাকে: এটি patheyo/ ফোল্ডারের সাইটটিকে মূল পেজে (রুট ঠিকানায়) দেখায়। এটি বদলানোর দরকার নেই। -->
+<script>
+(function(){
+  var D='patheyo/';
+  fetch(D+'index.html',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(h){
+    // patheyo/index.html এর সব রিলেটিভ লিংক (assets/, fonts/, config.js, admin/ ...) এর আগে patheyo/ বসানো হয়
+    h=h.replace(/(\s(?:src|href)=")(?![a-z][a-z0-9+.\-]*:|#|\/)([^"]*)"/gi,function(m,a,b){return a+D+b+'"'});
+    document.open();document.write(h);document.close();
+  }).catch(function(){location.replace(D)});
+})();
+</script>
+<p style="font-family:sans-serif;text-align:center;margin-top:30vh"><a href="patheyo/">Patheyo by Gunjoron</a></p>
+</body>
+</html>
