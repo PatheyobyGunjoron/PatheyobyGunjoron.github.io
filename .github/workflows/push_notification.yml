@@ -1,0 +1,67 @@
+name: Send Auto Push Notification on Release
+
+on:
+  release:
+    types: [published] # গিটহাবে নতুন রিলিজ পাবলিশ হলেই এটি চালু হবে
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send FCM Notification
+        uses: w9jds/firebase-action@v2.2.2
+        with:
+          args: |
+            firebase target:apply hosting app
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+
+      - name: Send FCM Push via API
+        run: |
+          # ফায়ারবেস সার্ভিস অ্যাকাউন্ট থেকে এক্সেস টোকেন জেনারেট এবং মেসেজ সেন্ড
+          python3 -c "
+          import json
+          import requests
+          from google.oauth2 import service_account
+          import google.auth.transport.requests
+
+          # GitHub Release Data
+          release_title = '''${{ github.event.release.name }}'''
+          release_body = '''${{ github.event.release.body }}'''
+
+          # Load Service Account
+          service_account_info = json.loads('''${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}''')
+          credentials = service_account.Credentials.from_service_account_info(
+              service_account_info,
+              scopes=['https://www.googleapis.com/auth/firebase.messaging']
+          )
+          request = google.auth.transport.requests.Request()
+          credentials.refresh(request)
+          access_token = credentials.token
+
+          # Send Notification
+          project_id = service_account_info['project_id']
+          url = f'https://fcm.googleapis.com/v1/projects/{project_id}/messages:send'
+          
+          headers = {
+              'Authorization': f'Bearer {access_token}',
+              'Content-Type': 'application/json'
+          }
+
+          payload = {
+              'message': {
+                  'topic': 'all', # আপনার FCM Topic নাম (যেমন: all/updates)
+                  'notification': {
+                      'title': release_title if release_title else 'নতুন আপডেট এসেছে!',
+                      'body': release_body[:100] + '...' if len(release_body) > 100 else release_body
+                  },
+                  'data': {
+                      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                      'update_notes': release_body
+                  }
+              }
+          }
+
+          response = requests.post(url, headers=headers, json=payload)
+          print('FCM Response:', response.text)
+          "
