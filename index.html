@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>পাথেয় — Patheyo by Gunjoron | ডাউনলোড</title>
+<meta name="theme-color" content="#06101f" media="(prefers-color-scheme: dark)"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<style>html,body{margin:0;padding:0;height:100%}html{background:radial-gradient(circle at 50% 40%,rgba(0,93,146,.13),transparent 62%),#fff}html.dk{background:radial-gradient(circle at 50% 40%,rgba(30,140,220,.22),transparent 62%),#06101f}body{background:transparent}</style>
+<script>try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.className='dk'}catch(e){}</script>
+<noscript><meta http-equiv="refresh" content="0;url=patheyo/"></noscript>
+<!-- আসল সাইটের দরকারি ফাইল আগে থেকেই নামাতে শুরু করে, যাতে লোড দ্রুত হয় -->
+<link rel="preload" href="patheyo/assets/style.css" as="style">
+<link rel="preload" href="patheyo/fonts/Kothamala-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="patheyo/fonts/Kothamala-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="patheyo/fonts/PlusJakartaSans-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="patheyo/fonts/HindSiliguri-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="patheyo/assets/logo-dark.svg" as="image">
+<link rel="preload" href="patheyo/assets/logo-light.svg" as="image">
+<link rel="preload" href="patheyo/index.html" as="fetch" crossorigin>
+</head>
+<body>
+<!-- রুটের এই ফাইলটি patheyo/ ফোল্ডারের সাইটকে মূল ঠিকানায় দেখায়। এতে কোনো লেখা নেই, তাই কিছুই ঝলকে দেখা যায় না। এটি বদলানোর দরকার নেই। -->
+<script>
+(function(){
+  var D='patheyo/';
+  fetch(D+'index.html').then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(h){
+    // patheyo/index.html এর সব রিলেটিভ লিংক (assets/, fonts/, config.js, admin/ ...) এর আগে patheyo/ বসানো হয়
+    h=h.replace(/(\s(?:src|href)=")(?![a-z][a-z0-9+.\-]*:|#|\/)([^"]*)"/gi,function(m,a,b){return a+D+b+'"'});
+    document.open();document.write(h);document.close();
+  }).catch(function(){location.replace(D)});
+})();
+</script>
+</body>
+</html>
