@@ -152,7 +152,7 @@ const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set
 const RELPAGE=`https://github.com/${C.GITHUB_REPO}/releases/latest`;
 // 1) data/releases.json (same site, no rate limit; kept fresh by the GitHub Action)  2) GitHub API  3) copy saved on this phone
 const mapRel=raw=>{const a=raw.filter(x=>!x.draft);
-  D._gh=a.reduce((m,x)=>m+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
+  DL.gh=a.reduce((n,x)=>n+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
   return a.map((x,i)=>{const f=(x.assets||[]).find(f=>/\.apk$/i.test(f.name))||(x.assets||[])[0];return{version:String(x.tag_name).replace(/^v/i,''),release_date:x.published_at,download_url:f?f.browser_download_url:(x.html_url||RELPAGE),file_size:f?(f.size/1048576).toFixed(1)+' MB':null,is_latest:i===0&&!x.prerelease,body:x.body||''}})};
 const getJson=async(u,ms)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}};
 const gh=async()=>{let raw=null;
@@ -195,7 +195,7 @@ const meta=r=>`<div class="meta"><span>রিলিজ: ${date(r.release_date)}<
 const dl=r=>`<button class="btn p" data-id="${esc(r.version)}" data-url="${esc(r.download_url)}">ডাউনলোড v${esc(r.version)}</button>`;
 let LATEST=null;
 async function releases(){
-  try{const rs=ok?await api('releases?status=eq.published&select=*&order=release_date.desc'):await gh();
+  try{const rs=await gh();   // v18-fix: সবসময় GitHub Releases থেকে (ডাটাবেসের releases টেবিল এখানে ব্যবহার হবে না)
     const l=rs.find(r=>r.is_latest)||rs[0];
     if(!l){$('#latest-body').innerHTML='<p class="empty">এখনো কোনো ভার্সন প্রকাশ হয়নি</p>';$('#old').innerHTML='';return}
     $('#latest-body').innerHTML=`<div class="rel l"><div class="rtop"><span class="tag">সর্বশেষ</span><h3>Patheyo v${esc(l.version)}</h3>${dl(l)}</div>${meta(l)}${notes(l)}</div>`;
