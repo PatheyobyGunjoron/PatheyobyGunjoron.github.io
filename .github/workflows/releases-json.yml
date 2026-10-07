@@ -46,4 +46,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add patheyo/data/releases.json
           [ -f patheyo/data/update.json ] && git add patheyo/data/update.json || true
-          git diff --cached --quiet || (git commit -m "chore: update releases.json" && git push)
+          git diff --cached --quiet || (git commit -m "chore: update releases.json" && git pull --rebase origin main && git push)
