@@ -152,7 +152,7 @@ const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set
 const RELPAGE=`https://github.com/${C.GITHUB_REPO}/releases/latest`;
 // 1) data/releases.json (same site, no rate limit; kept fresh by the GitHub Action)  2) GitHub API  3) copy saved on this phone
 const mapRel=raw=>{const a=raw.filter(x=>!x.draft);
-  DL.gh=a.reduce((n,x)=>n+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
+  D._gh=a.reduce((m,x)=>m+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
   return a.map((x,i)=>{const f=(x.assets||[]).find(f=>/\.apk$/i.test(f.name))||(x.assets||[])[0];return{version:String(x.tag_name).replace(/^v/i,''),release_date:x.published_at,download_url:f?f.browser_download_url:(x.html_url||RELPAGE),file_size:f?(f.size/1048576).toFixed(1)+' MB':null,is_latest:i===0&&!x.prerelease,body:x.body||''}})};
 const getJson=async(u,ms)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}};
 const gh=async()=>{let raw=null;
