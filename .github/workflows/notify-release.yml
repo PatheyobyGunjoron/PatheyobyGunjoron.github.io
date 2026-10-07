@@ -1,0 +1,64 @@
+name: Notify app users of new release
+
+# নতুন Release প্রকাশ (Publish) করলে অ্যাপের সব ইউজারের ফোনে নিজে থেকে "আপডেট করুন" নোটিফিকেশন যায়।
+# (Supabase Edge Function "send-push" → Firebase FCM → অ্যাপ)
+# একবারের সেটআপ: রিপোর Settings → Secrets and variables → Actions-এ ৩টি Secret দিন:
+#   SUPABASE_URL, SUPABASE_ANON_KEY, PUSH_HOOK_SECRET   (বিস্তারিত: patheyo/SETUP-BANGLA.md)
+# Secret না থাকলে এই ধাপ চুপচাপ বাদ যায় — কিছুই ভাঙে না।
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "ট্যাগ (যেমন v1.6.0) — খালি রাখলে সর্বশেষ রিলিজ"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send push notification
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          PUSH_HOOK_SECRET: ${{ secrets.PUSH_HOOK_SECRET }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$PUSH_HOOK_SECRET" ]; then
+            echo "SUPABASE_URL / PUSH_HOOK_SECRET secret দেওয়া নেই — নোটিফিকেশন বাদ দেওয়া হলো।"; exit 0
+          fi
+          TAG="${EVENT_TAG:-$INPUT_TAG}"
+          # APK ফাইল আপলোড শেষ হওয়া পর্যন্ত অপেক্ষা (সর্বোচ্চ ~১০ মিনিট)
+          for i in $(seq 1 20); do
+            if [ -n "$TAG" ]; then gh api "repos/$REPO/releases/tags/$TAG" > /tmp/rel.json
+            else gh api "repos/$REPO/releases/latest" > /tmp/rel.json; fi
+            if jq -e '[.assets[] | select(.name | test("\\.apk$"; "i"))] | length > 0' /tmp/rel.json > /dev/null; then break; fi
+            echo "APK এখনো আপলোড হয়নি, অপেক্ষা করছি ($i/20)…"; sleep 30
+          done
+          if [ "$(jq -r '.prerelease' /tmp/rel.json)" = "true" ]; then echo "প্রি-রিলিজ — নোটিফিকেশন বাদ"; exit 0; fi
+          if ! jq -e '[.assets[] | select(.name | test("\\.apk$"; "i"))] | length > 0' /tmp/rel.json > /dev/null; then
+            echo "রিলিজে কোনো .apk নেই — নোটিফিকেশন বাদ"; exit 0
+          fi
+          jq '(.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
+              | {kind: "app_update",
+                 version_name: (.tag_name | sub("^[vV]"; "")),
+                 apk_url: $a.browser_download_url,
+                 size_mb: (($a.size / 1048576) | round),
+                 notes: ((.body // "") | split("\n")
+                    | map(gsub("\r"; "") | gsub("^[#>*\\-\\s]+"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
+                    | map(select(length > 0 and (test("^full changelog"; "i") | not) and (test("^what.s changed"; "i") | not)))
+                    | .[0:8] | map("•  " + .) | join("\n"))}' /tmp/rel.json > /tmp/payload.json
+          cat /tmp/payload.json
+          curl -fsS -X POST "${SUPABASE_URL%/}/functions/v1/send-push" \
+            -H "Content-Type: application/json" \
+            -H "apikey: ${SUPABASE_ANON_KEY:-none}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY:-none}" \
+            -H "x-hook-secret: $PUSH_HOOK_SECRET" \
+            --data @/tmp/payload.json

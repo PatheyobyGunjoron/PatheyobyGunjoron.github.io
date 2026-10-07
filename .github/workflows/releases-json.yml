@@ -1,0 +1,49 @@
+name: Update releases.json
+
+# নতুন রিলিজ দিলে (বা সম্পাদনা/মুছলে) এবং প্রতি ৬ ঘণ্টায় ওয়েবসাইটের জন্য রিলিজ তালিকা (patheyo/data/releases.json) নতুন করে তৈরি করে।
+# এতে ডাউনলোড বাটন GitHub API-র রেট-লিমিটের ওপর নির্ভর করে না, সবার ফোনে ১০০% কাজ করে।
+on:
+  release:
+    types: [published, edited, deleted, released, prereleased]
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build releases.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p patheyo/data
+          gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
+          jq '[.[] | select(.draft | not) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > patheyo/data/releases.json
+      # v18: অ্যাপের নিজস্ব আপডেটার এই ফাইল পড়ে (patheyo/data/update.json) — সর্বশেষ প্রকাশিত (non-prerelease) রিলিজ থেকে নিজে তৈরি হয়।
+      # রিলিজে অবশ্যই একটি .apk ফাইল থাকতে হবে; ট্যাগের নাম অ্যাপের versionName-এর সমান হতে হবে (যেমন v1.6.0 ↔ versionName "1.6.0")।
+      - name: Build update.json (for the app updater)
+        run: |
+          jq '[.[] | select((.draft | not) and (.prerelease | not))] | .[0] as $r
+            | ($r.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
+            | select($r != null and $a != null)
+            | {versionName: ($r.tag_name | sub("^[vV]"; "")),
+               apk_url: $a.browser_download_url,
+               size_mb: (($a.size / 1048576) | round),
+               mandatory: false,
+               published_at: $r.published_at,
+               release_notes: (($r.body // "") | split("\n")
+                 | map(gsub("\r"; "") | gsub("^[#>*\\-\\s]+"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
+                 | map(select(length > 0 and (test("^full changelog"; "i") | not) and (test("^what.s changed"; "i") | not))) | .[0:8])}' /tmp/releases.json > /tmp/update.json || true
+          if [ -s /tmp/update.json ]; then cp /tmp/update.json patheyo/data/update.json; fi
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add patheyo/data/releases.json
+          [ -f patheyo/data/update.json ] && git add patheyo/data/update.json || true
+          git diff --cached --quiet || (git commit -m "chore: update releases.json" && git push)
