@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /patheyo/admin/
-
-Sitemap: https://patheyobygunjoron.github.io/sitemap.xml
