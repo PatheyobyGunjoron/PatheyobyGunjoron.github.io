@@ -1,5 +1,22 @@
 [
   {
+    "tag_name": "v1.5.0",
+    "name": "Patheyo v1.5.0",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-10-07T16:04:05Z",
+    "html_url": "https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/tag/v1.5.0",
+    "body": "🎨 নতুন ও আধুনিক গ্লাস ডিজাইন:\r\n- আপডেট পপআপ এখন আরও পরিষ্কার, ছোট ও গোছানো\r\n- হালকা ঝাপসা কাচের মতো ব্যাকগ্রাউন্ডে অ্যাপের ঝলক দেখা যাবে\r\n\r\n📍 লোকেশন কেন দরকার, এখন আগেই বোঝানো হবে:\r\n- অনুমতি চাওয়ার আগে সুন্দর একটি পপআপে কারণ জানানো হবে\r\n- সঠিক নামাজের ওয়াক্ত, আজান, সেহরি-ইফতার ও আরবি তারিখের জন্য এটি জরুরি\r\n\r\n✨ আরও স্পষ্ট লেখা:\r\n- ইংরেজি ও বাংলা ফন্ট আরও পরিষ্কার ও সহজে পড়ার মতো করা হয়েছে\r\n\r\n✨ নতুন: নোটিফিকেশন অনুমতির আলাদা পপআপ\r\n• লোকেশন অনুমতির পর অ্যাপের নিজস্ব পপআপে আজান ও ইসলামী রিমাইন্ডারের কারণ বুঝিয়ে বলা হবে\r\n• \"অনুমতি\" চাপলে তবেই ফোনের নোটিফিকেশন পপআপ আসবে\r\n• ডিজাইন লোকেশন পপআপের মতোই, শুধু আইকন ও লেখা আলাদা\r\n• \"পারমিশন\" ট্যাবের বাটন থেকেও এখন এই পপআপ আসবে",
+    "assets": [
+      {
+        "name": "Patheyo.v1.5.0.apk",
+        "size": 15138392,
+        "download_count": 0,
+        "browser_download_url": "https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/download/v1.5.0/Patheyo.v1.5.0.apk"
+      }
+    ]
+  },
+  {
     "tag_name": "v1.4.0",
     "name": "Patheyo v1.4.0",
     "draft": false,
@@ -11,7 +28,7 @@
       {
         "name": "Patheyo.v1.4.0.apk",
         "size": 13639025,
-        "download_count": 42,
+        "download_count": 44,
         "browser_download_url": "https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/download/v1.4.0/Patheyo.v1.4.0.apk"
       }
     ]
