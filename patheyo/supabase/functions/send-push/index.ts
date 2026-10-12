@@ -1,12 +1,12 @@
-// Patheyo — send-push (Supabase Edge Function, Deno)
-// অ্যাডমিন প্যানেল (বা GitHub Release অটোমেশন) থেকে অ্যাপের সব ইউজারের ফোনে FCM পুশ নোটিফিকেশন পাঠায়।
+// Patheyo - send-push (Supabase Edge Function, Deno)  [v2]
+// Sends FCM push to: (a) topic "all" / "ver_X" AND (b) every registered device token.
+// Device tokens come from push_tokens table (see supabase/push_tokens.sql).
+// Each message carries a unique push_id; the app de-duplicates, so a device that gets both copies shows one notification.
 //
-// সিক্রেট (Supabase → Edge Functions → Secrets): 
-//   FCM_SERVICE_ACCOUNT = Firebase সার্ভিস-অ্যাকাউন্ট JSON-এর পুরো লেখা
-//   PUSH_HOOK_SECRET    = নিজের বানানো লম্বা একটি গোপন শব্দ (GitHub Action এটা দিয়ে অনুমতি পায়)
-// SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY — Supabase নিজেই দেয়।
-//
-// ডিপ্লয়: supabase functions deploy send-push --no-verify-jwt   (ফাংশন নিজেই অনুমতি যাচাই করে)
+// Secrets (Supabase > Edge Functions > Secrets):
+//   FCM_SERVICE_ACCOUNT = full Firebase service-account JSON text
+//   PUSH_HOOK_SECRET    = your long random secret (GitHub Action uses it)
+// Deploy: supabase functions deploy send-push --no-verify-jwt
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const CORS = {
@@ -19,11 +19,11 @@ const json = (o: unknown, status = 200) =>
 
 const b64url = (b: ArrayBuffer | string) => {
   const bytes = typeof b === "string" ? new TextEncoder().encode(b) : new Uint8Array(b);
-  let s = ""; bytes.forEach((c) => (s += String.fromCharCode(c)));
+  let s = "";
+  bytes.forEach((c) => (s += String.fromCharCode(c)));
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 
-// Google OAuth2 access token (service account JWT → token)
 let cached: { token: string; exp: number } | null = null;
 async function accessToken(sa: { client_email: string; private_key: string }) {
   if (cached && cached.exp > Date.now() + 60_000) return cached.token;
@@ -48,6 +48,23 @@ async function accessToken(sa: { client_email: string; private_key: string }) {
   return cached.token;
 }
 
+// One FCM v1 send. dead = token is no longer valid (device uninstalled / token changed)
+async function fcmPost(url: string, access: string, message: Record<string, unknown>) {
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok) return { ok: true, dead: false, err: "" };
+    const txt = JSON.stringify(j);
+    return { ok: false, dead: /UNREGISTERED/.test(txt), err: `FCM ${r.status}: ${txt.slice(0, 200)}` };
+  } catch (e) {
+    return { ok: false, dead: false, err: String((e as Error).message ?? e).slice(0, 200) };
+  }
+}
+
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 const isHttps = (u: string) => /^https:\/\/[^\s]+$/i.test(u);
 
@@ -58,7 +75,7 @@ Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
-  // ---- অনুমতি: (ক) লগইন করা অ্যাডমিন, অথবা (খ) GitHub Action-এর গোপন শব্দ ----
+  // Auth: GitHub Action secret, or logged-in admin
   let sender = "";
   const hook = req.headers.get("x-hook-secret");
   const want = Deno.env.get("PUSH_HOOK_SECRET");
@@ -82,12 +99,11 @@ Deno.serve(async (req) => {
   if (link && !isHttps(link)) return json({ error: "লিংক অবশ্যই https:// দিয়ে শুরু হতে হবে" }, 400);
   if (image && !isHttps(image)) return json({ error: "ছবির লিংক অবশ্যই https:// দিয়ে শুরু হতে হবে" }, 400);
 
-  // কাদের পাঠানো হবে: সবাইকে ("all") অথবা নির্দিষ্ট ভার্সনের ইউজারকে ("ver_1_6_0")
   const version = clip(b.target_version, 32);
   const topic = version ? "ver_" + version.replace(/[^A-Za-z0-9_]/g, "_") : "all";
   const target = version ? `version:${version}` : "all";
 
-  const data: Record<string, string> = {};
+  const data: Record<string, string> = { push_id: crypto.randomUUID() };
   if (kind === "app_update") {
     const vn = clip(b.version_name, 32), apk = clip(b.apk_url, 500);
     if (!vn || !isHttps(apk)) return json({ error: "version_name ও https apk_url দরকার" }, 400);
@@ -95,37 +111,74 @@ Deno.serve(async (req) => {
     message = message || `পাথেয় v${vn} এখন ডাউনলোডের জন্য প্রস্তুত। আপডেট করতে ট্যাপ করুন।`;
     Object.assign(data, {
       update_type: "app_update", version_name: vn, apk_url: apk,
-      notes: clip(b.notes, 900), size_mb: String(parseInt(String(b.size_mb ?? "0")) || 0), mandatory: b.mandatory ? "true" : "false",
+      notes: clip(b.notes, 900), size_mb: String(parseInt(String(b.size_mb ?? "0")) || 0),
+      mandatory: b.mandatory ? "true" : "false",
     });
   } else {
     if (!title || !message) return json({ error: "শিরোনাম ও বার্তা দিন" }, 400);
-    Object.assign(data, { title, message });
     if (link) data.link = link;
     if (image) data.image = image;
   }
-  data.title = title; data.message = message;   // app_update-এও title/message থাকলে ব্যাকআপ হিসেবে কাজে লাগে
+  data.title = title;
+  data.message = message;
 
-  let status = "sent", detail = "";
+  let status = "sent";
+  let detail = "";
+  let topicOk = false, tokenOk = 0, tokenTotal = 0;
   try {
     const saRaw = Deno.env.get("FCM_SERVICE_ACCOUNT");
     if (!saRaw) throw new Error("FCM_SERVICE_ACCOUNT সিক্রেট সেট করা নেই");
     const sa = JSON.parse(saRaw);
-    const token = await accessToken(sa);
-    const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      // শুধু data মেসেজ: অ্যাপ বন্ধ থাকলেও PatheyoMessagingService নিজের ডিজাইনে নোটিফিকেশন দেখায়
-      body: JSON.stringify({ message: { topic, data, android: { priority: "HIGH", ttl: "86400s" } } }),
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(`FCM ${r.status}: ${JSON.stringify(j).slice(0, 300)}`);
-    detail = String(j.name ?? "");
+    const access = await accessToken(sa);
+    const fcmUrl = `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`;
+    const android = { priority: "HIGH", ttl: "86400s" };
+
+    // (a) topic copy - devices that subscribed to topic
+    const t = await fcmPost(fcmUrl, access, { topic, data, android });
+    topicOk = t.ok;
+    const topicErr = t.ok ? "" : t.err;
+
+    // (b) direct copy - every registered device token (fast, not dependent on topic delivery)
+    let q = admin.from("push_tokens").select("token").limit(20000);
+    if (version) q = q.eq("version", version);
+    const { data: rows } = await q;
+    const tokens: string[] = (rows ?? []).map((r: { token: string }) => r.token);
+    tokenTotal = tokens.length;
+    const dead: string[] = [];
+    let lastErr = "";
+    for (let i = 0; i < tokens.length; i += 25) {
+      const chunk = tokens.slice(i, i + 25);
+      const results = await Promise.all(
+        chunk.map((tk) => fcmPost(fcmUrl, access, { token: tk, data, android })),
+      );
+      results.forEach((r, idx) => {
+        if (r.ok) tokenOk++;
+        else {
+          lastErr = r.err;
+          if (r.dead) dead.push(chunk[idx]);
+        }
+      });
+    }
+    if (dead.length) {
+      for (let i = 0; i < dead.length; i += 200) {
+        await admin.from("push_tokens").delete().in("token", dead.slice(i, i + 200));
+      }
+    }
+
+    if (!topicOk && tokenOk === 0) {
+      throw new Error(`topic: ${topicErr || "ok"}; tokens: ${tokenTotal === 0 ? "কোনো ডিভাইস নিবন্ধিত নেই" : lastErr}`);
+    }
+    detail = `topic=${topicOk ? "ok" : "fail"}; tokens ${tokenOk}/${tokenTotal}` +
+      (topicErr ? `; topicErr=${topicErr}` : "");
   } catch (e) {
-    status = "failed"; detail = String((e as Error).message ?? e).slice(0, 400);
+    status = "failed";
+    detail = String((e as Error).message ?? e).slice(0, 400);
   }
 
   await admin.from("notifications").insert({
     kind, title, message, link: link || null, image: image || null, target, status, detail, sent_by: sender,
   });
-  return status === "sent" ? json({ ok: true, target, detail }) : json({ ok: false, error: detail }, 502);
+  return status === "sent"
+    ? json({ ok: true, target, detail, tokens_ok: tokenOk, tokens_total: tokenTotal })
+    : json({ ok: false, error: detail }, 502);
 });
