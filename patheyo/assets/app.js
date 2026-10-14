@@ -38,23 +38,34 @@ const count=(el,v)=>{v=Math.max(0,Math.round(+v||0));const t0=performance.now();
 // মোট ডাউনলোড = GitHub ও (চালু থাকলে) ডাটাবেসের সংখ্যার মধ্যে যেটা বেশি; একটা আরেকটাকে কমিয়ে দেয় না
 const DL={gh:0,sb:0},showDl=()=>count($('#sd'),Math.max(DL.gh,DL.sb));
 async function stats(){if(!ok)return;try{const s=await api('rpc/get_public_stats',{method:'POST',body:'{}'});const d=Array.isArray(s)?s[0]:s;DL.sb=+d.downloads||0;showDl()}catch{}}
-// screenshots: files named 1..8 in /screenshots, any of png/jpg/jpeg/webp/gif
+// screenshots: ডার্ক মোডে Dark-1, Dark-2 ... আর লাইট মোডে Light-1, Light-2 ... (JPG/JPEG/PNG/WEBP/GIF যেকোনোটা)
+// কোনো নম্বরের ফাইল না থাকলে শুধু সেটা বাদ যায়, কোনো এরর/ক্র্যাশ হয় না।
 const EXT=['webp','png','jpg','jpeg','gif','WEBP','PNG','JPG','JPEG','GIF'];
+const SHOT_MAX=+C.SHOTS_MAX||30;
+const shotCache=new Map();
 const probe=u=>new Promise(r=>{const m=new Image();m.onload=()=>r(u);m.onerror=()=>r(null);m.src=u});
-async function shot(n){const base=BASE+(C.SHOTS_DIR||'screenshots')+'/'+n,key='psh'+n;
-  try{const c=sessionStorage.getItem(key);if(c&&await probe(c))return c}catch{}
-  for(const e of EXT){const u=base+'.'+e;if(await probe(u)){try{sessionStorage.setItem(key,u)}catch{}return u}}return null}
+// একটা নম্বরের ছবির URL (না থাকলে null); একবার খুঁজলে ফলাফল ক্যাশে থাকে
+function shotFor(th,n){const key=th+'-'+n;
+  if(!shotCache.has(key))shotCache.set(key,(async()=>{const base=BASE+(C.SHOTS_DIR||'screenshots')+'/'+key;
+    for(const e of EXT){const u=await probe(base+'.'+e);if(u)return u}return null})());
+  return shotCache.get(key)}
 const im=(u,i)=>`<img src="${esc(u)}" alt="Patheyo অ্যাপ স্ক্রিনশট ${bn(i)}" decoding="async" draggable="false">`;
 const dark=()=>root.dataset.theme==='dark';
+const curTheme=()=>dark()?'Dark':'Light';
+// থিম বদলালে (টগল বাটন) সব স্ক্রিনশট নতুন থিমের ছবিতে নিজে থেকে বদলায়
+const REFRESH=[];
+new MutationObserver(()=>REFRESH.forEach(f=>f())).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
 // shared: progress bar + "splash still showing" gate
 const waiting=()=>document.documentElement.classList.contains('ld');
 const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set(p,st=''){if(!el)return;const v=p.toFixed(3);if(v!==ps){el.style.setProperty('--p',v);ps=v}if(st!==ss){if(st)el.dataset.s=st;else delete el.dataset.s;ss=st}}}};
 // hero: 3 phones, every 3s. The incoming phone first swings OUT to the right (clear of the centre phone),
 // only then rises to the front, and glides into the centre. The old centre slides left and goes behind.
-(function(){const ps=[...document.querySelectorAll('.hp')];
-  ps.forEach((p,i)=>{const g=p.querySelector('img'),fall=()=>shot(i+1).then(u=>{if(u)p.querySelector('.ph').innerHTML=im(u,i+1)});
-    if(!g)fall();else if(g.complete&&!g.naturalWidth)fall();else g.addEventListener('error',fall,{once:true})});
+(function(){const ps=[...document.querySelectorAll('.hp')];let gen=0;
+  // উপরের ৩টা ফোন: বর্তমান থিমের 1,2,3 নম্বর ছবি; ছবি না থাকলে সেই ফোনটা লুকানো থাকে
+  const fill=()=>{const g=++gen,th=curTheme();ps.forEach((p,i)=>shotFor(th,i+1).then(u=>{if(g!==gen)return;const box=p.querySelector('.ph');
+    if(u){box.innerHTML=im(u,i+1);p.style.visibility=''}else{box.innerHTML='';p.style.visibility='hidden'}}))};
+  REFRESH.push(fill);fill();
   const P=['translate3d(0%,0,0) rotate(0deg) scale(1)','translate3d(64%,0,0) rotate(5deg) scale(.86)','translate3d(-64%,0,0) rotate(-5deg) scale(.86)'];
   const D=1500,FL=.3,out=()=>matchMedia('(max-width:480px)').matches?100:110;
   const fly=(p,from,to)=>{if(!p.animate){p.classList.add('nw');return}let kf;
@@ -94,18 +105,16 @@ const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set
 // screenshot strip: endless loop. Each phone: 1s move, then a 3s loading bar (white -> green) before the next one.
 // drag/swipe/wheel/keys scroll it (bar dims while dragging, restarts after release); click holds a phone = bar pauses.
 (function(){const trk=$('#trk'),vp=trk.parentElement,bar=mkBar('sbar');
-  const NS=[4,5,6,7,8],n=NS.length;
-  const base=NS.map(k=>`<div class="ph" data-n="${k}">স্ক্রিনশট ${bn(k)}</div>`);
-  trk.innerHTML=base.concat(base,base).join('');const items=[...trk.children];
-  let fetched=false;const loadImgs=()=>{if(fetched)return;fetched=true;NS.forEach((k,j)=>shot(k).then(u=>{if(u)[0,1,2].forEach(c=>items[c*n+j].innerHTML=im(u,k))}))};
-  if('IntersectionObserver' in window)new IntersectionObserver((e,o)=>{if(e.some(z=>z.isIntersecting)){loadImgs();o.disconnect()}},{rootMargin:'1000px 0px'}).observe(vp);else loadImgs();
-  let i=n,tx=0,down=null,nt,wheeling=false,wt;
+  let n=0,items=[],i=0,fetched=false,stripGen=0;
+  // list = [[নম্বর, url], ...] থেকে ট্র্যাক বানায়; তিনবার কপি করে অসীম লুপ
+  const build=list=>{n=list.length;const h=list.map(([k,u])=>`<div class="ph" data-n="${k}">${im(u,k)}</div>`).join('');trk.innerHTML=h+h+h;items=[...trk.children];i=n};
+  let tx=0,down=null,nt,wheeling=false,wt;
   const MVT=1000,FILL=2800,GRN=200;let mvLeft=0,p=0,grn=0;
   const cxl=el=>el.offsetLeft+el.offsetWidth/2,mid=()=>vp.clientWidth/2;
   const mark=()=>{let b=0,bd=1e9;items.forEach((el,k)=>{const d=Math.abs(cxl(el)+tx-mid());if(d<bd){bd=d;b=k}});items.forEach((el,k)=>el.classList.toggle('on',k===b));return b};
   const apply=()=>{trk.style.transform=`translate3d(${tx}px,0,0)`};
-  const place=()=>{tx=mid()-cxl(items[i]);apply();mark()};
-  const norm=()=>{if(i<n||i>=2*n){const i1=n+(((i-n)%n)+n)%n;tx+=cxl(items[i])-cxl(items[i1]);i=i1;trk.classList.add('still');apply();void trk.offsetWidth;trk.classList.remove('still');mark()}};
+  const place=()=>{if(!n)return;tx=mid()-cxl(items[i]);apply();mark()};
+  const norm=()=>{if(!n)return;if(i<n||i>=2*n){const i1=n+(((i-n)%n)+n)%n;tx+=cxl(items[i])-cxl(items[i1]);i=i1;trk.classList.add('still');apply();void trk.offsetWidth;trk.classList.remove('still');mark()}};
   const sched=()=>{clearTimeout(nt);nt=setTimeout(norm,1100)};
   const readX=el=>{const t=getComputedStyle(el).transform;if(!t||t==='none')return 0;const M=window.DOMMatrix||window.WebKitCSSMatrix;if(M)return new M(t).m41;const m=/matrix\(([^)]+)\)/.exec(t);return m?parseFloat(m[1].split(',')[4])||0:0};
   const freeze=()=>{clearTimeout(nt);tx=readX(trk);trk.classList.add('still');apply();norm();trk.classList.add('still')};
@@ -118,7 +127,7 @@ const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set
   trk.addEventListener('pointerover',e=>{if(e.pointerType!=='mouse'||down)return;const el=e.target.closest('.ph');if(el&&!el.sup)el.classList.add('hv')});
   trk.addEventListener('pointerout',e=>{if(e.pointerType!=='mouse')return;const el=e.target.closest('.ph');if(!el||(e.relatedTarget&&el.contains(e.relatedTarget)))return;el.classList.remove('hv');el.sup=false});
   // drag (mouse + touch + pen)
-  vp.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;
+  vp.addEventListener('pointerdown',e=>{if(!n)return;if(e.button!==0&&e.pointerType==='mouse')return;
     down={x:e.clientX,x0:e.clientX,tx:0,id:e.pointerId,el:e.target.closest('.ph'),moved:false,h:[]}});
   vp.addEventListener('pointermove',e=>{if(!down||e.pointerId!==down.id)return;const dx=e.clientX-down.x;
     if(!down.moved&&Math.abs(e.clientX-down.x0)>8){down.moved=true;freeze();down.tx=tx;down.x=e.clientX;down.h=[[performance.now(),e.clientX]];vp.setPointerCapture(e.pointerId);vp.classList.add('dr');clearHold()}
@@ -136,11 +145,18 @@ const mkBar=id=>{const el=document.getElementById(id);let ps='',ss='';return{set
   vp.addEventListener('touchend',()=>{ts=null});vp.addEventListener('touchcancel',()=>{ts=null});
   vp.addEventListener('contextmenu',e=>e.preventDefault());vp.addEventListener('dragstart',e=>e.preventDefault());
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('#trk')&&held())clearHold()});
-  vp.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(!wheeling){wheeling=true;freeze();clearHold()}tx-=e.deltaX;apply();mark();clearTimeout(wt);wt=setTimeout(()=>{wheeling=false;settle(tx)},140)},{passive:false});
-  vp.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();freeze();clearHold();i+=e.key==='ArrowRight'?1:-1;trk.classList.remove('still');place();sched();restart()});
+  vp.addEventListener('wheel',e=>{if(!n)return;if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(!wheeling){wheeling=true;freeze();clearHold()}tx-=e.deltaX;apply();mark();clearTimeout(wt);wt=setTimeout(()=>{wheeling=false;settle(tx)},140)},{passive:false});
+  vp.addEventListener('keydown',e=>{if(!n)return;if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();freeze();clearHold();i+=e.key==='ArrowRight'?1:-1;trk.classList.remove('still');place();sched();restart()});
+  // নিচের স্ক্রিনশট: ৪ নম্বর থেকে শেষ পর্যন্ত, বর্তমান থিমের যেগুলো আছে শুধু সেগুলো
+  const loadStrip=()=>{const g=++stripGen,th=curTheme(),ks=[];for(let k=4;k<=SHOT_MAX;k++)ks.push(k);
+    Promise.all(ks.map(k=>shotFor(th,k).then(u=>u?[k,u]:null))).then(r=>{if(g!==stripGen)return;
+      const list=r.filter(Boolean);build(list);vp.hidden=!list.length;if(list.length){place();restart()}})};
+  REFRESH.push(()=>{if(fetched)loadStrip()});
+  if('IntersectionObserver' in window)new IntersectionObserver((e,o)=>{if(e.some(z=>z.isIntersecting)){fetched=true;o.disconnect();loadStrip()}},{rootMargin:'1000px 0px'}).observe(vp);
+  else{fetched=true;loadStrip()}
   let lt=performance.now();
   requestAnimationFrame(function f(now){const dt=Math.min(now-lt,100);lt=now;
-    if(!document.hidden&&!waiting()){
+    if(n&&!document.hidden&&!waiting()){
       if((down&&down.moved)||wheeling){bar.set(0,'dim');restart()}                       // being dragged: dim idle line, no loading
       else if(held()||(down&&!down.moved)){bar.set(p,'pause')}                     // clicked / hovered: freeze where it is
       else if(mvLeft>0){mvLeft-=dt;bar.set(0)}                                            // phone is sliding in
