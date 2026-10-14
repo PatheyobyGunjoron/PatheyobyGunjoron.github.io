@@ -53,7 +53,7 @@ Google Search Console-এ সাইট যোগ করুন (URL prefix: https
 
 ## ফোল্ডার
 - `fonts/` — Kothamala (Regular, Bold, Light), সব লেখা এই ফন্টে
-- `screenshots/` — `1`–`8` নামে ছবি (PNG/JPG/JPEG/WEBP/GIF যেকোনোটা); ১–৩ হিরো, ৪–৮ নিচের স্ক্রিনশট সেকশন
+- `screenshots/` — ডার্ক মোডের জন্য `Dark-1`…`Dark-30`, লাইট মোডের জন্য `Light-1`…`Light-30` নামে ছবি (PNG/JPG/JPEG/WEBP/GIF যেকোনোটা); উপরের হিরোতে ১–৩, নিচে ৪ থেকে বাকিগুলো
 - সোশ্যাল লিংক: `config.js` এর `SOCIAL`
 - ফিচারের আইকন: `index.html` এর SVG স্প্রাইটে (`ic0`–`ic12`); নতুন ফিচারে `data/features.json` এ `"svg":"icN"` দিন
 
