@@ -101,6 +101,33 @@ svg.ch{width:100%;height:auto;display:block}
 .filters{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:.8rem}
 .filters>*{flex:1 1 180px;width:auto}
 .empty{color:var(--mut);padding:1rem;text-align:center}
+.ibtn.sq{display:grid;place-items:center;width:40px;height:40px;padding:0}
+.ibtn svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
+.t-sun{display:none}:root[data-theme=dark] .t-sun{display:block}:root[data-theme=dark] .t-moon{display:none}
+input[type=checkbox]{width:auto;accent-color:var(--accent)}
+.swg{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:.4rem}
+.sw{display:flex;align-items:flex-start;gap:.65rem;margin:0;padding:.6rem .8rem;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-weight:700;cursor:pointer}
+.sw input{flex:none;width:18px;height:18px;margin-top:.2rem}
+.sw small{display:block;color:var(--mut);font-weight:400;font-size:.8rem;line-height:1.4}
+.thumb{display:block;width:92px;max-height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--soft)}
+.hint{color:var(--mut);font-size:.82rem;margin:.25rem 0 0}
+.hint.ok{color:var(--green)}.hint.bad{color:var(--amber)}
+.imgrow{display:flex;gap:.5rem;align-items:center}.imgrow input[type=url]{flex:1;min-width:0}
+.acts{display:flex;gap:.3rem;flex-wrap:wrap}
+.pl-note{border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:.55rem .8rem;font-size:.88rem;margin:.3rem 0 .2rem}
+.apv{border:1px dashed var(--line);border-radius:16px;padding:1rem;background:var(--bg);display:grid;place-items:center}
+.apv-box{position:relative;overflow:hidden;border-radius:14px;background:var(--soft);border:1px solid var(--line);width:100%;max-width:520px}
+.apv-box img,.apv-sq img{display:block;width:100%;height:100%;object-fit:cover}
+.apv-ph{display:grid;place-items:center;height:100%;min-height:90px;color:var(--mut);font-size:.85rem;text-align:center;padding:.6rem}
+.apv-chip{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:8px;padding:3px 3px 3px 9px;border:1px dashed #235FFE;border-radius:11px;background:rgba(255,255,255,.95);color:#00205E;line-height:1.2}
+.apv-chip span{display:flex;flex-direction:column}.apv-chip small{font-size:10px;color:#3A4A73;font-weight:700}.apv-chip i{font-style:normal;font-size:12px;font-weight:700}.apv-chip u{text-decoration:none;color:#235FFE;letter-spacing:.04em}
+.apv-chip b{font-size:11px;color:#fff;background:#235FFE;border-radius:8px;padding:4px 9px}
+.apv-pop{width:min(100%,290px);border-radius:20px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.apv-sq{aspect-ratio:1/1;background:var(--soft)}
+.apv-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px}
+.apv-bar .apv-chip{position:static;flex:1 1 130px;background:transparent;color:var(--fg)}
+.apv-bar .apv-chip small{color:var(--mut)}
+.apv-cta{flex:1 1 100px;text-align:center;background:#235FFE;color:#fff;border-radius:12px;padding:9px 12px;font-weight:700;font-size:.9rem}
 @media (max-width:820px){
  .wrap{grid-template-columns:1fr;padding-bottom:5.5rem}
  nav.side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;flex-direction:row;justify-content:space-around;background:var(--panel);border-top:1px solid var(--line);padding:.3rem .3rem calc(.3rem + env(safe-area-inset-bottom,0px));gap:0}
@@ -134,7 +161,7 @@ svg.ch{width:100%;height:auto;display:block}
   <header class="top"><div class="in">
     <div class="brand"><img src="../assets/icon-192.png" alt=""><div>Patheyo অ্যাডমিন<small id="who"></small></div></div>
     <div class="sp"></div>
-    <button class="ibtn" id="themeBtn" type="button" aria-label="থিম বদলান">🌓</button>
+    <button class="ibtn sq" id="themeBtn" type="button" aria-label="ডার্ক / লাইট মোড বদলান" title="ডার্ক / লাইট মোড"><svg class="i t-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i t-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
     <button class="ibtn" id="logoutBtn" type="button">লগআউট</button>
   </div></header>
 
@@ -143,6 +170,7 @@ svg.ch{width:100%;height:auto;display:block}
       <button data-t="dash" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-3H4z"/></svg>ড্যাশবোর্ড</button>
       <button data-t="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.3 3.5 5.2"/></svg>ইউজার</button>
       <button data-t="push"><svg viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1 1 12 0v6l2 2H4zM10 21a2 2 0 0 0 4 0"/></svg>নোটিফিকেশন</button>
+      <button data-t="ads"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15.5 8.5a5 5 0 0 1 0 7M18.2 5.8a9 9 0 0 1 0 12.4"/></svg>এড</button>
       <button data-t="rel"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 20h14"/></svg>রিলিজ</button>
       <button data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>সেটআপ</button>
     </nav>
@@ -191,6 +219,72 @@ svg.ch{width:100%;height:auto;display:block}
         <div class="panel"><h2>পাঠানোর ইতিহাস</h2><p class="sub">সর্বশেষ ৩০টি</p><div class="tw"><table><thead><tr><th>সময়</th><th>ধরন</th><th>শিরোনাম</th><th>কাদের</th><th>ফল</th></tr></thead><tbody id="hBody"></tbody></table></div></div>
       </section>
 
+      <!-- এড -->
+      <section id="t-ads" hidden>
+        <div class="warn" id="adsWarn" hidden>এড সিস্টেমের টেবিল পাওয়া যায়নি। Supabase → SQL Editor-এ <code>patheyo/supabase/ads.sql</code> পুরোটা একবার Run করুন (ধাপ: <b>SETUP-ADS-BANGLA.md</b>)।</div>
+        <div class="cards" id="adCards"></div>
+
+        <div class="panel"><h2>গত ১৪ দিনের এড পারফরম্যান্স</h2><p class="sub">অ্যাপে এড কতবার দেখা হয়েছে, কতবার ট্যাপ হয়েছে ও প্রমো কোড কপি হয়েছে (UTC তারিখ)</p>
+          <div id="adChart"></div>
+          <div class="legend"><span><i style="background:#2f9fe0"></i>ভিউ</span><span><i style="background:#EC1C24"></i>ক্লিক</span><span><i style="background:#f0b429"></i>প্রমো কপি</span></div></div>
+
+        <div class="panel"><h2>অ্যাপের এড — সাধারণ সেটিংস</h2><p class="sub">এখানে বদলালে অ্যাপ নতুন করে বিল্ড করতে হয় না — ইউজাররা অ্যাপ খুললে বা ফিরলে নতুন সেটিং পাবে।</p>
+          <div class="swg">
+            <label class="sw"><input type="checkbox" id="sAll"><span>অ্যাপে সব এড চালু<small>বন্ধ করলে অ্যাপের কোথাও কোনো এড দেখাবে না (জরুরি “অফ সুইচ”)</small></span></label>
+            <label class="sw"><input type="checkbox" id="sCar"><span>হোম স্লাইডার<small>হোমের স্লাইড হওয়া এড (১২০০×৩৫০)</small></span></label>
+            <label class="sw"><input type="checkbox" id="sFoot"><span>নিচের ব্যানার<small>হোম ও সব ফিচার পেজের নিচের এড (১২০০×৪৫০)</small></span></label>
+            <label class="sw"><input type="checkbox" id="sPop"><span>অ্যাপ-খোলা পপআপ<small>অ্যাপ খুললে সামনে আসা এড (১২০০×১২০০)</small></span></label>
+            <label class="sw"><input type="checkbox" id="sFb"><span>ডিফল্ট এড দেখাও<small>কোনো জায়গায় চালু এড না থাকলে অ্যাপে বসানো আগের এডগুলো দেখাবে</small></span></label>
+          </div>
+          <div class="row"><div><label for="sInt">স্লাইডার কত সেকেন্ডে বদলাবে</label><input id="sInt" type="number" min="2" max="30" value="5"></div></div>
+          <p><button class="btn p" id="sSave" type="button">সেটিং সেভ করুন</button></p></div>
+
+        <div class="panel"><h2>এডের তালিকা</h2><p class="sub">ছোট ক্রম নম্বরের এড আগে দেখায়। একই জায়গায় একাধিক এড চালু থাকলে স্লাইডারে সব ঘুরে ঘুরে, ব্যানারে একটি করে এলোমেলোভাবে, আর পপআপে ক্রমে প্রথমটি দেখায়।</p>
+          <div class="seg" id="adFilt" role="group" aria-label="ফিল্টার"><button type="button" data-f="all" aria-pressed="true">সব</button><button type="button" data-f="carousel" aria-pressed="false">স্লাইডার</button><button type="button" data-f="footer" aria-pressed="false">নিচের ব্যানার</button><button type="button" data-f="popup" aria-pressed="false">পপআপ</button></div>
+          <div class="tw"><table><thead><tr><th>ছবি</th><th>এড</th><th>জায়গা</th><th>অবস্থা</th><th>সময়</th><th>পারফরম্যান্স</th><th></th></tr></thead><tbody id="adBody"></tbody></table></div></div>
+
+        <div class="panel" id="adFormPanel"><h2 id="adfT">নতুন এড যোগ করুন</h2><p class="sub">ছবির লিংক বসান অথবা সরাসরি আপলোড করুন। সেভ করলেই ওয়েবসাইট ↔ অ্যাপ সংযোগে অ্যাপে চলে যাবে।</p>
+          <form id="adForm"><input type="hidden" id="aId">
+            <label>কোথায় দেখাবে</label>
+            <div class="seg" id="plSeg" role="group" aria-label="জায়গা"><button type="button" data-p="carousel" aria-pressed="true">🖼️ হোম স্লাইডার</button><button type="button" data-p="footer" aria-pressed="false">📌 নিচের ব্যানার</button><button type="button" data-p="popup" aria-pressed="false">💬 অ্যাপ-খোলা পপআপ</button></div>
+            <div class="pl-note" id="aSize"></div>
+            <div class="row">
+              <div><label for="aTitle">এডের নাম (শুধু আপনার চেনার জন্য)</label><input id="aTitle" required maxlength="120" placeholder="যেমন: ঈদ অফার ২০২৬"></div>
+              <div><label for="aActive">অবস্থা</label><select id="aActive"><option value="true">চালু</option><option value="false">বন্ধ (খসড়া)</option></select></div>
+              <div><label for="aSort">ক্রম নম্বর (ছোট = আগে)</label><input id="aSort" type="number" value="100" min="0" max="100000"></div>
+            </div>
+            <label for="aImg">এডের ছবির লিংক (https://)</label>
+            <div class="imgrow"><input id="aImg" type="url" required placeholder="https://…/ad.png"><button class="btn" type="button" id="aUp">⬆️ আপলোড</button><input type="file" id="aFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div>
+            <p class="hint" id="aImgInfo">PNG / JPG / WebP, সর্বোচ্চ ৩ MB। আপলোড করলে ছবি Supabase স্টোরেজে রাখা হয় (ads.sql-এর শেষ অংশ লাগে)।</p>
+            <div class="row">
+              <div><label for="aLink">ওয়েবসাইট / প্রমোশনাল লিংক (ঐচ্ছিক)</label><input id="aLink" type="url" placeholder="https://… (ছবিতে ট্যাপ করলে ফোনের ব্রাউজারে খুলবে)"></div>
+              <div id="btnWrap"><label for="aBtn">বাটনের লেখা (পপআপে)</label><input id="aBtn" maxlength="40" placeholder="বিস্তারিত দেখুন"></div>
+            </div>
+            <div class="row">
+              <div><label for="aCode">প্রমো কোড (ঐচ্ছিক)</label><input id="aCode" maxlength="40" placeholder="যেমন: EID26" autocapitalize="characters"></div>
+              <div><label for="aNote">প্রমো কোডের পাশের ছোট লেখা (ঐচ্ছিক)</label><input id="aNote" maxlength="80" placeholder="যেমন: ২০% ছাড়"></div>
+            </div>
+            <div class="row">
+              <div><label for="aStart">শুরু (ঐচ্ছিক)</label><input id="aStart" type="datetime-local"></div>
+              <div><label for="aEnd">শেষ (ঐচ্ছিক)</label><input id="aEnd" type="datetime-local"></div>
+            </div>
+            <div id="popOpts" hidden>
+              <div class="row">
+                <div><label for="aFreq">পপআপ কতবার দেখাবে</label><select id="aFreq"><option value="daily">দিনে একবার</option><option value="every_open">প্রতিবার অ্যাপ খুললে</option><option value="weekly">সপ্তাহে একবার</option><option value="once">একবারই (প্রতি ফোনে)</option></select></div>
+                <div><label for="aDelay">অ্যাপ খোলার কত সেকেন্ড পরে</label><input id="aDelay" type="number" min="0" max="30" value="2"></div>
+                <div><label for="aBd">বাইরে ট্যাপ করলে বন্ধ হবে?</label><select id="aBd"><option value="true">হ্যাঁ</option><option value="false">না — শুধু ✕ বাটনে</option></select></div>
+              </div>
+            </div>
+            <details style="margin-top:.8rem"><summary style="cursor:pointer;font-weight:700">⚙️ উন্নত: নির্দিষ্ট অ্যাপ ভার্সনে দেখানো</summary>
+              <p class="hint">ভার্সন কোড = অ্যাপের <code>versionCode</code> (ইউজার ট্যাবের ভার্সনের সাথে মিলিয়ে দেখুন)। খালি রাখলে সব ভার্সনে দেখাবে। যেমন পুরোনো ভার্সনের ইউজারদের “আপডেট করুন” পপআপ দিতে শুধু “সর্বোচ্চ”-এ পুরোনো কোড দিন।</p>
+              <div class="row"><div><label for="aMin">সর্বনিম্ন ভার্সন কোড</label><input id="aMin" type="number" min="0" placeholder="খালি = সব"></div><div><label for="aMax">সর্বোচ্চ ভার্সন কোড</label><input id="aMax" type="number" min="0" placeholder="খালি = সব"></div></div>
+            </details>
+            <label>অ্যাপে যেমন দেখাবে (প্রিভিউ)</label>
+            <div class="apv" id="adPv"></div>
+            <p style="margin-top:1rem"><button class="btn p" id="aSave">💾 সেভ করুন</button> <button type="button" class="btn" id="aReset">পরিষ্কার / নতুন</button></p>
+          </form></div>
+      </section>
+
       <!-- রিলিজ -->
       <section id="t-rel" hidden>
         <div class="panel"><h2>রিলিজ নোট (ডাটাবেস)</h2><p class="sub">ওয়েবসাইটের পাবলিক পেজ আসল APK ও নোট পায় GitHub Releases থেকে। এখানকার তালিকা ঐচ্ছিক — আগের মতোই কাজ করে।</p>
@@ -207,7 +301,7 @@ svg.ch{width:100%;height:auto;display:block}
       <section id="t-set" hidden>
         <div class="panel"><h2>সংযোগ পরীক্ষা</h2><p class="sub">সবকিছু ঠিকমতো জোড়া লেগেছে কি না এখানে দেখুন</p><div id="checks"></div><p><button class="btn" id="recheck" type="button">আবার পরীক্ষা করুন</button></p></div>
         <div class="panel"><h2>অ্যাপের সাথে কীভাবে জোড়া লাগে</h2>
-          <p class="sub" style="margin:0">① অ্যাপ সামনে থাকলে প্রতি ~৫ মিনিটে ডাটাবেসে “আমি সক্রিয়” জানায় → এখানে ইউজার ও ভার্সন গণনা। ② ওয়েবসাইটের “অ্যাপ আপডেট করুন” বাটন অ্যাপের নিজস্ব আপডেটার খোলে। ③ GitHub-এ নতুন Release দিলে ইউজারদের কাছে অটো “আপডেট করুন” নোটিফিকেশন যায়। ④ এই প্যানেল থেকে যেকোনো সময় ঘোষণা পাঠানো যায়। বিস্তারিত: <b>SETUP-BANGLA.md</b></p></div>
+          <p class="sub" style="margin:0">① অ্যাপ সামনে থাকলে প্রতি ~৫ মিনিটে ডাটাবেসে “আমি সক্রিয়” জানায় → এখানে ইউজার ও ভার্সন গণনা। ② ওয়েবসাইটের “অ্যাপ আপডেট করুন” বাটন অ্যাপের নিজস্ব আপডেটার খোলে। ③ GitHub-এ নতুন Release দিলে ইউজারদের কাছে অটো “আপডেট করুন” নোটিফিকেশন যায়। ④ এই প্যানেল থেকে যেকোনো সময় ঘোষণা পাঠানো যায়। ⑤ “এড” ট্যাবে বানানো বিজ্ঞাপন (হোম স্লাইডার, নিচের ব্যানার, অ্যাপ-খোলা পপআপ) অ্যাপ নতুন করে বিল্ড ছাড়াই অ্যাপে দেখায়; ভিউ/ক্লিক/প্রমো কপি এখানে গোনা হয়। বিস্তারিত: <b>SETUP-BANGLA.md</b></p></div>
       </section>
     </main>
   </div>
@@ -259,10 +353,11 @@ $('#logoutBtn').onclick=async()=>{await sb.auth.signOut();SESSION=null;show(fals
 
 // ---- ট্যাব ----
 function go(t){tab=t;$$('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'page':'false'));
-  ['dash','users','push','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
+  ['dash','users','push','ads','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
   if(t==='dash'){loadDash();timer=setInterval(()=>{if(!document.hidden)loadDash(true)},30000)}
   if(t==='users'){loadUsers(true)}
   if(t==='push'){initPush()}
+  if(t==='ads'){loadAds()}
   if(t==='rel'){loadRel()}
   if(t==='set'){runChecks()}}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-t]');if(b)go(b.dataset.t)};
@@ -370,6 +465,132 @@ $('#rf').onsubmit=async e=>{e.preventDefault();if(!/^https:\/\//.test($('#ru').v
   const q=$('#rid').value?sb.from('releases').update(row).eq('id',$('#rid').value):sb.from('releases').insert(row);const{error}=await q;
   if(error)return toast('সেভ ব্যর্থ: ভার্সন ডুপ্লিকেট বা অনুমতি নেই',1);toast('✅ সেভ হয়েছে');$('#rrs').click();loadRel()};
 
+// ================= এড (অ্যাপের বিজ্ঞাপন) =================
+const PL={carousel:{n:'হোম স্লাইডার',w:1200,h:350,ar:'24/7'},footer:{n:'নিচের ব্যানার',w:1200,h:450,ar:'8/3'},popup:{n:'অ্যাপ-খোলা পপআপ',w:1200,h:1200,ar:'1/1'}};
+let ADS=[],ADSTAT={},ADFILT='all',ADPL='carousel',imgT=0;
+const p2=n=>String(n).padStart(2,'0');
+const toLocal=iso=>{if(!iso)return'';const d=new Date(iso);return isNaN(d)?'':`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`};
+const fromLocal=v=>v?new Date(v).toISOString():null;
+function adState(a){const n=Date.now();
+  if(!a.is_active)return{k:'off',t:'বন্ধ',c:''};
+  if(a.start_at&&new Date(a.start_at).getTime()>n)return{k:'sched',t:'শিডিউলড',c:'a'};
+  if(a.end_at&&new Date(a.end_at).getTime()<=n)return{k:'ended',t:'মেয়াদ শেষ',c:'r'};
+  return{k:'live',t:'চালু',c:'g'}}
+const dshort=d=>{try{return new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{return''}};
+
+async function loadAds(){
+  const[a,s,g,d]=await Promise.all([
+    sb.from('app_ads').select('*').order('placement').order('sort_order').order('created_at',{ascending:false}),
+    sb.rpc('admin_ads_stats'),sb.from('app_ad_settings').select('*').eq('id',1).maybeSingle(),sb.rpc('admin_ads_daily',{p_days:14})]);
+  if(a.error){$('#adsWarn').hidden=false;ADS=[];$('#adBody').innerHTML='<tr><td colspan="7" class="empty">এড সিস্টেম এখনো সেটআপ হয়নি</td></tr>';$('#adCards').innerHTML='';$('#adChart').innerHTML='';return}
+  $('#adsWarn').hidden=true;ADS=a.data||[];ADSTAT={};(s.data||[]).forEach(r=>ADSTAT[r.ad_id]=r);
+  fillSettings(g.data);renderAdCards(d.data||[]);renderAdList();drawAdChart(d.data||[]);adPv();setPl(ADPL)}
+
+function fillSettings(s){s=s||{};const on=v=>v!==false;
+  $('#sAll').checked=on(s.ads_enabled);$('#sCar').checked=on(s.carousel_enabled);$('#sFoot').checked=on(s.footer_enabled);$('#sPop').checked=on(s.popup_enabled);$('#sFb').checked=on(s.builtin_fallback);
+  $('#sInt').value=s.carousel_interval_sec||5}
+$('#sSave').onclick=async()=>{
+  const iv=Math.round(Number($('#sInt').value));if(!(iv>=2&&iv<=30))return toast('স্লাইডারের সময় ২–৩০ সেকেন্ডের মধ্যে দিন',1);
+  const row={id:1,ads_enabled:$('#sAll').checked,carousel_enabled:$('#sCar').checked,footer_enabled:$('#sFoot').checked,popup_enabled:$('#sPop').checked,builtin_fallback:$('#sFb').checked,carousel_interval_sec:iv};
+  const{error}=await sb.from('app_ad_settings').upsert(row);
+  error?toast('সেটিং সেভ হয়নি — ads.sql Run করা হয়েছে কি?',1):toast(row.ads_enabled?'✅ সেটিং সেভ হয়েছে':'✅ সেভ হয়েছে — অ্যাপে এখন সব এড বন্ধ')};
+
+function renderAdCards(daily){
+  const live=ADS.filter(a=>adState(a).k==='live').length,sch=ADS.filter(a=>adState(a).k==='sched').length,off=ADS.length-live-sch;
+  const w=(daily||[]).slice(-7),sum=k=>w.reduce((n,r)=>n+Number(r[k]||0),0),v=sum('views'),c=sum('clicks'),cp=sum('copies');
+  $('#adCards').innerHTML=[['live','এখন চালু এড',live],['new','শিডিউলড',sch],['','বন্ধ / মেয়াদ শেষ',off],['','ভিউ (৭ দিন)',v],['dl','ক্লিক (৭ দিন)',c],['','ক্লিক হার (CTR)',(v?Math.round(c*1000/v)/10:0)+'%'],['new','প্রমো কপি (৭ দিন)',cp]]
+    .map(([k,t,n])=>`<div class="card ${k}"><b>${typeof n==='number'?num(n):n}</b><span>${t}</span></div>`).join('')}
+
+function renderAdList(){
+  const rows=ADS.filter(a=>ADFILT==='all'||a.placement===ADFILT);
+  $('#adBody').innerHTML=rows.map(a=>{const s=adState(a),t=ADSTAT[a.id]||{},v=Number(t.views||0),c=Number(t.clicks||0),cp=Number(t.copies||0);
+    const sc=(a.start_at||a.end_at)?`${a.start_at?dshort(a.start_at):'—'}<br>→ ${a.end_at?dshort(a.end_at):'চলবে'}`:'সব সময়';
+    return `<tr><td><img class="thumb" src="${esc(a.image_url)}" alt="" loading="lazy"></td>
+    <td style="white-space:normal;min-width:170px"><b>${esc(a.title)}</b>${a.promo_code?`<br><span class="tag">কোড: ${esc(a.promo_code)}</span>`:''}${a.link_url?'<br><span class="hint" style="word-break:break-all">'+esc(a.link_url.slice(0,48))+(a.link_url.length>48?'…':'')+'</span>':''}</td>
+    <td><span class="tag">${PL[a.placement].n}</span>${a.placement==='popup'?'<br><span class="hint">'+({every_open:'প্রতিবার',daily:'দিনে একবার',weekly:'সপ্তাহে একবার',once:'একবারই'}[a.popup_frequency]||'')+'</span>':''}</td>
+    <td><span class="tag ${s.c}">${s.t}</span></td><td style="font-size:.82rem">${sc}</td>
+    <td style="font-size:.85rem">${num(v)} ভিউ · ${num(c)} ক্লিক<br><span class="hint">CTR ${v?Math.round(c*1000/v)/10:0}%${a.promo_code?' · কপি '+num(cp):''} · ৭ দিনে ${num(t.views_7d||0)}/${num(t.clicks_7d||0)}</span></td>
+    <td><div class="acts"><button class="btn sm" data-a="edit" data-id="${esc(a.id)}">এডিট</button><button class="btn sm" data-a="tog" data-id="${esc(a.id)}">${a.is_active?'বন্ধ করুন':'চালু করুন'}</button><button class="btn sm" data-a="dup" data-id="${esc(a.id)}">ডুপ্লিকেট</button><button class="btn sm" data-a="up" data-id="${esc(a.id)}" title="আগে আনুন">↑</button><button class="btn sm" data-a="dn" data-id="${esc(a.id)}" title="পরে নিন">↓</button><button class="btn sm d" data-a="del" data-id="${esc(a.id)}">মুছুন</button></div></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">এখনো কোনো এড নেই — নিচের ফর্মে প্রথম এডটি যোগ করুন</td></tr>'}
+$('#adFilt').onclick=e=>{const b=e.target.closest('button[data-f]');if(!b)return;ADFILT=b.dataset.f;$$('#adFilt button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderAdList()};
+
+$('#adBody').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=ADS.find(x=>x.id===b.dataset.id);if(!a)return;
+  if(b.dataset.a==='edit'){fillAdForm(a);return}
+  if(b.dataset.a==='dup'){fillAdForm(a,true);return}
+  if(b.dataset.a==='tog'){const{error}=await sb.from('app_ads').update({is_active:!a.is_active}).eq('id',a.id);error?toast('বদলানো যায়নি',1):(toast(a.is_active?'এড বন্ধ হয়েছে':'এড চালু হয়েছে'),loadAds());return}
+  if(b.dataset.a==='del'){if(!confirm(`“${a.title}” মুছে ফেলবেন? এর পরিসংখ্যানও মুছে যাবে।`))return;const{error}=await sb.from('app_ads').delete().eq('id',a.id);error?toast('মুছতে ব্যর্থ',1):(toast('মুছে ফেলা হয়েছে'),loadAds());return}
+  if(b.dataset.a==='up'||b.dataset.a==='dn'){
+    const grp=ADS.filter(x=>x.placement===a.placement).sort((p,q)=>p.sort_order-q.sort_order||new Date(q.created_at)-new Date(p.created_at));
+    const i=grp.findIndex(x=>x.id===a.id),j=i+(b.dataset.a==='up'?-1:1);if(j<0||j>=grp.length)return;[grp[i],grp[j]]=[grp[j],grp[i]];
+    const rs=await Promise.all(grp.map((x,k)=>sb.from('app_ads').update({sort_order:(k+1)*10}).eq('id',x.id)));
+    rs.some(r=>r.error)?toast('ক্রম বদলানো যায়নি',1):loadAds()}};
+
+// ---- ফর্ম ----
+function setPl(p){ADPL=p;$$('#plSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
+  const m=PL[p];$('#aSize').innerHTML=`📐 ছবির মাপ: <b>${m.w} × ${m.h} px</b> (${p==='popup'?'বর্গাকার ১:১':p==='carousel'?'চওড়া ২৪:৭':'চওড়া ৮:৩'}) — ঠিক এই মাপে বানালে অ্যাপে একদম নিখুঁত দেখাবে।`;
+  $('#popOpts').hidden=p!=='popup';$('#btnWrap').hidden=p!=='popup';adPv();checkImg()}
+$('#plSeg').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)setPl(b.dataset.p)};
+function adPv(){const p=ADPL,img=$('#aImg').value.trim(),link=$('#aLink').value.trim(),code=$('#aCode').value.trim(),note=$('#aNote').value.trim(),btn=$('#aBtn').value.trim()||'বিস্তারিত দেখুন';
+  const imgTag=/^https:\/\//.test(img)?`<img src="${esc(img)}" alt="">`:'<div class="apv-ph">ছবির লিংক দিলে এখানে প্রিভিউ দেখাবে</div>';
+  const chip=code?`<div class="apv-chip"><span>${note?`<small>${esc(note)}</small>`:''}<i>কোড: <u>${esc(code)}</u></i></span><b>কপি</b></div>`:'';
+  $('#adPv').innerHTML=p==='popup'
+    ?`<div class="apv-pop"><div class="apv-sq">${imgTag}</div>${(code||link)?`<div class="apv-bar">${chip}${link?`<span class="apv-cta">${esc(btn)}</span>`:''}</div>`:''}</div>`
+    :`<div class="apv-box" style="aspect-ratio:${PL[p].ar}">${imgTag}${chip}</div>`}
+function checkImg(){clearTimeout(imgT);const u=$('#aImg').value.trim(),el=$('#aImgInfo');
+  if(!u){el.className='hint';el.textContent='PNG / JPG / WebP, সর্বোচ্চ ৩ MB। আপলোড করলে ছবি Supabase স্টোরেজে রাখা হয় (ads.sql-এর শেষ অংশ লাগে)।';return}
+  if(!/^https:\/\//.test(u)){el.className='hint bad';el.textContent='⚠️ লিংক https:// দিয়ে শুরু হতে হবে (http:// অ্যাপে দেখাবে না)';return}
+  imgT=setTimeout(()=>{const im=new Image(),m=PL[ADPL];im.onload=()=>{const ok=Math.abs(im.naturalWidth/im.naturalHeight-m.w/m.h)/(m.w/m.h)<.02;
+      el.className='hint '+(ok?'ok':'bad');el.textContent=ok?`✓ ছবি ঠিক আছে (${im.naturalWidth}×${im.naturalHeight})`:`⚠️ ছবির মাপ ${im.naturalWidth}×${im.naturalHeight} — ${m.n}-এর জন্য ${m.w}×${m.h} হওয়া উচিত, নইলে কিনারা কেটে যেতে পারে`};
+    im.onerror=()=>{el.className='hint bad';el.textContent='⚠️ এই লিংক থেকে ছবি লোড হচ্ছে না — লিংকটি ঠিক আছে কি দেখুন'};im.src=u},400)}
+['#aImg','#aLink','#aCode','#aNote','#aBtn'].forEach(s=>$(s).addEventListener('input',()=>{adPv();if(s==='#aImg')checkImg()}));
+function fillAdForm(a,dup){
+  $('#aId').value=dup?'':a.id;$('#aTitle').value=dup?a.title+' (কপি)':a.title;$('#aActive').value=String(dup?false:a.is_active);$('#aSort').value=a.sort_order;
+  $('#aImg').value=a.image_url;$('#aLink').value=a.link_url||'';$('#aBtn').value=a.button_text||'';$('#aCode').value=a.promo_code||'';$('#aNote').value=a.promo_note||'';
+  $('#aStart').value=toLocal(a.start_at);$('#aEnd').value=toLocal(a.end_at);$('#aFreq').value=a.popup_frequency||'daily';$('#aDelay').value=a.popup_delay_sec??2;$('#aBd').value=String(a.close_on_backdrop!==false);
+  $('#aMin').value=a.min_version_code??'';$('#aMax').value=a.max_version_code??'';
+  $('#adfT').textContent=dup?'ডুপ্লিকেট — নতুন এড হিসেবে সেভ হবে':'এডিট: '+a.title;setPl(a.placement);$('#adFormPanel').scrollIntoView({behavior:'smooth'})}
+function resetAdForm(){$('#adForm').reset();$('#aId').value='';$('#adfT').textContent='নতুন এড যোগ করুন';setPl(ADPL)}
+$('#aReset').onclick=resetAdForm;
+
+$('#aUp').onclick=()=>$('#aFile').click();
+$('#aFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!/^image\/(png|jpeg|webp|gif)$/.test(f.type))return toast('শুধু PNG / JPG / WebP / GIF ছবি দিন',1);
+  if(f.size>3*1048576)return toast('ছবি ৩ MB-এর বেশি — ছোট করে দিন',1);
+  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'}[f.type],path=`${ADPL}-${Date.now()}.${ext}`;
+  $('#aUp').disabled=true;$('#aUp').textContent='আপলোড হচ্ছে…';
+  try{const{error}=await sb.storage.from('ads').upload(path,f,{contentType:f.type,cacheControl:'31536000',upsert:false});
+    if(error)throw error;const{data}=sb.storage.from('ads').getPublicUrl(path);$('#aImg').value=data.publicUrl;adPv();checkImg();toast('✅ ছবি আপলোড হয়েছে')}
+  catch(err){toast('আপলোড ব্যর্থ — ads.sql-এর স্টোরেজ অংশ চালানো হয়েছে কি? (অথবা ছবির লিংক বসান)',1)}
+  $('#aUp').disabled=false;$('#aUp').textContent='⬆️ আপলোড'};
+
+$('#adForm').onsubmit=async e=>{e.preventDefault();
+  const t=$('#aTitle').value.trim(),img=$('#aImg').value.trim(),link=$('#aLink').value.trim();
+  if(!t)return toast('এডের নাম দিন',1);
+  if(!/^https:\/\//.test(img))return toast('ছবির লিংক https:// দিয়ে শুরু হতে হবে',1);
+  if(link&&!/^https:\/\//.test(link))return toast('ওয়েবসাইট লিংক https:// দিয়ে শুরু হতে হবে',1);
+  const st=fromLocal($('#aStart').value),en=fromLocal($('#aEnd').value);
+  if(st&&en&&new Date(en)<=new Date(st))return toast('শেষের সময় শুরুর পরে হতে হবে',1);
+  const ni=v=>{v=String(v).trim();return v===''?null:Math.max(0,Math.round(Number(v)))},mn=ni($('#aMin').value),mx=ni($('#aMax').value);
+  if(mn!=null&&mx!=null&&mn>mx)return toast('সর্বনিম্ন ভার্সন কোড সর্বোচ্চের চেয়ে বড় হতে পারে না',1);
+  const row={title:t,placement:ADPL,image_url:img,link_url:link||null,button_text:$('#aBtn').value.trim()||null,promo_code:$('#aCode').value.trim()||null,promo_note:$('#aNote').value.trim()||null,
+    is_active:$('#aActive').value==='true',start_at:st,end_at:en,sort_order:Math.round(Number($('#aSort').value)||100),
+    popup_frequency:$('#aFreq').value,popup_delay_sec:Math.min(30,Math.max(0,Math.round(Number($('#aDelay').value)||0))),close_on_backdrop:$('#aBd').value==='true',min_version_code:mn,max_version_code:mx};
+  $('#aSave').disabled=true;
+  const id=$('#aId').value,{error}=await(id?sb.from('app_ads').update(row).eq('id',id):sb.from('app_ads').insert(row));
+  $('#aSave').disabled=false;
+  if(error)return toast('সেভ ব্যর্থ: '+(error.message||'অনুমতি/ডাটাবেস সমস্যা'),1);
+  toast(id?'✅ এড হালনাগাদ হয়েছে':'✅ নতুন এড যোগ হয়েছে — অ্যাপে এখন থেকে দেখাবে');resetAdForm();loadAds()};
+
+function drawAdChart(rows){
+  if(!rows.length){$('#adChart').innerHTML='<div class="empty">তথ্য নেই</div>';return}
+  const W=680,H=210,pl=34,pr=10,pt=14,pb=32,iw=W-pl-pr,ih=H-pt-pb,n=rows.length;
+  const mx=Math.max(4,...rows.map(r=>Math.max(Number(r.views),Number(r.clicks),Number(r.copies)))),step=Math.ceil(mx/4),top=step*4;
+  const x=i=>pl+iw*(i+.5)/n,y=v=>pt+ih-ih*v/top,bw=Math.min(28,iw/n*.55);
+  let g='';for(let k=0;k<=4;k++){const v=k*step,yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="currentColor" opacity=".12"/><text x="${pl-6}" y="${yy+4}" text-anchor="end" font-size="11" fill="currentColor" opacity=".7">${v}</text>`}
+  const bars=rows.map((r,i)=>`<rect x="${x(i)-bw/2}" y="${y(Number(r.views))}" width="${bw}" height="${pt+ih-y(Number(r.views))}" rx="4" fill="#2f9fe0"><title>${esc(r.day)}: ভিউ ${r.views}</title></rect>`).join('');
+  const line=(k,c)=>`<path d="${rows.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(Number(r[k])).toFixed(1)}`).join(' ')}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`+rows.map((r,i)=>`<circle cx="${x(i)}" cy="${y(Number(r[k]))}" r="3.1" fill="${c}"><title>${esc(r.day)}: ${r[k]}</title></circle>`).join('');
+  const lab=rows.map((r,i)=>`<text x="${x(i)}" y="${H-11}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">${String(r.day).slice(8,10)}/${String(r.day).slice(5,7)}</text>`).join('');
+  $('#adChart').innerHTML=`<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="দৈনিক এড ভিউ, ক্লিক ও প্রমো কপির চার্ট" style="color:var(--fg)">${g}${bars}${line('clicks','#EC1C24')}${line('copies','#f0b429')}${lab}</svg>`}
+
 // ================= সেটআপ পরীক্ষা =================
 async function runChecks(){
   const out=[];const add=(s,t,d)=>out.push({s,t,d});
@@ -384,6 +605,10 @@ async function runChecks(){
     else if(r.status===401||r.status===403)add('no','নোটিফিকেশন ফাংশন','অনুমতি সমস্যা: '+esc((r.j&&r.j.error)||r.status));
     else if(r.status===404)add('no','নোটিফিকেশন ফাংশন','ডিপ্লয় করা নেই (Supabase → Edge Functions → send-push)');
     else add('wa','নোটিফিকেশন ফাংশন','অপ্রত্যাশিত উত্তর: '+r.status)}catch{add('no','নোটিফিকেশন ফাংশন','পৌঁছানো যায়নি (ডিপ্লয় করা নেই?)')}
+  try{const r=await sb.rpc('get_app_ads',{p_version_code:null});
+    if(r.data&&r.data.settings){const n=(r.data.ads||[]).length;add('ok','এড সিস্টেম (ads.sql)',`চালু — অ্যাপ এখন ${n}টি সক্রিয় এড পাচ্ছে${r.data.settings.enabled===false?' (মাস্টার সুইচ বন্ধ আছে)':''}`)}
+    else add('no','এড সিস্টেম (ads.sql)','get_app_ads পাওয়া যায়নি — supabase/ads.sql Run করুন')}catch{add('no','এড সিস্টেম (ads.sql)','সংযোগ হয়নি')}
+  try{const r=await sb.storage.from('ads').list('',{limit:1});add(r.error?'wa':'ok','এডের ছবি আপলোড (স্টোরেজ)',r.error?'বাকেট নেই — আপলোড বাটন কাজ করবে না; ads.sql-এর শেষ অংশ Run করুন (অথবা ছবির লিংক বসান)':'প্রস্তুত')}catch{add('wa','এডের ছবি আপলোড (স্টোরেজ)','যাচাই করা যায়নি')}
   const rel=await loadLatest();add(rel?'ok':'wa','GitHub রিলিজ তথ্য',rel?`সর্বশেষ v${esc(rel.version)}`:'data/releases.json খালি — GitHub Actions থেকে “Update releases.json” একবার চালান');
   $('#checks').innerHTML=out.map(c=>`<div class="chk"><span class="s ${c.s}">${c.s==='ok'?'✓':c.s==='no'?'✕':'!'}</span><div><b>${c.t}</b><small>${c.d}</small></div></div>`).join('')}
 $('#recheck').onclick=runChecks;
