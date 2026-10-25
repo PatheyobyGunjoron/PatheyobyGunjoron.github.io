@@ -23,7 +23,8 @@ create table if not exists app_ads(
  link_url text check(link_url is null or (link_url ~ '^https://' and length(link_url)<=1000)),   -- ওয়েবসাইট / প্রমোশনাল লিংক
  button_text text check(button_text is null or length(button_text)<=40),       -- পপআপের বাটনের লেখা
  promo_code text check(promo_code is null or length(promo_code)<=40),
- promo_note text check(promo_note is null or length(promo_note)<=80),          -- প্রমো কোডের পাশের ছোট লেখা, যেমন "২০% ছাড়"
+ promo_note text check(promo_note is null or length(promo_note)<=80),          -- ছাড়ের ব্যাজের লেখা, যেমন "২০% ছাড়"
+ note_on boolean not null default false,                                       -- ছাড়ের লাল ব্যাজ দেখাবে কি না (দরকার হলে চালু, নইলে বন্ধ)
  is_active boolean not null default true,
  start_at timestamptz, end_at timestamptz,                                      -- খালি = সীমা নেই
  sort_order int not null default 100,                                           -- ছোট সংখ্যা আগে দেখায়
@@ -32,6 +33,7 @@ create table if not exists app_ads(
  close_on_backdrop boolean not null default true,
  min_version_code bigint, max_version_code bigint,                              -- খালি = সব ভার্সন
  created_at timestamptz default now(), updated_at timestamptz default now());
+alter table app_ads add column if not exists note_on boolean not null default false;   -- আগে ads.sql চালানো থাকলে নতুন কলাম যোগ হবে
 create index if not exists app_ads_place on app_ads(placement,is_active,sort_order);
 
 create or replace function ads_touch() returns trigger language plpgsql as $$begin new.updated_at=now(); return new; end$$;
@@ -62,7 +64,7 @@ create or replace function get_app_ads(p_version_code bigint default null) retur
     'interval_ms', coalesce((select carousel_interval_sec from app_ad_settings where id=1),5)*1000,
     'fallback',  coalesce((select builtin_fallback from app_ad_settings where id=1),true)),
   'ads', (select coalesce(json_agg(json_build_object(
-      'id',a.id,'p',a.placement,'img',a.image_url,'link',a.link_url,'btn',a.button_text,'promo',a.promo_code,'note',a.promo_note,
+      'id',a.id,'p',a.placement,'img',a.image_url,'link',a.link_url,'btn',a.button_text,'promo',a.promo_code,'note',case when a.note_on then a.promo_note end,
       'alt',a.title,'freq',a.popup_frequency,'delay',a.popup_delay_sec,'bd',a.close_on_backdrop) order by a.sort_order, a.created_at desc),'[]'::json)
     from app_ads a
     where a.is_active
