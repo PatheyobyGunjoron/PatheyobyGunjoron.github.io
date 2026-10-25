@@ -120,7 +120,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .apv-box img,.apv-sq img{display:block;width:100%;height:100%;object-fit:cover}
 .apv-ph{display:grid;place-items:center;height:100%;min-height:90px;color:var(--mut);font-size:.85rem;text-align:center;padding:.6rem}
 .apv-chip{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:8px;padding:3px 3px 3px 9px;border:1px dashed #235FFE;border-radius:11px;background:rgba(255,255,255,.95);color:#00205E;line-height:1.2}
-.apv-chip span{display:flex;flex-direction:column}.apv-chip small{font-size:10px;color:#3A4A73;font-weight:700}.apv-chip i{font-style:normal;font-size:12px;font-weight:700}.apv-chip u{text-decoration:none;color:#235FFE;letter-spacing:.04em}
+.apv-chip span{display:flex;flex-direction:column}.apv-chip em.bd{font-style:normal;font-weight:800;font-size:11px;color:#fff;background:linear-gradient(135deg,#FF4B55,#D4101C);padding:4px 9px;border-radius:7px;white-space:nowrap}.apv-chip i{font-style:normal;font-size:12px;font-weight:700}.apv-chip u{text-decoration:none;color:#235FFE;letter-spacing:.04em}
 .apv-chip b{font-size:11px;color:#fff;background:#235FFE;border-radius:8px;padding:4px 9px}
 .apv-pop{width:min(100%,290px);border-radius:20px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
 .apv-sq{aspect-ratio:1/1;background:var(--soft)}
@@ -262,7 +262,8 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
             </div>
             <div class="row">
               <div><label for="aCode">প্রমো কোড (ঐচ্ছিক)</label><input id="aCode" maxlength="40" placeholder="যেমন: EID26" autocapitalize="characters"></div>
-              <div><label for="aNote">প্রমো কোডের পাশের ছোট লেখা (ঐচ্ছিক)</label><input id="aNote" maxlength="80" placeholder="যেমন: ২০% ছাড়"></div>
+              <div><label for="aNote">ছাড়ের ব্যাজের লেখা</label><input id="aNote" maxlength="80" placeholder="যেমন: ২০% ছাড়"></div>
+              <div><label for="aNoteOn">🔴 ছাড়ের লাল ব্যাজ</label><select id="aNoteOn"><option value="false">বন্ধ (দেখাবে না)</option><option value="true">চালু (অ্যাপে দেখাবে)</option></select></div>
             </div>
             <div class="row">
               <div><label for="aStart">শুরু (ঐচ্ছিক)</label><input id="aStart" type="datetime-local"></div>
@@ -506,7 +507,7 @@ function renderAdList(){
   $('#adBody').innerHTML=rows.map(a=>{const s=adState(a),t=ADSTAT[a.id]||{},v=Number(t.views||0),c=Number(t.clicks||0),cp=Number(t.copies||0);
     const sc=(a.start_at||a.end_at)?`${a.start_at?dshort(a.start_at):'—'}<br>→ ${a.end_at?dshort(a.end_at):'চলবে'}`:'সব সময়';
     return `<tr><td><img class="thumb" src="${esc(a.image_url)}" alt="" loading="lazy"></td>
-    <td style="white-space:normal;min-width:170px"><b>${esc(a.title)}</b>${a.promo_code?`<br><span class="tag">কোড: ${esc(a.promo_code)}</span>`:''}${a.link_url?'<br><span class="hint" style="word-break:break-all">'+esc(a.link_url.slice(0,48))+(a.link_url.length>48?'…':'')+'</span>':''}</td>
+    <td style="white-space:normal;min-width:170px"><b>${esc(a.title)}</b>${a.promo_code?`<br><span class="tag">কোড: ${esc(a.promo_code)}</span>`:''}${a.note_on&&a.promo_note?`<br><span class="tag r">🔴 ${esc(a.promo_note)}</span>`:''}${a.link_url?'<br><span class="hint" style="word-break:break-all">'+esc(a.link_url.slice(0,48))+(a.link_url.length>48?'…':'')+'</span>':''}</td>
     <td><span class="tag">${PL[a.placement].n}</span>${a.placement==='popup'?'<br><span class="hint">'+({every_open:'প্রতিবার',daily:'দিনে একবার',weekly:'সপ্তাহে একবার',once:'একবারই'}[a.popup_frequency]||'')+'</span>':''}</td>
     <td><span class="tag ${s.c}">${s.t}</span></td><td style="font-size:.82rem">${sc}</td>
     <td style="font-size:.85rem">${num(v)} ভিউ · ${num(c)} ক্লিক<br><span class="hint">CTR ${v?Math.round(c*1000/v)/10:0}%${a.promo_code?' · কপি '+num(cp):''} · ৭ দিনে ${num(t.views_7d||0)}/${num(t.clicks_7d||0)}</span></td>
@@ -531,7 +532,7 @@ function setPl(p){ADPL=p;$$('#plSeg button').forEach(b=>b.setAttribute('aria-pre
 $('#plSeg').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)setPl(b.dataset.p)};
 function adPv(){const p=ADPL,img=$('#aImg').value.trim(),link=$('#aLink').value.trim(),code=$('#aCode').value.trim(),note=$('#aNote').value.trim(),btn=$('#aBtn').value.trim()||'বিস্তারিত দেখুন';
   const imgTag=/^https:\/\//.test(img)?`<img src="${esc(img)}" alt="">`:'<div class="apv-ph">ছবির লিংক দিলে এখানে প্রিভিউ দেখাবে</div>';
-  const chip=code?`<div class="apv-chip"><span>${note?`<small>${esc(note)}</small>`:''}<i>কোড: <u>${esc(code)}</u></i></span><b>কপি</b></div>`:'';
+  const nOn=$('#aNoteOn').value==='true'&&note;const chip=code?`<div class="apv-chip">${nOn?`<em class="bd">${esc(note)}</em>`:''}<span><i>কোড: <u>${esc(code)}</u></i></span><b>কপি</b></div>`:'';
   $('#adPv').innerHTML=p==='popup'
     ?`<div class="apv-pop"><div class="apv-sq">${imgTag}</div>${(code||link)?`<div class="apv-bar">${chip}${link?`<span class="apv-cta">${esc(btn)}</span>`:''}</div>`:''}</div>`
     :`<div class="apv-box" style="aspect-ratio:${PL[p].ar}">${imgTag}${chip}</div>`}
@@ -542,9 +543,10 @@ function checkImg(){clearTimeout(imgT);const u=$('#aImg').value.trim(),el=$('#aI
       el.className='hint '+(ok?'ok':'bad');el.textContent=ok?`✓ ছবি ঠিক আছে (${im.naturalWidth}×${im.naturalHeight})`:`⚠️ ছবির মাপ ${im.naturalWidth}×${im.naturalHeight} — ${m.n}-এর জন্য ${m.w}×${m.h} হওয়া উচিত, নইলে কিনারা কেটে যেতে পারে`};
     im.onerror=()=>{el.className='hint bad';el.textContent='⚠️ এই লিংক থেকে ছবি লোড হচ্ছে না — লিংকটি ঠিক আছে কি দেখুন'};im.src=u},400)}
 ['#aImg','#aLink','#aCode','#aNote','#aBtn'].forEach(s=>$(s).addEventListener('input',()=>{adPv();if(s==='#aImg')checkImg()}));
+$('#aNoteOn').onchange=adPv;
 function fillAdForm(a,dup){
   $('#aId').value=dup?'':a.id;$('#aTitle').value=dup?a.title+' (কপি)':a.title;$('#aActive').value=String(dup?false:a.is_active);$('#aSort').value=a.sort_order;
-  $('#aImg').value=a.image_url;$('#aLink').value=a.link_url||'';$('#aBtn').value=a.button_text||'';$('#aCode').value=a.promo_code||'';$('#aNote').value=a.promo_note||'';
+  $('#aImg').value=a.image_url;$('#aLink').value=a.link_url||'';$('#aBtn').value=a.button_text||'';$('#aCode').value=a.promo_code||'';$('#aNote').value=a.promo_note||'';$('#aNoteOn').value=String(!!a.note_on);
   $('#aStart').value=toLocal(a.start_at);$('#aEnd').value=toLocal(a.end_at);$('#aFreq').value=a.popup_frequency||'daily';$('#aDelay').value=a.popup_delay_sec??2;$('#aBd').value=String(a.close_on_backdrop!==false);
   $('#aMin').value=a.min_version_code??'';$('#aMax').value=a.max_version_code??'';
   $('#adfT').textContent=dup?'ডুপ্লিকেট — নতুন এড হিসেবে সেভ হবে':'এডিট: '+a.title;setPl(a.placement);$('#adFormPanel').scrollIntoView({behavior:'smooth'})}
@@ -571,7 +573,7 @@ $('#adForm').onsubmit=async e=>{e.preventDefault();
   if(st&&en&&new Date(en)<=new Date(st))return toast('শেষের সময় শুরুর পরে হতে হবে',1);
   const ni=v=>{v=String(v).trim();return v===''?null:Math.max(0,Math.round(Number(v)))},mn=ni($('#aMin').value),mx=ni($('#aMax').value);
   if(mn!=null&&mx!=null&&mn>mx)return toast('সর্বনিম্ন ভার্সন কোড সর্বোচ্চের চেয়ে বড় হতে পারে না',1);
-  const row={title:t,placement:ADPL,image_url:img,link_url:link||null,button_text:$('#aBtn').value.trim()||null,promo_code:$('#aCode').value.trim()||null,promo_note:$('#aNote').value.trim()||null,
+  const row={title:t,placement:ADPL,image_url:img,link_url:link||null,button_text:$('#aBtn').value.trim()||null,promo_code:$('#aCode').value.trim()||null,promo_note:$('#aNote').value.trim()||null,note_on:$('#aNoteOn').value==='true',
     is_active:$('#aActive').value==='true',start_at:st,end_at:en,sort_order:Math.round(Number($('#aSort').value)||100),
     popup_frequency:$('#aFreq').value,popup_delay_sec:Math.min(30,Math.max(0,Math.round(Number($('#aDelay').value)||0))),close_on_backdrop:$('#aBd').value==='true',min_version_code:mn,max_version_code:mx};
   $('#aSave').disabled=true;
