@@ -123,7 +123,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .apv-chip span{display:flex;flex-direction:column}.apv-chip em.bd{font-style:normal;font-weight:800;font-size:11px;color:#fff;background:linear-gradient(135deg,#FF4B55,#D4101C);padding:4px 9px;border-radius:7px;white-space:nowrap}.apv-chip i{font-style:normal;font-size:12px;font-weight:700}.apv-chip u{text-decoration:none;color:#235FFE;letter-spacing:.04em}
 .apv-chip b{font-size:11px;color:#fff;background:#235FFE;border-radius:8px;padding:4px 9px}
 .apv-pop{width:min(100%,290px);border-radius:20px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
-.apv-sq{aspect-ratio:1/1;background:var(--soft)}
+.apv-pop.clr{background:transparent;border:0;box-shadow:none;overflow:visible}.apv-pop.clr .apv-sq{background:repeating-conic-gradient(#d9dde6 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:6px}.apv-pop.clr .apv-bar{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px}.apv-sq{background:var(--soft);line-height:0}.apv-sq img{height:auto}.apv-sq .apv-ph{aspect-ratio:1/1;min-height:150px}.apv-badge{display:block;text-align:center;font-style:normal;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(135deg,#FF4B55,#D4101C);padding:8px 12px;border-radius:10px;flex:1 1 100%}.apv-box .apv-badge{position:absolute;left:8px;bottom:8px;display:inline-block;flex:none;font-size:11px;padding:4px 9px;border-radius:7px}
 .apv-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px}
 .apv-bar .apv-chip{position:static;flex:1 1 130px;background:transparent;color:var(--fg)}
 .apv-bar .apv-chip small{color:var(--mut)}
@@ -263,7 +263,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
             <div class="row">
               <div><label for="aCode">প্রমো কোড (ঐচ্ছিক)</label><input id="aCode" maxlength="40" placeholder="যেমন: EID26" autocapitalize="characters"></div>
               <div><label for="aNote">ছাড়ের ব্যাজের লেখা</label><input id="aNote" maxlength="80" placeholder="যেমন: ২০% ছাড়"></div>
-              <div><label for="aNoteOn">🔴 ছাড়ের লাল ব্যাজ</label><select id="aNoteOn"><option value="false">বন্ধ (দেখাবে না)</option><option value="true">চালু (অ্যাপে দেখাবে)</option></select></div>
+              <div><label for="aNoteOn">🔴 ছাড়ের লাল ব্যাজ (প্রমো কোড ছাড়াও চলে)</label><select id="aNoteOn"><option value="false">বন্ধ (দেখাবে না)</option><option value="true">চালু (অ্যাপে দেখাবে)</option></select></div>
             </div>
             <div class="row">
               <div><label for="aStart">শুরু (ঐচ্ছিক)</label><input id="aStart" type="datetime-local"></div>
@@ -273,6 +273,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
               <div class="row">
                 <div><label for="aFreq">পপআপ কতবার দেখাবে</label><select id="aFreq"><option value="daily">দিনে একবার</option><option value="every_open">প্রতিবার অ্যাপ খুললে</option><option value="weekly">সপ্তাহে একবার</option><option value="once">একবারই (প্রতি ফোনে)</option></select></div>
                 <div><label for="aDelay">অ্যাপ খোলার কত সেকেন্ড পরে</label><input id="aDelay" type="number" min="0" max="30" value="2"></div>
+                <div><label for="aClear">ছবির ধরন</label><select id="aClear"><option value="false">সাধারণ (ব্যাকগ্রাউন্ডসহ ছবি)</option><option value="true">স্বচ্ছ PNG (ব্যাকগ্রাউন্ড নেই)</option></select></div>
                 <div><label for="aBd">বাইরে ট্যাপ করলে বন্ধ হবে?</label><select id="aBd"><option value="true">হ্যাঁ</option><option value="false">না — শুধু ✕ বাটনে</option></select></div>
               </div>
             </div>
@@ -467,7 +468,7 @@ $('#rf').onsubmit=async e=>{e.preventDefault();if(!/^https:\/\//.test($('#ru').v
   if(error)return toast('সেভ ব্যর্থ: ভার্সন ডুপ্লিকেট বা অনুমতি নেই',1);toast('✅ সেভ হয়েছে');$('#rrs').click();loadRel()};
 
 // ================= এড (অ্যাপের বিজ্ঞাপন) =================
-const PL={carousel:{n:'হোম স্লাইডার',w:1200,h:350,ar:'24/7'},footer:{n:'নিচের ব্যানার',w:1200,h:450,ar:'8/3'},popup:{n:'অ্যাপ-খোলা পপআপ',w:1200,h:1200,ar:'1/1'}};
+const PL={carousel:{n:'হোম স্লাইডার',w:1200,h:350,ar:'24/7'},footer:{n:'নিচের ব্যানার',w:1200,h:450,ar:'8/3'},popup:{n:'অ্যাপ-খোলা পপআপ',w:1200,h:1200,ar:'1/1',any:true}};
 let ADS=[],ADSTAT={},ADFILT='all',ADPL='carousel',imgT=0;
 const p2=n=>String(n).padStart(2,'0');
 const toLocal=iso=>{if(!iso)return'';const d=new Date(iso);return isNaN(d)?'':`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`};
@@ -527,27 +528,28 @@ $('#adBody').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)
 
 // ---- ফর্ম ----
 function setPl(p){ADPL=p;$$('#plSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
-  const m=PL[p];$('#aSize').innerHTML=`📐 ছবির মাপ: <b>${m.w} × ${m.h} px</b> (${p==='popup'?'বর্গাকার ১:১':p==='carousel'?'চওড়া ২৪:৭':'চওড়া ৮:৩'}) — ঠিক এই মাপে বানালে অ্যাপে একদম নিখুঁত দেখাবে।`;
+  const m=PL[p];$('#aSize').innerHTML=m.any?`📐 ছবির মাপ: <b>যেকোনো মাপ চলবে</b> — যেমন ১২০০×১২০০, ১২০০×৫৫০ বা ১২০০×১৬০০। অ্যাপ ছবির অনুপাত মেনে পর্দায় ঠিকভাবে বসাবে ও বাকি পর্দা ঝাপসা করবে। (বেশি লম্বা হলে ছবি পর্দার উচ্চতার মধ্যে ছোট হয়ে বসে।)`:`📐 ছবির মাপ: <b>${m.w} × ${m.h} px</b> (${p==='carousel'?'চওড়া ২৪:৭':'চওড়া ৮:৩'}) — ঠিক এই মাপে বানালে অ্যাপে একদম নিখুঁত দেখাবে।`;
   $('#popOpts').hidden=p!=='popup';$('#btnWrap').hidden=p!=='popup';adPv();checkImg()}
 $('#plSeg').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)setPl(b.dataset.p)};
 function adPv(){const p=ADPL,img=$('#aImg').value.trim(),link=$('#aLink').value.trim(),code=$('#aCode').value.trim(),note=$('#aNote').value.trim(),btn=$('#aBtn').value.trim()||'বিস্তারিত দেখুন';
   const imgTag=/^https:\/\//.test(img)?`<img src="${esc(img)}" alt="">`:'<div class="apv-ph">ছবির লিংক দিলে এখানে প্রিভিউ দেখাবে</div>';
   const nOn=$('#aNoteOn').value==='true'&&note;const chip=code?`<div class="apv-chip">${nOn?`<em class="bd">${esc(note)}</em>`:''}<span><i>কোড: <u>${esc(code)}</u></i></span><b>কপি</b></div>`:'';
+  const solo=(nOn&&!code)?`<em class="apv-badge">${esc(note)}</em>`:'';
   $('#adPv').innerHTML=p==='popup'
-    ?`<div class="apv-pop"><div class="apv-sq">${imgTag}</div>${(code||link)?`<div class="apv-bar">${chip}${link?`<span class="apv-cta">${esc(btn)}</span>`:''}</div>`:''}</div>`
-    :`<div class="apv-box" style="aspect-ratio:${PL[p].ar}">${imgTag}${chip}</div>`}
+    ?`<div class="apv-pop${$('#aClear').value==='true'?' clr':''}"><div class="apv-sq">${imgTag}</div>${(code||link||solo)?`<div class="apv-bar">${solo}${chip}${link?`<span class="apv-cta">${esc(btn)}</span>`:''}</div>`:''}</div>`
+    :`<div class="apv-box" style="aspect-ratio:${PL[p].ar}">${imgTag}${chip}${solo}</div>`}
 function checkImg(){clearTimeout(imgT);const u=$('#aImg').value.trim(),el=$('#aImgInfo');
   if(!u){el.className='hint';el.textContent='PNG / JPG / WebP, সর্বোচ্চ ৩ MB। আপলোড করলে ছবি Supabase স্টোরেজে রাখা হয় (ads.sql-এর শেষ অংশ লাগে)।';return}
   if(!/^https:\/\//.test(u)){el.className='hint bad';el.textContent='⚠️ লিংক https:// দিয়ে শুরু হতে হবে (http:// অ্যাপে দেখাবে না)';return}
-  imgT=setTimeout(()=>{const im=new Image(),m=PL[ADPL];im.onload=()=>{const ok=Math.abs(im.naturalWidth/im.naturalHeight-m.w/m.h)/(m.w/m.h)<.02;
+  imgT=setTimeout(()=>{const im=new Image(),m=PL[ADPL];im.onload=()=>{if(m.any){const r=im.naturalWidth/im.naturalHeight,ext=r<.4||r>3.2;el.className='hint '+(ext?'bad':'ok');el.textContent=ext?`⚠️ ছবির মাপ ${im.naturalWidth}×${im.naturalHeight} — অনুপাত অনেক চরম, ছোট পর্দায় লেখা ছোট দেখাতে পারে`:`✓ ছবি ঠিক আছে (${im.naturalWidth}×${im.naturalHeight})`;return}const ok=Math.abs(im.naturalWidth/im.naturalHeight-m.w/m.h)/(m.w/m.h)<.02;
       el.className='hint '+(ok?'ok':'bad');el.textContent=ok?`✓ ছবি ঠিক আছে (${im.naturalWidth}×${im.naturalHeight})`:`⚠️ ছবির মাপ ${im.naturalWidth}×${im.naturalHeight} — ${m.n}-এর জন্য ${m.w}×${m.h} হওয়া উচিত, নইলে কিনারা কেটে যেতে পারে`};
     im.onerror=()=>{el.className='hint bad';el.textContent='⚠️ এই লিংক থেকে ছবি লোড হচ্ছে না — লিংকটি ঠিক আছে কি দেখুন'};im.src=u},400)}
 ['#aImg','#aLink','#aCode','#aNote','#aBtn'].forEach(s=>$(s).addEventListener('input',()=>{adPv();if(s==='#aImg')checkImg()}));
-$('#aNoteOn').onchange=adPv;
+$('#aNoteOn').onchange=adPv;$('#aClear').onchange=adPv;
 function fillAdForm(a,dup){
   $('#aId').value=dup?'':a.id;$('#aTitle').value=dup?a.title+' (কপি)':a.title;$('#aActive').value=String(dup?false:a.is_active);$('#aSort').value=a.sort_order;
   $('#aImg').value=a.image_url;$('#aLink').value=a.link_url||'';$('#aBtn').value=a.button_text||'';$('#aCode').value=a.promo_code||'';$('#aNote').value=a.promo_note||'';$('#aNoteOn').value=String(!!a.note_on);
-  $('#aStart').value=toLocal(a.start_at);$('#aEnd').value=toLocal(a.end_at);$('#aFreq').value=a.popup_frequency||'daily';$('#aDelay').value=a.popup_delay_sec??2;$('#aBd').value=String(a.close_on_backdrop!==false);
+  $('#aStart').value=toLocal(a.start_at);$('#aEnd').value=toLocal(a.end_at);$('#aFreq').value=a.popup_frequency||'daily';$('#aDelay').value=a.popup_delay_sec??2;$('#aBd').value=String(a.close_on_backdrop!==false);$('#aClear').value=String(!!a.popup_clear);
   $('#aMin').value=a.min_version_code??'';$('#aMax').value=a.max_version_code??'';
   $('#adfT').textContent=dup?'ডুপ্লিকেট — নতুন এড হিসেবে সেভ হবে':'এডিট: '+a.title;setPl(a.placement);$('#adFormPanel').scrollIntoView({behavior:'smooth'})}
 function resetAdForm(){$('#adForm').reset();$('#aId').value='';$('#adfT').textContent='নতুন এড যোগ করুন';setPl(ADPL)}
@@ -575,7 +577,7 @@ $('#adForm').onsubmit=async e=>{e.preventDefault();
   if(mn!=null&&mx!=null&&mn>mx)return toast('সর্বনিম্ন ভার্সন কোড সর্বোচ্চের চেয়ে বড় হতে পারে না',1);
   const row={title:t,placement:ADPL,image_url:img,link_url:link||null,button_text:$('#aBtn').value.trim()||null,promo_code:$('#aCode').value.trim()||null,promo_note:$('#aNote').value.trim()||null,note_on:$('#aNoteOn').value==='true',
     is_active:$('#aActive').value==='true',start_at:st,end_at:en,sort_order:Math.round(Number($('#aSort').value)||100),
-    popup_frequency:$('#aFreq').value,popup_delay_sec:Math.min(30,Math.max(0,Math.round(Number($('#aDelay').value)||0))),close_on_backdrop:$('#aBd').value==='true',min_version_code:mn,max_version_code:mx};
+    popup_frequency:$('#aFreq').value,popup_delay_sec:Math.min(30,Math.max(0,Math.round(Number($('#aDelay').value)||0))),close_on_backdrop:$('#aBd').value==='true',popup_clear:$('#aClear').value==='true',min_version_code:mn,max_version_code:mx};
   $('#aSave').disabled=true;
   const id=$('#aId').value,{error}=await(id?sb.from('app_ads').update(row).eq('id',id):sb.from('app_ads').insert(row));
   $('#aSave').disabled=false;
