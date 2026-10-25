@@ -31,8 +31,10 @@ create table if not exists app_ads(
  popup_frequency text not null default 'daily' check(popup_frequency in('every_open','daily','weekly','once')),
  popup_delay_sec int not null default 2 check(popup_delay_sec between 0 and 30),
  close_on_backdrop boolean not null default true,
+ popup_clear boolean not null default false,                                     -- পপআপের ছবি ব্যাকগ্রাউন্ডহীন (স্বচ্ছ) PNG কি না
  min_version_code bigint, max_version_code bigint,                              -- খালি = সব ভার্সন
  created_at timestamptz default now(), updated_at timestamptz default now());
+alter table app_ads add column if not exists popup_clear boolean not null default false;
 alter table app_ads add column if not exists note_on boolean not null default false;   -- আগে ads.sql চালানো থাকলে নতুন কলাম যোগ হবে
 create index if not exists app_ads_place on app_ads(placement,is_active,sort_order);
 
@@ -65,7 +67,7 @@ create or replace function get_app_ads(p_version_code bigint default null) retur
     'fallback',  coalesce((select builtin_fallback from app_ad_settings where id=1),true)),
   'ads', (select coalesce(json_agg(json_build_object(
       'id',a.id,'p',a.placement,'img',a.image_url,'link',a.link_url,'btn',a.button_text,'promo',a.promo_code,'note',case when a.note_on then a.promo_note end,
-      'alt',a.title,'freq',a.popup_frequency,'delay',a.popup_delay_sec,'bd',a.close_on_backdrop) order by a.sort_order, a.created_at desc),'[]'::json)
+      'alt',a.title,'freq',a.popup_frequency,'delay',a.popup_delay_sec,'bd',a.close_on_backdrop,'clear',a.popup_clear) order by a.sort_order, a.created_at desc),'[]'::json)
     from app_ads a
     where a.is_active
       and (a.start_at is null or a.start_at<=now())
