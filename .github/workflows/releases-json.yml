@@ -28,17 +28,27 @@ jobs:
       # রিলিজে অবশ্যই একটি .apk ফাইল থাকতে হবে; ট্যাগের নাম অ্যাপের versionName-এর সমান হতে হবে (যেমন v1.6.0 ↔ versionName "1.6.0")।
       - name: Build update.json (for the app updater)
         run: |
+          # v154: release_notes_text = পুরো নোট (শিরোনাম + পয়েন্ট, কোনো লাইন-সীমা নেই) — অ্যাপের আপডেট পপআপ এটাই দেখায়।
+          #       release_notes (অ্যারে) পুরনো অ্যাপ ভার্সনের জন্য রাখা হলো (সেখানে আগের মতো প্রথম ৮ লাইন)।
           jq '[.[] | select((.draft | not) and (.prerelease | not))] | .[0] as $r
             | ($r.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
             | select($r != null and $a != null)
+            | (($r.body // "") | split("\n")
+                | map(gsub("\r"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
+                | map(select(length > 0
+                    and (test("^[=_~*\\-]{3,}$") | not)
+                    and (test("^full changelog"; "i") | not)
+                    and (test("^what.s changed"; "i") | not)))
+                | map(sub("^#{1,6}\\s+"; ""))
+                | map(sub("^[>*+]\\s+"; "•  "))
+                | map(sub("^-\\s+"; "•  "))) as $lines
             | {versionName: ($r.tag_name | sub("^[vV]"; "")),
                apk_url: $a.browser_download_url,
                size_mb: (($a.size / 1048576) | round),
                mandatory: false,
                published_at: $r.published_at,
-               release_notes: (($r.body // "") | split("\n")
-                 | map(gsub("\r"; "") | gsub("^[#>*\\-\\s]+"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
-                 | map(select(length > 0 and (test("^full changelog"; "i") | not) and (test("^what.s changed"; "i") | not))) | .[0:8])}' /tmp/releases.json > /tmp/update.json || true
+               release_notes_text: ($lines | join("\n")),
+               release_notes: ($lines | map(sub("^•\\s+"; "")) | .[0:8])}' /tmp/releases.json > /tmp/update.json || true
           if [ -s /tmp/update.json ]; then cp /tmp/update.json patheyo/data/update.json; fi
       - name: Commit if changed
         run: |
