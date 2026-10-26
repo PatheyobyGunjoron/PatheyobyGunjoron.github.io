@@ -46,15 +46,34 @@ jobs:
           if ! jq -e '[.assets[] | select(.name | test("\\.apk$"; "i"))] | length > 0' /tmp/rel.json > /dev/null; then
             echo "রিলিজে কোনো .apk নেই — নোটিফিকেশন বাদ"; exit 0
           fi
+          # v154: ওয়েবসাইটের update.json-এ নতুন ভার্সনের পুরো নোট লাইভ হওয়া পর্যন্ত অপেক্ষা (সর্বোচ্চ ~৮ মিনিট)।
+          # কারণ: পুশ পেয়ে অ্যাপ ওই ফাইল থেকেই পুরো নোট এনে পপআপে দেখায়। না পেলেও পুশ যাবে — কিছু আটকে থাকে না।
+          WANT="$(jq -r '.tag_name | sub("^[vV]"; "")' /tmp/rel.json)"
+          for i in $(seq 1 24); do
+            GOT="$(curl -fsS "https://patheyobygunjoron.github.io/patheyo/data/update.json?t=$(date +%s)" 2>/dev/null | jq -r 'select(.release_notes_text != null) | .versionName' 2>/dev/null || true)"
+            if [ "$GOT" = "$WANT" ]; then echo "update.json লাইভ ($WANT)"; break; fi
+            echo "update.json এখনো নতুন হয়নি, অপেক্ষা করছি ($i/24)…"; sleep 20
+          done
+          # v154: নোট ৪KB সীমার ভেতরে রাখতে — পুরো নোট ২২০০ bytes-এর মধ্যে হলে পুরোটাই যায়;
+          # বড় হলে শুধু শিরোনামগুলো যায়। (অ্যাপ পরে সার্ভার থেকে পুরো নোট নিজে এনে নেয় — update.json থেকে।)
           jq '(.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
+              | ((.body // "") | split("\n")
+                  | map(gsub("\r"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
+                  | map(select(length > 0
+                      and (test("^[=_~*\\-]{3,}$") | not)
+                      and (test("^full changelog"; "i") | not)
+                      and (test("^what.s changed"; "i") | not)))
+                  | map(sub("^#{1,6}\\s+"; ""))
+                  | map(sub("^[>*+\\-]\\s+"; "•  "))) as $lines
+              | ($lines | join("\n")) as $full
+              | ($lines | map(select(startswith("•  ") | not)) | .[0:12] | map(.[0:60]) | join("\n")) as $heads
               | {kind: "app_update",
                  version_name: (.tag_name | sub("^[vV]"; "")),
                  apk_url: $a.browser_download_url,
                  size_mb: (($a.size / 1048576) | round),
-                 notes: ((.body // "") | split("\n")
-                    | map(gsub("\r"; "") | gsub("^[#>*\\-\\s]+"; "") | gsub("\\*\\*|`"; "") | gsub("^\\s+|\\s+$"; ""))
-                    | map(select(length > 0 and (test("^full changelog"; "i") | not) and (test("^what.s changed"; "i") | not)))
-                    | .[0:8] | map("•  " + .) | join("\n"))}' /tmp/rel.json > /tmp/payload.json
+                 notes: (if ($full | utf8bytelength) <= 2200 then $full
+                         elif ($heads | length) > 0 then $heads
+                         else ($lines | .[0:6] | join("\n")) end)}' /tmp/rel.json > /tmp/payload.json
           cat /tmp/payload.json
           curl -fsS -X POST "${SUPABASE_URL%/}/functions/v1/send-push" \
             -H "Content-Type: application/json" \
