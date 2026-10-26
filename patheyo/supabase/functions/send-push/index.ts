@@ -66,6 +66,16 @@ async function fcmPost(url: string, access: string, message: Record<string, unkn
 }
 
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+// v154: FCM-এর সীমা ৪০৯৬ bytes (বাংলা অক্ষর = ৩ bytes), তাই অক্ষর নয় — bytes গুনে কাটা হয়; অক্ষর মাঝখানে ভাঙে না।
+const enc = new TextEncoder();
+const byteLen = (s: string) => enc.encode(s).length;
+const clipBytes = (v: unknown, maxBytes: number) => {
+  let s = String(v ?? "").trim();
+  if (byteLen(s) <= maxBytes) return s;
+  const cps = Array.from(s);
+  while (cps.length && byteLen(cps.join("")) > maxBytes - 3) cps.length = Math.max(0, cps.length - Math.max(1, Math.ceil(cps.length * 0.05)));
+  return cps.join("").trimEnd() + "...";
+};
 const isHttps = (u: string) => /^https:\/\/[^\s]+$/i.test(u);
 
 Deno.serve(async (req) => {
@@ -111,7 +121,7 @@ Deno.serve(async (req) => {
     message = message || `পাথেয় v${vn} এখন ডাউনলোডের জন্য প্রস্তুত। আপডেট করতে ট্যাপ করুন।`;
     Object.assign(data, {
       update_type: "app_update", version_name: vn, apk_url: apk,
-      notes: clip(b.notes, 900), size_mb: String(parseInt(String(b.size_mb ?? "0")) || 0),
+      notes: clipBytes(b.notes, 2400), size_mb: String(parseInt(String(b.size_mb ?? "0")) || 0),
       mandatory: b.mandatory ? "true" : "false",
     });
   } else {
@@ -121,6 +131,17 @@ Deno.serve(async (req) => {
   }
   data.title = title;
   data.message = message;
+
+  // v154: শেষ নিরাপত্তা — পুরো মেসেজ (data + topic/android অংশ) ৩৬০০ bytes-এর বেশি হলে notes ছোট করা হয়,
+  // যাতে "Message is too large" ত্রুটিতে পুশ আর কখনো ব্যর্থ না হয়।
+  const MAX_FCM_BYTES = 3600;
+  const sizeOf = () => byteLen(JSON.stringify({ message: { topic: "ver_000_000_000", data, android: { priority: "HIGH", ttl: "86400s" } } }));
+  let guard = 0;
+  while (sizeOf() > MAX_FCM_BYTES && guard++ < 40) {
+    if (data.notes && data.notes.length > 0) data.notes = clipBytes(data.notes, Math.max(0, Math.floor(byteLen(data.notes) * 0.8)));
+    else if (data.message.length > 200) data.message = clipBytes(data.message, Math.floor(byteLen(data.message) * 0.8));
+    else break;
+  }
 
   let status = "sent";
   let detail = "";
