@@ -21,11 +21,112 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
           RELEASE_NAME: ${{ github.event.release.name }}
           RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
         run: |
-          python3 -c "
-          import os, json, requests
+          python3 - <<'PYEOF'
+          import os, re, json, unicodedata, requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
+
+          MAX_PAYLOAD_BYTES = 3500   # FCM লিমিট 4096, নিরাপদ margin
+          MAX_HEADINGS = 15          # সারাংশে সর্বোচ্চ কয়টি শিরোনাম
+          MAX_HEADING_CHARS = 60     # প্রতি শিরোনামের সর্বোচ্চ অক্ষর
+          ELLIPSIS = '...'
+
+          def truncate_utf8(text, max_bytes):
+              """UTF-8 bytes হিসেবে কাটে; কোনো বাংলা অক্ষর মাঝখানে ভাঙে না।"""
+              if max_bytes <= 0:
+                  return ''
+              encoded = text.encode('utf-8')
+              if len(encoded) <= max_bytes:
+                  return text
+              ell = ELLIPSIS.encode('utf-8')
+              cut = encoded[:max(max_bytes - len(ell), 0)]
+              return cut.decode('utf-8', errors='ignore').rstrip() + ELLIPSIS
+
+          def payload_size(payload):
+              return len(json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+
+          def clean_inline(text):
+              """Markdown চিহ্ন সরিয়ে সাধারণ টেক্সট বানায়।"""
+              text = re.sub(r'!\[[^\]]*\]\([^)]*\)', '', text)
+              text = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', text)
+              text = re.sub(r'https?://\S+', '', text)
+              text = re.sub(r'(\*\*|__|\*|`|~~)', '', text)
+              text = re.sub(r'<[^>]+>', '', text)
+              return re.sub(r'\s+', ' ', text).strip()
+
+          def is_divider(line):
+              """=====  -----  ***** ধরনের দাগ কিনা।"""
+              return bool(re.fullmatch(r'[=\-_*~#\s]{3,}', line))
+
+          def starts_with_emoji(line):
+              """লাইনের প্রথম অক্ষর ইমোজি/চিহ্ন কিনা (বাংলা/ইংরেজি অক্ষর বা সংখ্যা নয়)।"""
+              if not line:
+                  return False
+              ch = line[0]
+              if ch in '-*+•#>|[(':
+                  return False
+              cat = unicodedata.category(ch)
+              # So = Symbol other (বেশিরভাগ ইমোজি), Sk, Cs ইত্যাদি
+              return cat in ('So', 'Sk') or ord(ch) >= 0x1F000
+
+          def summarize(text):
+              """শিরোনামগুলো (ইমোজি দিয়ে শুরু / Markdown # / পুরো bold লাইন) আলাদা করে।"""
+              lines = [l.rstrip() for l in text.splitlines()]
+              headings = []
+              in_code = False
+
+              for i, raw in enumerate(lines):
+                  line = raw.strip()
+                  if line.startswith('```'):
+                      in_code = not in_code
+                      continue
+                  if in_code or not line or is_divider(line):
+                      continue
+
+                  # ১) Markdown শিরোনাম: ## শিরোনাম
+                  m = re.match(r'^#{1,6}\s+(.*)$', line)
+                  if m:
+                      t = clean_inline(m.group(1))
+                      if t:
+                          headings.append(t)
+                      continue
+
+                  # ২) ইমোজি দিয়ে শুরু + পরের লাইনে ----- বা ===== দাগ
+                  nxt = lines[i + 1].strip() if i + 1 < len(lines) else ''
+                  if starts_with_emoji(line) and (is_divider(nxt) or len(line) <= 80):
+                      # পয়েন্ট নয়, শিরোনাম
+                      t = clean_inline(line)
+                      if t:
+                          headings.append(t)
+                      continue
+
+                  # ৩) পুরো লাইন bold: **শিরোনাম**
+                  m = re.match(r'^(?:\*\*|__)(.+?)(?:\*\*|__):?$', line)
+                  if m:
+                      t = clean_inline(m.group(1))
+                      if t:
+                          headings.append(t)
+                      continue
+
+              # সীমা প্রয়োগ
+              out = []
+              for h in headings:
+                  if len(h) > MAX_HEADING_CHARS:
+                      h = h[:MAX_HEADING_CHARS].rstrip() + '...'
+                  out.append(h)
+
+              if len(out) > MAX_HEADINGS:
+                  extra = len(out) - MAX_HEADINGS
+                  out = out[:MAX_HEADINGS] + ['... আরও ' + str(extra) + 'টি']
+
+              # কোনো শিরোনাম না পেলে fallback: প্রথম ২০০ অক্ষর
+              if not out:
+                  plain = clean_inline(text)
+                  return plain[:200] + ('...' if len(plain) > 200 else '')
+
+              return '\n'.join(out)
 
           info = json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT_KEY'])
           project_id = info['project_id']
@@ -36,22 +137,44 @@ jobs:
           creds.refresh(Request())
 
           title = (os.environ.get('RELEASE_NAME') or '').strip() or 'নতুন আপডেট এসেছে!'
-          full_body = os.environ.get('RELEASE_BODY') or ''
-          short_body = full_body if len(full_body) <= 100 else full_body[:100] + '...'
+          title = truncate_utf8(title, 200)
 
-          payload = {
-              'message': {
-                  'topic': 'all',
-                  'notification': {
-                      'title': title,
-                      'body': short_body
-                  },
-                  'data': {
-                      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-                      'update_notes': full_body
+          full_body = (os.environ.get('RELEASE_BODY') or '').strip()
+          release_url = os.environ.get('RELEASE_URL') or ''
+
+          summary = summarize(full_body)
+          print('Summary:\n' + summary)
+
+          # নোটিফিকেশন ট্রে-র জন্য ছোট body
+          short_body = truncate_utf8(summary.replace('\n', ' · '), 300)
+
+          def build(update_notes):
+              return {
+                  'message': {
+                      'topic': 'all',
+                      'notification': {
+                          'title': title,
+                          'body': short_body
+                      },
+                      'data': {
+                          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                          'update_notes': update_notes,
+                          'release_url': release_url
+                      }
                   }
               }
-          }
+
+          overhead = payload_size(build(''))
+          allowed = MAX_PAYLOAD_BYTES - overhead
+          update_notes = truncate_utf8(summary, allowed)
+          payload = build(update_notes)
+
+          while payload_size(payload) > MAX_PAYLOAD_BYTES and allowed > 50:
+              allowed = int(allowed * 0.9)
+              update_notes = truncate_utf8(summary, allowed)
+              payload = build(update_notes)
+
+          print('Payload size (bytes):', payload_size(payload))
 
           url = 'https://fcm.googleapis.com/v1/projects/' + project_id + '/messages:send'
           headers = {
@@ -59,7 +182,12 @@ jobs:
               'Content-Type': 'application/json; charset=UTF-8'
           }
 
-          response = requests.post(url, headers=headers, json=payload, timeout=30)
+          response = requests.post(
+              url,
+              headers=headers,
+              data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+              timeout=30
+          )
           print('Status Code:', response.status_code)
           print('Response:', response.text)
 
@@ -67,4 +195,4 @@ jobs:
               raise Exception('FCM request failed: ' + str(response.status_code) + ' - ' + response.text)
 
           print('Notification sent successfully!')
-          "
+          PYEOF
