@@ -164,7 +164,7 @@ p{margin:0}
 .waqts li.now{background:var(--accent);color:var(--accent-ink);box-shadow:0 12px 26px -14px var(--accent)}
 .waqts li.now .wn,.waqts li.now .wt small{color:inherit;opacity:.85}
 .waqts li.next{border-color:var(--accent)}
-.waqts li.sr .wn::before{content:"";display:inline-block;width:.45em;height:.45em;border-radius:50%;background:var(--gold);margin-right:.3em;vertical-align:.15em}
+.waqts li.srw .wn::before{content:"";display:inline-block;width:.45em;height:.45em;border-radius:50%;background:var(--gold);margin-right:.3em;vertical-align:.15em}
 .tc-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem 1rem;border-top:1px dashed var(--line-2);padding-top:.8rem;font-size:.93rem;color:var(--ink-2)}
 .tc-foot b{color:var(--ink)}
 .tc-foot .cd{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -717,3 +717,155 @@ body{background:var(--paper)}
 .phone{background:linear-gradient(160deg,#3a4458,#121826 55%,#2a3448);box-shadow:var(--phone-shadow),inset 0 0 0 1px rgba(255,255,255,.12)}
 .fx-body{background:var(--glass);border:1px solid var(--glass-bd);box-shadow:var(--glass-sh);border-radius:var(--r-l);padding:clamp(18px,2.4vw,30px);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
 .ticks>li{border-bottom-color:var(--glass-ln)}
+
+
+/* =====================================================================
+   v4 — আসল সূর্য, মেঘ ও আবহাওয়া, অ্যাপের মসজিদ, আগের স্ক্রিনশট-স্লাইডার ও "উপরে যান", স্পষ্ট লেখা
+   ===================================================================== */
+:root{--ink:#061430;--ink-2:#2E3E58;--ink-3:#526179;--accent:#2159F5;--accent-soft:rgba(33,89,245,.11);
+  --glass:rgba(255,255,255,.7);--glass-2:rgba(255,255,255,.5);--glass-3:rgba(255,255,255,.84);--gold:#C99A3B}
+:root[data-theme=dark]{--ink:#F3F7FE;--ink-2:#C3CFE0;--ink-3:#97A7BE;--accent:#6E9BFF;--accent-soft:rgba(110,155,255,.16);
+  --glass:rgba(16,31,60,.66);--glass-2:rgba(24,44,82,.5);--glass-3:rgba(30,54,100,.78);--gold:#E2B85A}
+.sh p,.fx-body .d,.prose p,.prose li{color:var(--ink-2)}
+
+/* আসল সূর্যের মতো: উজ্জ্বল কেন্দ্র, হালকা ঝাপসা কিনারা, চারপাশে মিশে যাওয়া আলো */
+.sun{width:clamp(240px,26vw,380px);aspect-ratio:1;border-radius:50%;box-shadow:none;opacity:var(--o,1);
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0,rgba(255,252,238,.9) 6%,color-mix(in srgb,var(--sc,#ffe7a6) 70%,transparent) 10%,color-mix(in srgb,var(--sc,#ffe7a6) 34%,transparent) 17%,color-mix(in srgb,var(--sc,#ffe7a6) 14%,transparent) 30%,color-mix(in srgb,var(--sc,#ffe7a6) 5%,transparent) 46%,transparent 66%);
+  mix-blend-mode:screen;filter:blur(1px);transition:left 1.2s var(--ease),top 1.2s var(--ease),opacity 2s ease}
+.sun>i{position:absolute;left:50%;top:50%;width:13.5%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,#fff 0,#fffdf6 45%,color-mix(in srgb,var(--sc,#ffe7a6) 60%,#fff) 72%,transparent 100%);filter:blur(1.6px);
+  box-shadow:0 0 18px 6px rgba(255,255,255,.75),0 0 46px 16px color-mix(in srgb,var(--sc,#ffe7a6) 55%,transparent)}
+.moon{z-index:0}
+.sun{z-index:0}
+/* মেঘ */
+.clouds{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:var(--co,.95);filter:var(--cf,none);transition:opacity 2s ease,filter 2s ease}
+.clouds canvas{position:absolute;left:0;will-change:transform;max-width:none}
+#rain{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.5s ease}
+#rain.on{opacity:1}
+.flash{position:absolute;inset:0;z-index:0;pointer-events:none;background:rgba(235,240,255,.55);opacity:0}
+.flash.go{animation:flash 1.1s ease-out}
+@keyframes flash{0%{opacity:0}6%{opacity:1}12%{opacity:.15}18%{opacity:.8}100%{opacity:0}}
+.sky .hero h1,.sky .hero .tag{text-shadow:0 2px 24px color-mix(in srgb,var(--s2) 70%,transparent),0 1px 2px rgba(0,0,0,.12)}
+.sky .hero .lede,.sky .hero-meta{text-shadow:0 1px 12px color-mix(in srgb,var(--s2) 85%,transparent)}
+
+/* অ্যাপের হিরোর মসজিদ — দিগন্তে */
+.skyline{position:relative;z-index:1;display:flex;align-items:flex-end;height:auto;margin-top:-1px;color:var(--paper)}
+.skyline .msq{position:static;display:block;flex:0 1 auto;width:min(100%,1040px);height:auto;margin:0 auto -1px;--sky-top:var(--paper);--sky-top-o:.16;--sky-bot:var(--paper);--sky-bot-o:.9;overflow:visible}
+.skyline .msq .sky-body path{stroke:color-mix(in srgb,var(--gold) 85%,transparent);stroke-width:1;vector-effect:non-scaling-stroke}
+.skyline .msq .sky-lines path{stroke:color-mix(in srgb,var(--gold) 80%,transparent)}
+.skyline .msq .sky-moon{fill:var(--gold);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--gold) 60%,transparent))}
+.skyline .gnd{flex:1 1 0;align-self:stretch;position:relative}
+.skyline .gnd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:13.5%;background:linear-gradient(color-mix(in srgb,var(--paper) 70%,transparent),var(--paper));border-top:1px solid color-mix(in srgb,var(--gold) 70%,transparent)}
+.skyline::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:var(--paper)}
+.today{margin-top:clamp(-30px,-2vw,-12px)}
+
+/* স্ক্রিনশট স্লাইডার — আগের মতো নিজে থেকে চলে */
+.shots{position:relative;overflow:hidden;padding:2.6rem 0 1.6rem;touch-action:pan-y;overscroll-behavior-x:contain;-webkit-touch-callout:none;cursor:grab;user-select:none;-webkit-user-select:none;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.shots.dr{cursor:grabbing}
+.trk{display:flex;gap:1.6rem;width:max-content;position:relative;transition:transform .95s cubic-bezier(.65,0,.35,1);will-change:transform}
+.trk.still{transition:none!important}
+.trk .sp{flex:none;position:relative;width:212px;aspect-ratio:1082/2402;border-radius:34px;padding:6px;background:linear-gradient(160deg,#3a4458,#121826 55%,#2a3448);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 24px 46px -24px rgba(0,30,70,.55);transform:scale(.9);opacity:.6;filter:saturate(.85);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .55s,filter .55s,box-shadow .55s;-webkit-tap-highlight-color:transparent;backface-visibility:hidden}
+.trk .sp::before{content:"";position:absolute;top:10px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#0b0f18;z-index:2}
+.trk .sp img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:28px;display:block;-webkit-user-drag:none}
+.trk .sp.on{transform:scale(1.04);opacity:1;filter:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 34px 70px -28px rgba(0,38,110,.6)}
+.trk .sp.hv,.trk .sp.hold{transform:scale(1.14);opacity:1;filter:none;z-index:5}
+.shot-cap{text-align:center;min-height:3.2em;transition:opacity .3s}
+.shot-cap b{display:block;font-size:1.12rem}
+.shot-cap small{color:var(--ink-2);font-size:.93rem}
+.shot-cap.chg{opacity:0}
+.pbar.sb{width:140px;margin-top:.6rem}
+.pbar{--c1:color-mix(in srgb,var(--accent) 55%,transparent);--c2:#2fb67d;--tr:rgba(0,38,87,.12);position:relative;height:3px;border-radius:3px;background:var(--tr);overflow:visible}
+:root[data-theme=dark] .pbar{--tr:rgba(255,255,255,.16);--c2:#6fe3ae}
+.sky .pbar{--tr:color-mix(in srgb,var(--sfg) 22%,transparent);--c1:var(--sfg)}
+.pbar .bf,.pbar>i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0)*100%);transform:none;border-radius:inherit;background:color-mix(in srgb,var(--c2) calc(var(--p,0)*100%),var(--c1));transition:box-shadow .3s,opacity .3s}
+.pbar[data-s=done] .bf,.pbar[data-s=done]>i{box-shadow:0 0 9px 1px color-mix(in srgb,var(--c2) 60%,transparent)}
+.pbar[data-s=dim]{opacity:.5}.pbar[data-s=dim] .bf{opacity:0}
+.pbar[data-s=pause] .bf{animation:pz 1.6s ease-in-out infinite}
+@keyframes pz{50%{opacity:.45}}
+@media (max-width:760px){.trk .sp{width:162px;border-radius:28px;padding:5px}.trk .sp img{border-radius:23px}.trk{gap:1.1rem}}
+
+/* হিরোর ফোন — আলতো ভেসে থাকা */
+.hp .phone{animation:float 7s ease-in-out infinite}
+.hp[data-i="1"] .phone{animation-delay:-2.3s}.hp[data-i="2"] .phone{animation-delay:-4.6s}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -10px}}
+.hp .phone::after{content:"";position:absolute;inset:0;border-radius:inherit;background:#02070f;opacity:0;transition:opacity 1s .2s;pointer-events:none}
+.hp:not([data-pos="0"]) .phone::after{opacity:.22}
+
+/* প্রবেশের অ্যানিমেশন: পেজ খুললে একবার, সাজানো ক্রমে */
+.sky .hero-t>*,.sky .stagewrap,.today .tcard{transition:opacity .9s var(--ease),transform 1.1s var(--ease),filter .9s var(--ease)}
+.sky:not(.in) .hero-t>*{opacity:0;transform:translateY(22px);filter:blur(6px)}
+.sky:not(.in) .stagewrap{opacity:0;transform:translateY(40px) scale(.97)}
+.sky:not(.in)~.today .tcard{opacity:0;transform:translateY(30px)}
+.sky.in .hero-t>:nth-child(2){transition-delay:.12s}.sky.in .hero-t>:nth-child(3){transition-delay:.22s}
+.sky.in .hero-t>:nth-child(4){transition-delay:.32s}.sky.in .hero-t>:nth-child(5){transition-delay:.42s}
+.sky.in .stagewrap{transition-delay:.25s}.sky.in~.today .tcard{transition-delay:.45s}
+/* স্ক্রল করলে অংশগুলো আলতো ভেসে ওঠে */
+[data-rv]{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .9s var(--ease)}
+[data-rv].shown{opacity:1;transform:none}
+.np,.rv,.orow{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+
+/* scroll-to-top: progress ring + comet dot + rising chevrons */
+.totop{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;width:56px;height:56px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--navy);background:linear-gradient(145deg,#ffffff,#d7e6f6);box-shadow:0 10px 26px rgba(0,38,87,.28),inset 0 1px 0 #fff;opacity:0;visibility:hidden;transform:translateY(18px) scale(.7);transition:opacity .35s,transform .45s cubic-bezier(.3,1.5,.5,1),visibility 0s .45s,box-shadow .25s;-webkit-tap-highlight-color:transparent}
+:root[data-theme=dark] .totop{color:#fff;background:linear-gradient(145deg,rgba(24,46,80,.95),rgba(8,20,40,.95));box-shadow:0 10px 26px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14)}
+.totop.show{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.totop:hover{box-shadow:0 14px 32px rgba(0,38,87,.38)}.totop:active{transform:scale(.94)}
+.tr{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overflow:visible}
+.tr circle{fill:none}.tr-t{stroke:rgba(0,38,87,.13);stroke-width:2.5}:root[data-theme=dark] .tr-t{stroke:rgba(255,255,255,.18)}
+.tr-p{stroke:url(#tg1);stroke-width:3;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0)*100);transform:rotate(-90deg);transform-origin:28px 28px}
+:root[data-theme=dark] .tr-p{stroke:url(#tg2)}
+.hd{transform:rotate(calc(var(--p,0)*360deg));transform-origin:28px 28px}.hd circle{fill:#EC1C24;filter:drop-shadow(0 0 4px rgba(236,28,36,.8))}:root[data-theme=dark] .hd circle{fill:#fff;filter:drop-shadow(0 0 4px rgba(255,255,255,.9))}
+.totop.z .hd{opacity:0}
+.ta{position:relative;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.ta .c1{animation:cv 2s ease-in-out infinite}.ta .c2{animation:cv 2s ease-in-out .35s infinite}
+@keyframes cv{0%,100%{opacity:.25;transform:translateY(2.5px)}45%{opacity:1;transform:translateY(0)}}
+.totop:hover .c1{animation-duration:1.1s}.totop:hover .c2{animation-duration:1.1s;animation-delay:.18s}
+.totop.go .ta{animation:shoot .8s cubic-bezier(.5,0,.2,1)}
+@keyframes shoot{40%{transform:translateY(-16px);opacity:0}41%{transform:translateY(16px);opacity:0}100%{transform:none;opacity:1}}
+
+
+
+
+.totop{z-index:55;-webkit-backdrop-filter:none;backdrop-filter:none;border:0}
+@media (max-width:760px){.totop{display:grid;bottom:calc(92px + env(safe-area-inset-bottom,0px));right:12px;width:50px;height:50px}}
+.tc-wx{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .9rem;margin-top:.2rem;font-size:.9rem;color:var(--ink-2)}
+.tc-wx span{white-space:nowrap}
+.tc-wx b{color:var(--ink);font-weight:700}
+.tc-wx small{color:var(--ink-3);font-size:.78rem;flex-basis:100%}
+
+/* ===== মোবাইল: আজকের কার্ড মাঝখানে, ফিচার কার্ড ===== */
+@media (max-width:760px){
+  .tc-l{align-items:center;text-align:center}
+  .tc-place,.tc-dates,.tc-sun,.tc-wx{justify-content:center}
+  .tc-wx small{text-align:center}
+  .tc-foot{flex-direction:column;justify-content:center;text-align:center}
+  /* ফিচার: কার্ড-তালিকা */
+  .fx.m{display:block}
+  .fxm-hint{display:flex;align-items:center;justify-content:center;gap:.35rem;margin:-.6rem 0 1rem;font-size:.92rem;color:var(--ink-3)}
+  .fxm-hint .i{width:16px;height:16px;transform:rotate(90deg);animation:hintb 1.8s ease-in-out infinite}
+  @keyframes hintb{50%{transform:rotate(90deg) translateX(3px)}}
+  .fxm{display:grid;gap:.6rem}
+  .fxm-c{border-radius:20px;background:var(--glass);border:1px solid var(--glass-bd);box-shadow:var(--glass-sh);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);overflow:hidden;transition:box-shadow .3s}
+  .fxm-c.open{box-shadow:var(--glass-sh),0 0 0 1.5px color-mix(in srgb,var(--accent) 45%,transparent)}
+  .fxm-h{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:.8rem;width:100%;padding:.85rem .9rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .fxm-h:focus-visible{outline:2.5px solid var(--accent);outline-offset:-3px;border-radius:20px}
+  .fxm-h .gi{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;flex:none;background:var(--accent-soft);color:var(--accent);transition:background-color .3s,color .3s}
+  .fxm-h .gi .i{width:22px;height:22px}
+  .fxm-c.open .gi{background:linear-gradient(160deg,#4a80ff,#1f4fe0);color:#fff}
+  .fxm-t{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+  .fxm-t b{font-size:1.05rem;color:var(--ink)}
+  .fxm-t small{font-size:.84rem;color:var(--ink-2);margin-top:.15rem}
+  .fxm-x{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;flex:none;background:var(--glass-2);color:var(--ink-2);transition:transform .35s var(--ease),background-color .3s,color .3s}
+  .fxm-x .i{width:17px;height:17px}
+  .fxm-c.open .fxm-x{transform:rotate(45deg);background:var(--accent);color:#fff}
+  .fxm-b{overflow:hidden}
+  .fxm-in{padding:0 .9rem 1rem}
+  .fxm-shots{display:flex;gap:.8rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.4rem .2rem 1rem;margin:0 -.2rem;scrollbar-width:none;justify-content:safe center}
+  .fxm-shots::-webkit-scrollbar{display:none}
+  .fxm-shots .phone{flex:0 0 148px;scroll-snap-align:center}
+  .fxm-n{font-size:.85rem;font-weight:700;color:var(--accent);margin:0 0 .2rem}
+  .fxm-in .ticks>li{padding:.45rem 0 .45rem 1.9rem;font-size:.95rem}
+  .fxm-in .ticks>li::before{top:.8rem;width:1.05rem;height:1.05rem}
+}

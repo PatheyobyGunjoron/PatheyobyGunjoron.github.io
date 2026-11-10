@@ -28,11 +28,11 @@ let snT;function snack(msg,acts=[],ms=9000,err){let s=$('#snk');if(!s){s=D.creat
   s.className='snk'+(err?' err':'');s.innerHTML='';const m=D.createElement('span');m.textContent=msg;s.appendChild(m);
   acts.forEach(a=>{const x=D.createElement(a.href?'a':'button');x.textContent=a.t;if(a.href){x.href=a.href;x.target='_blank';x.rel='noopener'}else{x.type='button';x.onclick=a.f}s.appendChild(x)});
   requestAnimationFrame(()=>s.classList.add('show'));clearTimeout(snT);snT=setTimeout(()=>s.classList.remove('show'),ms)}
-// উপরে যাওয়ার বাটন (অগ্রগতির রিং সহ)
+// উপরে যাওয়ার বাটন — অগ্রগতির রিং, ঘুরন্ত বিন্দু, ওঠা-নামা তীর (আগের অ্যানিমেশন)
 (function(){const b=$('#top');if(!b)return;let q=0;
-  const upd=()=>{q=0;const m=D.documentElement.scrollHeight-innerHeight,p=m>0?Math.min(Math.max(scrollY/m,0),1):0;b.style.setProperty('--p',p.toFixed(4));b.classList.toggle('show',scrollY>600)};
+  const upd=()=>{q=0;const m=D.documentElement.scrollHeight-innerHeight,p=m>0?Math.min(Math.max(scrollY/m,0),1):0;b.style.setProperty('--p',p.toFixed(4));b.classList.toggle('show',scrollY>320);b.classList.toggle('z',p<.01)};
   addEventListener('scroll',()=>{if(!q)q=requestAnimationFrame(upd)},{passive:true});addEventListener('resize',upd);upd();
-  b.onclick=()=>scrollTo({top:0,behavior:'smooth'})})();
+  b.addEventListener('click',()=>{b.classList.add('go');scrollTo({top:0,behavior:'smooth'});setTimeout(()=>b.classList.remove('go'),900)})})();
 // সূচিপত্র: এখন কোন অংশ পড়া হচ্ছে
 (function(){const links=$$('.toc a');if(!links.length||!('IntersectionObserver' in W))return;
   const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));

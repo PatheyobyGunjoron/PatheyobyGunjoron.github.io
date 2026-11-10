@@ -17,17 +17,25 @@ const toM=s=>{const p=String(s||'').split(':');return p.length===2?(+p[0])*60+(+
 const h12=m=>{m=((m%1440)+1440)%1440;let h=Math.floor(m/60)%12||12;return bn(String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0'))};
 const cd=sec=>{sec=Math.max(0,Math.round(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return bn((h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'))};
 let LOC=null;
-function loadLoc(){try{const j=JSON.parse(localStorage.getItem('pat_loc')||'null');if(j&&isFinite(j.lat)&&isFinite(j.lng))return j}catch{}const c=CITIES[0];return{name:c[0],lat:c[1],lng:c[2],i:0}}
+function loadLoc(){try{const j=JSON.parse(localStorage.getItem('pat_loc')||'null');if(j&&isFinite(j.lat)&&isFinite(j.lng))return j}catch{}
+  try{const a=JSON.parse(sessionStorage.getItem('pat_auto')||'null');if(a&&isFinite(a.lat))return a}catch{}const c=CITIES[0];return{name:c[0],lat:c[1],lng:c[2],i:0,def:1}}
+// নিজে থেকে এলাকা: আগে অনুমতি দেওয়া থাকলে ফোনের লোকেশন, নইলে ইন্টারনেট সংযোগের আনুমানিক শহর (কোনো অনুমতি চাওয়া হয় না)
+async function detectLoc(){if(!LOC||!LOC.def)return;
+  const use=(lat,lng,name)=>{if(!LOC.def)return;LOC={name:name||'আপনার এলাকা',lat,lng,i:'auto'};try{sessionStorage.setItem('pat_auto',JSON.stringify(LOC))}catch{}locSelect();tick(true);weather()};
+  try{if(navigator.permissions&&navigator.geolocation){const st=await navigator.permissions.query({name:'geolocation'});
+    if(st.state==='granted'){navigator.geolocation.getCurrentPosition(p=>use(p.coords.latitude,p.coords.longitude,'আপনার অবস্থান'),()=>{},{timeout:10000,maximumAge:3600e3});return}}}catch{}
+  try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch('https://get.geojs.io/v1/ip/geo.json',{signal:c.signal});const j=await r.json();
+    const lat=parseFloat(j.latitude),lng=parseFloat(j.longitude);if(isFinite(lat)&&isFinite(lng))use(lat,lng,j.city||j.region||'আপনার এলাকা')}catch{}}
 function locSelect(){const sel=$('#loc');if(!sel)return;
-  sel.innerHTML=CITIES.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('')+(LOC.i==='geo'?`<option value="geo">${esc(LOC.name)}</option>`:'')+'<option value="me">📍 আমার অবস্থান</option>';
+  sel.innerHTML=(LOC.i==='auto'?`<option value="auto">📍 ${esc(LOC.name)}</option>`:'')+CITIES.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('')+(LOC.i==='geo'?`<option value="geo">${esc(LOC.name)}</option>`:'')+'<option value="me">📍 আমার অবস্থান</option>';
   sel.value=String(LOC.i);
   sel.onchange=()=>{const v=sel.value;
     if(v==='me'){if(!navigator.geolocation){snack('এই ব্রাউজারে লোকেশন পাওয়া যায় না।');sel.value=String(LOC.i);return}
       sel.disabled=true;navigator.geolocation.getCurrentPosition(p=>{sel.disabled=false;
         LOC={name:`আমার অবস্থান (${bn(p.coords.latitude.toFixed(2))}°, ${bn(p.coords.longitude.toFixed(2))}°)`,lat:p.coords.latitude,lng:p.coords.longitude,i:'geo'};save()},
         ()=>{sel.disabled=false;sel.value=String(LOC.i);snack('লোকেশন পাওয়া যায়নি। তালিকা থেকে শহর বেছে নিন।')},{timeout:12000,maximumAge:3600e3});return}
-    if(v==='geo')return;const c=CITIES[+v];LOC={name:c[0],lat:c[1],lng:c[2],i:+v};save()};
-  function save(){try{localStorage.setItem('pat_loc',JSON.stringify(LOC))}catch{}locSelect();tick(true)}}
+    if(v==='geo'||v==='auto')return;const c=CITIES[+v];LOC={name:c[0],lat:c[1],lng:c[2],i:+v};save()};
+  function save(){try{localStorage.setItem('pat_loc',JSON.stringify(LOC))}catch{}locSelect();tick(true);weather()}}
 let TT=null,TDAY='',lastWaqt='';
 function times(d){const P=W.PtPrayer;if(!P)return null;
   const m=P.effectiveMethod(C.PRAYER_METHOD||'0',C.PRAYER_METHOD_DEFAULT||'1',LOC.lat,LOC.lng);
@@ -72,69 +80,134 @@ function tick(force){
     const hj=P.hijri(hd,+C.HIJRI_ADJUST||0),bg=P.bangla(now);
     $('#dates').innerHTML=`<span>${DAYS[now.getDay()]}, ${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span>${bn(hj)} হিজরি</span>`:''}<span>${bn(bg)} বঙ্গাব্দ</span>`}}
 function renderWaqts(){const ol=$('#waqts');if(!ol||!TT)return;lastWaqt='';
-  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'sr':''}"><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
-function prayerInit(){if(!W.PtPrayer||!$('#tcard'))return;LOC=loadLoc();locSelect();tick(true);setInterval(()=>{if(!D.hidden)tick()},1000);D.addEventListener('visibilitychange',()=>{if(!D.hidden)tick(true)})}
+  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
+function prayerInit(){if(!W.PtPrayer||!$('#tcard'))return;LOC=loadLoc();locSelect();tick(true);wxInit();detectLoc();setInterval(()=>{if(!D.hidden)tick()},1000);D.addEventListener('visibilitychange',()=>{if(!D.hidden)tick(true)})}
 
 
-/* ================= আসল সূর্য ও চাঁদ =================
-   সূর্য ও চাঁদের উচ্চতা (altitude) আর দিক (azimuth) এই মুহূর্তে, নির্বাচিত এলাকা থেকে হিসাব করা হয়।
-   আকাশের রং সূর্যের উচ্চতা থেকে, সূর্য/চাঁদের জায়গা তাদের আসল দিক ও উচ্চতা থেকে, আর দিগন্তের আভা সূর্য যেদিকে সেদিকে। */
+/* ================= আসল সূর্য, চাঁদ ও আবহাওয়া =================
+   সূর্য ও চাঁদের উচ্চতা ও ঘণ্টা-কোণ (hour angle) এই মুহূর্তে, নির্বাচিত এলাকা থেকে হিসাব হয়।
+   পর্দায়: উদয়ের মুহূর্তে বাঁ দিকের নিচে, মধ্যাহ্নে সবচেয়ে উঁচুতে, অস্তের মুহূর্তে ডান দিকের নিচে।
+   আবহাওয়া Open-Meteo (ফ্রী, কোনো key লাগে না) থেকে — মেঘলা/বৃষ্টিতে আকাশ ধূসর, সূর্য মেঘে ঢাকা, বৃষ্টি পড়ে। */
 const SKY=(function(){
   const R=Math.PI/180,jd=d=>d.getTime()/864e5+2440587.5,mod=(a,m)=>((a%m)+m)%m;
   function sunEq(d){const n=jd(d)-2451545,L=mod(280.46+.9856474*n,360),g=mod(357.528+.9856003*n,360)*R,lam=(L+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R;
     return{ra:Math.atan2(Math.cos(e)*Math.sin(lam),Math.cos(lam)),dec:Math.asin(Math.sin(e)*Math.sin(lam)),lon:lam}}
   function moonEq(d){const n=jd(d)-2451545,L=(218.316+13.176396*n)*R,M=(134.963+13.064993*n)*R,F=(93.272+13.22935*n)*R,l=L+6.289*R*Math.sin(M),b=5.128*R*Math.sin(F),e=23.4397*R;
     return{ra:Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l)),dec:Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l)),lon:l,lat:b}}
-  function altaz(q,d,lat,lng){const n=jd(d)-2451545,lst=(mod(280.46061837+360.98564736629*n,360)+lng)*R,H=lst-q.ra,p=lat*R;
-    const alt=Math.asin(Math.sin(p)*Math.sin(q.dec)+Math.cos(p)*Math.cos(q.dec)*Math.cos(H));
-    const az=Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(p)-Math.tan(q.dec)*Math.cos(p));return{alt:alt/R,az:mod(az/R+180,360)}}
-  // আকাশের রং: সূর্যের উচ্চতা (ডিগ্রি) → উপর/মাঝ/নিচের রং ও দিগন্তের আভা
+  // ঘণ্টা-কোণ H (রেডিয়ান, -π..π), উচ্চতা, দিগন্ত পেরোনোর ঘণ্টা-কোণ H0, সর্বোচ্চ উচ্চতা
+  function pos(q,d,lat,lng,h0deg){const n=jd(d)-2451545,lst=(mod(280.46061837+360.98564736629*n,360)+lng)*R,p=lat*R;
+    let H=mod(lst-q.ra+Math.PI,2*Math.PI)-Math.PI;
+    const alt=Math.asin(Math.sin(p)*Math.sin(q.dec)+Math.cos(p)*Math.cos(q.dec)*Math.cos(H))/R;
+    const c=(Math.sin(h0deg*R)-Math.sin(p)*Math.sin(q.dec))/(Math.cos(p)*Math.cos(q.dec));
+    const H0=c<=-1?Math.PI:c>=1?0:Math.acos(c),top=90-Math.abs(lat-q.dec/R);
+    const az=mod(Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(p)-Math.tan(q.dec)*Math.cos(p))/R+180,360);
+    return{H,alt,H0,top,az,dec:q.dec,p}}
+  const HZ=90,TOP=9;
+  const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+46*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
+  // আকাশের রং: সূর্যের উচ্চতা → উপর/মাঝ/নিচ ও দিগন্তের আভা
   const ST=[[-90,'#020817','#071634','#0f2856',[0,0,0,0]],[-14,'#030c22','#0c1f49','#1d3a72',[70,80,170,.18]],[-8,'#0f1a45','#2f3a78','#7d5f95',[255,130,120,.32]],
     [-3,'#1e2c66','#5d5491','#e08f86',[255,150,110,.55]],[0,'#2c4a90','#9a7aa3','#ffb98a',[255,175,115,.7]],[4,'#4a84cc','#a7c5e6','#ffd7ab',[255,205,150,.55]],
     [10,'#3e88da','#94c6f0','#ecf2ff',[255,236,200,.35]],[25,'#2f7fe0','#7fbdf3','#dceeff',[255,250,235,.22]],[90,'#2470d8','#6eb2f2','#cfe7ff',[255,255,255,.18]]];
   const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
-  const rgb=c=>`rgb(${c.map(v=>Math.round(v)).join(',')})`,rgba=c=>`rgba(${c.slice(0,3).map(v=>Math.round(v)).join(',')},${c[3].toFixed(3)})`;
+  const rgb=c=>`rgb(${c.slice(0,3).map(v=>Math.round(v)).join(',')})`,rgba=c=>`rgba(${c.slice(0,3).map(v=>Math.round(v)).join(',')},${(+c[3]).toFixed(3)})`;
   function palette(alt){let i=0;while(i<ST.length-2&&alt>ST[i+1][0])i++;const A=ST[i],B=ST[i+1],t=Math.min(Math.max((alt-A[0])/(B[0]-A[0]),0),1),e=t*t*(3-2*t);
     return{s1:mix(hx(A[1]),hx(B[1]),e),s2:mix(hx(A[2]),hx(B[2]),e),s3:mix(hx(A[3]),hx(B[3]),e),g:mix(A[4],B[4],e)}}
   const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])};
-  // দিক → পর্দার x (পূর্ব বাঁয়ে, পশ্চিম ডানে), উচ্চতা → y
-  const HZ=72,xOf=az=>Math.min(Math.max(6+(az-60)/240*88,4),96);
-  const yOf=(alt,top)=>alt>=0?HZ-Math.min(alt/top,1)*(HZ-9):HZ+Math.min(-alt,12)*1.2;
+  const grey=c=>{const l=.3*c[0]+.59*c[1]+.11*c[2];return[l*.96,l*.99,l*1.06]};      // মেঘলা আকাশের ধূসর-নীল
   const DIR=['উত্তর','উত্তর-পূর্ব','পূর্ব','দক্ষিণ-পূর্ব','দক্ষিণ','দক্ষিণ-পশ্চিম','পশ্চিম','উত্তর-পশ্চিম'],dir=az=>DIR[Math.round(az/45)%8];
   let pathKey='';
-  function sunPath(d,lat,lng,top){const key=d.toDateString()+lat.toFixed(2)+lng.toFixed(2);if(key===pathKey)return;pathKey=key;
-    const d0=new Date(d);d0.setHours(0,0,0,0);let pts=[];
-    for(let m=0;m<=1440;m+=8){const t=new Date(d0.getTime()+m*6e4),p=altaz(sunEq(t),t,lat,lng);if(p.alt>-1)pts.push([xOf(p.az)*10,yOf(p.alt,top)*10])}
-    const el=$('#sp-arc');if(el)el.setAttribute('d',pts.length?'M'+pts.map(p=>p.map(v=>v.toFixed(1)).join(' ')).join(' L'):'')}
+  function sunPath(b,key){if(key===pathKey)return;pathKey=key;const el=$('#sp-arc');if(!el)return;if(!(b.H0>0)){el.setAttribute('d','');return}
+    const pts=[];for(let i=0;i<=60;i++){const H=-b.H0+2*b.H0*i/60,alt=Math.asin(Math.sin(b.p)*Math.sin(b.dec)+Math.cos(b.p)*Math.cos(b.dec)*Math.cos(H))/R,q=place({H,H0:b.H0,alt,top:b.top});pts.push([q.x*10,q.y*10])}
+    el.setAttribute('d','M'+pts.map(p=>p.map(v=>v.toFixed(1)).join(' ')).join(' L'))}
   function moonPath(k,waxing){const r=48,c=50,rx=Math.abs(1-2*k)*r,big=k>.5;
-    // আলোকিত প্রান্ত (অর্ধবৃত্ত) + টার্মিনেটরের উপবৃত্ত
     if(waxing)return`M${c} ${c-r} A${r} ${r} 0 0 1 ${c} ${c+r} A${rx} ${r} 0 0 ${big?1:0} ${c} ${c-r}Z`;
     return`M${c} ${c-r} A${r} ${r} 0 0 0 ${c} ${c+r} A${rx} ${r} 0 0 ${big?0:1} ${c} ${c-r}Z`}
-  function update(now){const sky=$('#sky');if(!sky||!LOC)return;const lat=+LOC.lat,lng=+LOC.lng;
-    const se=sunEq(now),sp=altaz(se,now,lat,lng),me=moonEq(now),mp=altaz(me,now,lat,lng);
-    const noon=90-Math.abs(lat-se.dec/R),top=Math.max(noon,20);
-    const P=palette(sp.alt),st=sky.style;
-    st.setProperty('--s1',rgb(P.s1));st.setProperty('--s2',rgb(P.s2));st.setProperty('--s3',rgb(P.s3));st.setProperty('--gc',rgba(P.g));st.setProperty('--gx',xOf(sp.az).toFixed(1)+'%');
-    const light=lum(P.s2)>.36;st.setProperty('--sfg',light?'#08214a':'#ffffff');st.setProperty('--sfg2',light?'rgba(8,33,74,.74)':'rgba(255,255,255,.8)');
-    st.setProperty('--star',Math.min(Math.max((-sp.alt-3)/9,0),1).toFixed(2));
-    const h=$('#hdr');h&&h.style.setProperty('--sky-fg',light?'#08214a':'#ffffff');
-    // সূর্য
-    const sun=$('#sun');if(sun){sun.style.setProperty('--x',xOf(sp.az).toFixed(2)+'%');sun.style.setProperty('--y',yOf(sp.alt,top).toFixed(2)+'%');
-      sun.style.setProperty('--o',Math.min(Math.max((sp.alt+3)/4,0),1).toFixed(2));
-      const warm=Math.min(Math.max(1-sp.alt/14,0),1);sun.style.setProperty('--sc',rgb(mix([255,246,214],[255,170,96],warm)))}
-    // চাঁদ: কলা (phase) ও অবস্থান
-    const el=Math.acos(Math.cos(me.lat)*Math.cos(me.lon-se.lon)),k=(1-Math.cos(el))/2,waxing=mod(me.lon-se.lon,2*Math.PI)<Math.PI;
-    const moon=$('#moon');if(moon){moon.style.setProperty('--x',xOf(mp.az).toFixed(2)+'%');moon.style.setProperty('--y',yOf(mp.alt,top).toFixed(2)+'%');
-      const vis=Math.min(Math.max((mp.alt+2)/4,0),1)*(sp.alt>8?.55:1)*(k<.03?0:1);moon.style.setProperty('--o',vis.toFixed(2));
+  let WX=null,last=null;
+  function update(now){now=now||new Date();last=now;const sky=$('#sky');if(!sky||!LOC)return;const lat=+LOC.lat,lng=+LOC.lng;
+    const se=sunEq(now),sb=pos(se,now,lat,lng,-.833),me=moonEq(now),mb=pos(me,now,lat,lng,.125);
+    const ov=WX?WX.over:0;                               // ০ = পরিষ্কার … ১ = ঘন মেঘ/বৃষ্টি
+    const P=palette(sb.alt),g=x=>mix(x,grey(x),ov*.85),dk=x=>mix(x,[0,0,0],ov*.18);
+    const s1=dk(g(P.s1)),s2=dk(g(P.s2)),s3=dk(g(P.s3)),st=sky.style;
+    st.setProperty('--s1',rgb(s1));st.setProperty('--s2',rgb(s2));st.setProperty('--s3',rgb(s3));
+    const sp=place(sb);st.setProperty('--gc',rgba([...P.g.slice(0,3),P.g[3]*(1-ov*.85)]));st.setProperty('--gx',Math.min(Math.max(sp.x,0),100).toFixed(1)+'%');
+    const light=lum(s2)>.34;st.setProperty('--sfg',light?'#061a40':'#ffffff');st.setProperty('--sfg2',light?'rgba(6,26,64,.82)':'rgba(255,255,255,.86)');
+    st.setProperty('--star',(Math.min(Math.max((-sb.alt-3)/9,0),1)*(1-ov)).toFixed(2));
+    const h=$('#hdr');h&&h.style.setProperty('--sky-fg',light?'#061a40':'#ffffff');
+    // সূর্য: মেঘ ঘন হলে ঢাকা পড়ে
+    const sun=$('#sun');if(sun){sun.style.setProperty('--x',sp.x.toFixed(2)+'%');sun.style.setProperty('--y',sp.y.toFixed(2)+'%');
+      sun.style.setProperty('--o',(Math.min(Math.max((sb.alt+2.5)/3.5,0),1)*Math.max(0,1-ov*1.15)).toFixed(2));
+      const warm=Math.min(Math.max(1-sb.alt/16,0),1);sun.style.setProperty('--sc',rgb(mix([255,240,200],[255,150,80],warm)))}
+    // চাঁদ
+    const el=Math.acos(Math.cos(me.lat)*Math.cos(me.lon-se.lon)),k=(1-Math.cos(el))/2,waxing=mod(me.lon-se.lon,2*Math.PI)<Math.PI,mp=place(mb);
+    const moon=$('#moon');if(moon){moon.style.setProperty('--x',mp.x.toFixed(2)+'%');moon.style.setProperty('--y',mp.y.toFixed(2)+'%');
+      const vis=(mp.up?Math.min(Math.max((mb.alt+1.5)/3,0),1):0)*(sb.alt>6?.5:1)*(k<.03?0:1)*Math.max(0,1-ov*1.1);moon.style.setProperty('--o',vis.toFixed(2));
       const ml=$('#mlit');ml&&ml.setAttribute('d',moonPath(k,waxing))}
-    sunPath(now,lat,lng,top);STARS.set&&STARS.set();
-    // তথ্য-লাইন
-    const si=$('#suninfo');if(si){const up=sp.alt>=-.83;
-      const s1=up?`<span><i></i>সূর্য এখন <b>${dir(sp.az)}</b> আকাশে, <b>${bn(Math.round(sp.alt))}°</b> উচ্চতায়</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sp.alt))}°</b> নিচে (${dir(sp.az)})</span>`;
-      const s2=(mp.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ ${dir(mp.az)} আকাশে · <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
-      si.innerHTML=s1+s2}}
-  return{update}})();
+    sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2));STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
+    const si=$('#suninfo');if(si){const up=sb.alt>=-.83;
+      const s1t=up?`<span><i></i>সূর্য এখন <b>${dir(sb.az)}</b> আকাশে, <b>${bn(Math.round(sb.alt))}°</b> উচ্চতায়</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sb.alt))}°</b> নিচে</span>`;
+      const s2t=(mb.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ ${dir(mb.az)} আকাশে · <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
+      si.innerHTML=s1t+s2t}}
+  function setWeather(w){WX=w;if(last)update(last)}
+  return{update,setWeather,get:()=>WX}})();
+
+/* ================= মেঘ =================
+   ক্যানভাসে আঁকা নরম মেঘ (একবার আঁকা হয়, তারপর শুধু সরে) — দূরের মেঘ ছোট ও ধীর, কাছের মেঘ বড় ও দ্রুত। */
+const CLOUDS=(function(){const box=$('#clouds');if(!box)return{set(){},tint(){}};
+  let want=-1,anims=[];const R=Math.random;
+  function sprite(w,h,dark){const dpr=Math.min(devicePixelRatio||1,1.5),c=D.createElement('canvas');c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.width=w+'px';c.style.height=h+'px';
+    const x=c.getContext('2d');x.scale(dpr,dpr);const n=10+Math.round(R()*8);
+    for(let i=0;i<n;i++){const cx=w*(.14+.72*R()),cy=h*(.5+(R()-.35)*.38),r=h*(.2+.24*R())*(1-Math.abs(cx/w-.5)*.9);
+      const g=x.createRadialGradient(cx,cy-r*.25,r*.08,cx,cy,r);const top=dark?'rgba(222,228,238,':'rgba(255,255,255,';
+      g.addColorStop(0,top+'.95)');g.addColorStop(.55,top+'.72)');g.addColorStop(.8,(dark?'rgba(188,198,214,':'rgba(236,242,250,')+'.35)');g.addColorStop(1,'rgba(255,255,255,0)');
+      x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,6.2832);x.fill()}
+    // নিচের দিকটা একটু ছায়াময় — আসল মেঘের মতো
+    x.globalCompositeOperation='source-atop';const sh=x.createLinearGradient(0,h*.35,0,h);sh.addColorStop(0,'rgba(0,0,0,0)');sh.addColorStop(1,dark?'rgba(70,80,100,.35)':'rgba(120,140,170,.22)');x.fillStyle=sh;x.fillRect(0,0,w,h);
+    return c}
+  function set(n,heavy){if(n===want)return;want=n;anims.forEach(a=>a.cancel());anims=[];box.innerHTML='';
+    const W=box.clientWidth||innerWidth,Hh=box.clientHeight||700,mob=W<700;
+    for(let i=0;i<n;i++){const layer=i%3,s=(layer===0?.55:layer===1?.8:1.05)*(heavy?1.35:1)*(mob?.62:1);
+      const w=Math.round((260+R()*260)*s),h=Math.round(w*(.34+R()*.14)),c=sprite(w,h,heavy);
+      const y=Hh*(.04+R()*(heavy?.62:.5));c.style.top=y+'px';c.style.opacity=(layer===0?.55:layer===1?.75:.92)*(heavy?1:.92);box.appendChild(c);
+      const dur=(layer===0?210:layer===1?150:100)*(.8+R()*.5)*1000*(mob?.75:1);
+      const a=c.animate([{transform:`translate3d(${-w-40}px,0,0)`},{transform:`translate3d(${W+40}px,0,0)`}],{duration:dur,iterations:Infinity,easing:'linear'});
+      a.currentTime=R()*dur;anims.push(a)}}
+  let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const n=want;want=-1;set(n,box.dataset.h==='1')},400)});
+  // দিনের আলো অনুযায়ী মেঘের রং: রাতে গাঢ়, গোধূলিতে উষ্ণ
+  function tint(alt,ov){const night=Math.min(Math.max((-alt+2)/10,0),1),dusk=Math.max(0,1-Math.abs(alt-1)/7);
+    box.style.setProperty('--cf',`brightness(${(1-night*.68-ov*.12).toFixed(2)}) sepia(${(dusk*.45).toFixed(2)}) saturate(${(1+dusk*.6).toFixed(2)})`);
+    box.style.setProperty('--co',(.92-night*.3).toFixed(2))}
+  D.addEventListener('visibilitychange',()=>anims.forEach(a=>D.hidden?a.pause():a.play()));
+  return{set:(n,h)=>{box.dataset.h=h?'1':'';set(n,h)},tint}})();
+
+/* ================= বৃষ্টি ও বজ্রপাত ================= */
+const RAIN=(function(){const cv=$('#rain');if(!cv)return{set(){}};let x;try{x=cv.getContext('2d')}catch{}if(!x)return{set(){}};
+  let on=false,drops=[],w=0,h=0,raf=0,lf=0,storm=false,ft=0,snow=false;
+  const size=()=>{const r=cv.getBoundingClientRect();w=r.width;h=r.height;cv.width=Math.round(w);cv.height=Math.round(h)};
+  const mk=()=>({x:Math.random()*(w+200)-100,y:Math.random()*h,l:snow?2+Math.random()*2.5:10+Math.random()*16,v:snow?40+Math.random()*50:520+Math.random()*380,a:snow?.5+Math.random()*.4:.18+Math.random()*.3});
+  function loop(t){raf=requestAnimationFrame(loop);if(D.hidden||t-lf<30)return;const dt=Math.min((t-lf)/1000,.05);lf=t;x.clearRect(0,0,w,h);
+    x.lineCap='round';for(const d of drops){d.y+=d.v*dt;d.x+=(snow?Math.sin(t/900+d.l)*12:-d.v*.18)*dt;if(d.y>h+20){d.y=-20;d.x=Math.random()*(w+200)-100}
+      if(snow){x.fillStyle=`rgba(255,255,255,${d.a})`;x.beginPath();x.arc(d.x,d.y,d.l,0,6.2832);x.fill()}else{x.strokeStyle=`rgba(225,235,250,${d.a})`;x.lineWidth=1;x.beginPath();x.moveTo(d.x,d.y);x.lineTo(d.x-d.l*.18,d.y-d.l);x.stroke()}}
+    if(storm&&t>ft){ft=t+6000+Math.random()*12000;const f=$('#flash');if(f){f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}}}
+  function set(intensity,isStorm,isSnow){storm=!!isStorm;snow=!!isSnow;if(intensity<=0){on=false;cv.classList.remove('on');setTimeout(()=>{if(!on){cancelAnimationFrame(raf);raf=0;x.clearRect(0,0,w,h)}},1600);return}
+    on=true;size();const n=Math.round(Math.min(380,(snow?60:90)+intensity*90)*(w<700?.55:1));drops=Array.from({length:n},mk);cv.classList.add('on');if(!raf){lf=performance.now();raf=requestAnimationFrame(loop)}}
+  addEventListener('resize',()=>{if(on)size()});return{set}})();
+
+/* ================= আবহাওয়া (Open-Meteo, ফ্রী) ================= */
+const WXN={0:['পরিষ্কার আকাশ','☀️'],1:['প্রায় পরিষ্কার','🌤️'],2:['আংশিক মেঘলা','⛅'],3:['মেঘলা','☁️'],45:['কুয়াশা','🌫️'],48:['কুয়াশা','🌫️'],51:['হালকা গুঁড়ি বৃষ্টি','🌦️'],53:['গুঁড়ি বৃষ্টি','🌦️'],55:['ঘন গুঁড়ি বৃষ্টি','🌧️'],56:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],57:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],61:['হালকা বৃষ্টি','🌦️'],63:['বৃষ্টি','🌧️'],65:['ভারী বৃষ্টি','🌧️'],66:['ঠান্ডা বৃষ্টি','🌧️'],67:['ঠান্ডা ভারী বৃষ্টি','🌧️'],71:['হালকা তুষার','🌨️'],73:['তুষারপাত','🌨️'],75:['ভারী তুষার','❄️'],77:['তুষারকণা','🌨️'],80:['হালকা ঝরো বৃষ্টি','🌦️'],81:['ঝরো বৃষ্টি','🌧️'],82:['প্রবল ঝরো বৃষ্টি','⛈️'],85:['তুষার ঝড়','🌨️'],86:['প্রবল তুষার ঝড়','❄️'],95:['বজ্রসহ বৃষ্টি','⛈️'],96:['বজ্র ও শিলাবৃষ্টি','⛈️'],99:['প্রবল বজ্র ও শিলাবৃষ্টি','⛈️']};
+function applyWx(c){if(!c)return;const code=+c.weather_code,cc=+c.cloud_cover||0,rainy=(code>=51&&code<=67)||(code>=80&&code<=82)||code>=95,snowy=(code>=71&&code<=77)||code===85||code===86,fog=code===45||code===48;
+  const over=Math.min(1,Math.max(rainy||snowy?.9:code===3?.75:fog?.6:0,cc>=85?.7:cc>=60?.35:cc>=35?.15:0));
+  SKY.setWeather({over,code});
+  CLOUDS.set(rainy||snowy?16:code===3||cc>=85?14:code===2||cc>=40?9:fog?11:5,over>=.6);
+  RAIN.set(rainy?(code===65||code===82||code>=95?3:code===63||code===81?2:1):snowy?1:0,code>=95,snowy);
+  const n=WXN[code]||['—',''],el=$('#wx');if(el){el.hidden=false;el.innerHTML=`<span>${n[1]} <b>${n[0]}</b></span><span>তাপমাত্রা <b>${bn(Math.round(c.temperature_2m))}°সে</b></span><span>আর্দ্রতা <b>${bn(Math.round(c.relative_humidity_2m))}%</b></span><span>মেঘ <b>${bn(Math.round(cc))}%</b></span><small>আবহাওয়া: Open-Meteo</small>`}}
+let wxT=0;
+async function weather(){if(!LOC)return;const key='pat_wx_'+(+LOC.lat).toFixed(2)+','+(+LOC.lng).toFixed(2);
+  try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c&&Date.now()-c.t<15*60e3){applyWx(c.d);return}}catch{}
+  try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+LOC.lat).toFixed(3)}&longitude=${(+LOC.lng).toFixed(3)}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,precipitation,is_day&timezone=auto`;
+    const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();applyWx(j.current);try{sessionStorage.setItem(key,JSON.stringify({t:Date.now(),d:j.current}))}catch{}}
+  catch{CLOUDS.set(5,false)}}
+function wxInit(){CLOUDS.set(5,false);weather();clearInterval(wxT);wxT=setInterval(()=>{if(!D.hidden)weather()},15*60e3)}
 
 /* ================= তারা ================= */
 const STARS={};
@@ -179,11 +252,14 @@ async function anyShot(n,th){return(await shotFor(th||curTheme(),n))||(await sho
     if(!D.hidden&&!waiting()){acc+=dt;if(acc>=CYC){acc-=CYC;mv=Dm;t++;set()}const w=CYC-mv-GRN,d=acc-mv;if(d<=0)setBar(0);else if(d>=w)setBar(1,'done');else setBar(d/w)}};
   requestAnimationFrame(function f(){tk();requestAnimationFrame(f)});setInterval(tk,250)})();
 
-/* ================= ফিচার এক্সপ্লোরার ================= */
+/* ================= ফিচার এক্সপ্লোরার =================
+   কম্পিউটারে: বাঁয়ে তালিকা, মাঝে ফোন, ডানে বিস্তারিত।  মোবাইলে: অ্যাপের মতো কার্ড — চাপলে খুলে স্ক্রিনশট ও সুবিধাগুলো দেখায়। */
 (function(){const box=$('#fx');if(!box)return;
-  fetch(BASE+'data/features.json?v='+Math.floor(Date.now()/36e5)).then(r=>r.json()).then(list=>{
-    const li=i=>`<li>${esc(i.t)}${i.sub&&i.sub.length?`<ul>${i.sub.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}</li>`;
-    box.innerHTML=`<div class="fx-list" role="tablist" aria-label="ফিচারের অংশ" aria-orientation="vertical">${list.map((c,k)=>`<button role="tab" id="fxt${k}" aria-controls="fxp" aria-selected="${k===0}" tabindex="${k===0?0:-1}" data-k="${k}"><span class="gi" aria-hidden="true"><svg class="i"><use href="#i-${esc(c.svg||'ic'+Math.min(k,14))}"/></svg></span><span>${esc(c.title)}</span><span class="ct">${bn(c.items.length)}</span></button>`).join('')}</div>
+  const li=i=>`<li>${esc(i.t)}${i.sub&&i.sub.length?`<ul>${i.sub.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}</li>`;
+  const shotsOf=c=>c.shots||(c.shot?[c.shot]:[]);
+  let cleanup=()=>{};
+  function desktop(list){cleanup();
+    box.classList.remove('m');box.innerHTML=`<div class="fx-list" role="tablist" aria-label="ফিচারের অংশ" aria-orientation="vertical">${list.map((c,k)=>`<button role="tab" id="fxt${k}" aria-controls="fxp" aria-selected="${k===0}" tabindex="${k===0?0:-1}" data-k="${k}"><span class="gi" aria-hidden="true"><svg class="i"><use href="#i-${esc(c.svg||'ic'+Math.min(k,14))}"/></svg></span><span>${esc(c.title)}</span><span class="ct">${bn(c.items.length)}</span></button>`).join('')}</div>
       <div class="fx-phone"><div class="phone"><div class="scr" id="fxs"></div></div><div class="fx-dots" id="fxd"></div></div>
       <div class="fx-body" id="fxp" role="tabpanel" tabindex="0"></div>`;
     const tabs=[...box.querySelectorAll('[role=tab]')];let cur=0,si=0,timer=null,gen=0;
@@ -204,40 +280,84 @@ async function anyShot(n,th){return(await shotFor(th||curTheme(),n))||(await sho
     let vis=false;const restart=()=>{clearInterval(timer);timer=setInterval(()=>{if(!vis||D.hidden)return;const ss=shots(list[cur]);if(ss.length>1){si=(si+1)%ss.length;showShot()}},3800)};
     if('IntersectionObserver' in W)new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(box);
     REFRESH.push(showShot);pick(0);restart();
+    cleanup=()=>{clearInterval(timer);const k=REFRESH.indexOf(showShot);if(k>=0)REFRESH.splice(k,1)}}
+  function mobile(list){cleanup();box.classList.add('m');
+    box.innerHTML=`<p class="fxm-hint"><svg class="i" aria-hidden="true"><use href="#i-chev"/></svg>যে ফিচার দেখতে চান, সেটিতে চাপুন</p><div class="fxm">${list.map((c,k)=>`<div class="fxm-c" data-k="${k}">
+      <button class="fxm-h" type="button" aria-expanded="false" aria-controls="fxmb${k}"><span class="gi" aria-hidden="true"><svg class="i"><use href="#i-${esc(c.svg||'ic'+Math.min(k,14))}"/></svg></span>
+      <span class="fxm-t"><b>${esc(c.title)}</b>${c.desc?`<small>${esc(c.desc)}</small>`:''}</span><span class="fxm-x" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span></button>
+      <div class="fxm-b" id="fxmb${k}" hidden><div class="fxm-in">${shotsOf(c).length?`<div class="fxm-shots">${shotsOf(c).map(n=>`<div class="phone"><div class="scr" data-n="${n}"></div></div>`).join('')}</div>`:''}
+      <p class="fxm-n">${bn(c.items.length)}টি সুবিধা</p><ul class="ticks">${c.items.map(li).join('')}</ul></div></div></div>`).join('')}</div>`;
+    const fill=card=>card.querySelectorAll('.scr[data-n]').forEach(s=>anyShot(+s.dataset.n).then(u=>{s.innerHTML=u?img(u,+s.dataset.n,true):emptyScr()}));
+    const toggle=(card,open,instant)=>{const h=card.querySelector('.fxm-h'),b=card.querySelector('.fxm-b');if(open===(h.getAttribute('aria-expanded')==='true'))return;
+      h.setAttribute('aria-expanded',open);card.classList.toggle('open',open);
+      if(open){b.hidden=false;fill(card);if(!instant&&b.animate){const H=b.scrollHeight;b.animate([{height:'0px',opacity:0},{height:H+'px',opacity:1}],{duration:420,easing:'cubic-bezier(.22,.8,.24,1)'})}}
+      else{if(instant||!b.animate){b.hidden=true;return}const H=b.offsetHeight;const a=b.animate([{height:H+'px',opacity:1},{height:'0px',opacity:0}],{duration:300,easing:'ease'});a.onfinish=()=>{if(!card.classList.contains('open'))b.hidden=true}}};
+    const cards=[...box.querySelectorAll('.fxm-c')];
+    box.querySelector('.fxm').addEventListener('click',e=>{const h=e.target.closest('.fxm-h');if(!h)return;const card=h.parentElement,open=h.getAttribute('aria-expanded')!=='true';
+      cards.forEach(c=>c!==card&&toggle(c,false,true));toggle(card,open);
+      if(open)setTimeout(()=>{const y=card.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68)-12;scrollTo({top:y,behavior:'smooth'})},60)});
+    toggle(cards[0],true,true);
+    const re=()=>cards.forEach(c=>{if(c.classList.contains('open'))fill(c)});REFRESH.push(re);
+    cleanup=()=>{const k=REFRESH.indexOf(re);if(k>=0)REFRESH.splice(k,1)}}
+  fetch(BASE+'data/features.json?v='+Math.floor(Date.now()/36e5)).then(r=>r.json()).then(list=>{
+    const mq=matchMedia('(max-width:760px)'),render=()=>mq.matches?mobile(list):desktop(list);render();
+    mq.addEventListener?mq.addEventListener('change',render):mq.addListener(render);
   }).catch(()=>{box.innerHTML='<p class="gempty">ফিচার তালিকা লোড করা যায়নি। পেজটি রিফ্রেশ করুন।</p>'})})();
 
-/* ================= স্ক্রিনশট গ্যালারি + লাইটবক্স ================= */
-(function(){const trk=$('#gtrack');if(!trk)return;let th=null,items=[],gen=0,loaded=false;
-  const segs=$$('#screenshots .seg button');
-  const setSeg=()=>segs.forEach(b=>b.setAttribute('aria-pressed',b.dataset.th===(th||curTheme())));
+/* ================= স্ক্রিনশট স্লাইডার (আগের মতো) =================
+   অসীম লুপ: প্রতিটি ফোন ১ সেকেন্ডে সরে আসে, তারপর ~৩ সেকেন্ডের লোডিং-বার (সাদা → সবুজ) পূর্ণ হলে পরেরটি।
+   টেনে/সোয়াইপ/চাকা/তীরচিহ্নে সরানো যায়; মাউস রাখলে বড় হয়ে থামে; চাপ দিলে ধরে রাখে (আবার চাপলে ছাড়ে)। */
+(function(){const trk=$('#trk');if(!trk)return;const vp=trk.parentElement,barEl=$('#sbar'),cap=$('#scap');
+  const bar={ps:'',ss:'',set(p,st=''){if(!barEl)return;const v=p.toFixed(3);if(v!==this.ps){barEl.style.setProperty('--p',v);this.ps=v}if(st!==this.ss){if(st)barEl.dataset.s=st;else delete barEl.dataset.s;this.ss=st}}};
+  let th=null,n=0,items=[],i=0,fetched=false,gen=0,curK=null;
+  const segs=$$('#screenshots .seg button'),setSeg=()=>segs.forEach(b=>b.setAttribute('aria-pressed',b.dataset.th===(th||curTheme())));
+  const build=list=>{n=list.length;const h=list.map(([k,u])=>`<div class="sp" data-n="${k}">${img(u,k)}</div>`).join('');trk.innerHTML=h+h+h;items=[...trk.children];i=n};
+  let tx=0,down=null,nt,wheeling=false,wt;const MVT=1000,FILL=2800,GRN=200;let mvLeft=0,p=0,grn=0;
+  const cxl=el=>el.offsetLeft+el.offsetWidth/2,mid=()=>vp.clientWidth/2;
+  const showCap=k=>{if(!cap||k===curK)return;curK=k;cap.classList.add('chg');setTimeout(()=>{const c=CAP[k]||['স্ক্রিনশট '+bn(k),''];cap.querySelector('b').textContent=c[0];cap.querySelector('small').textContent=c[1]||'';cap.classList.remove('chg')},180)};
+  const mark=()=>{let b=0,bd=1e9;items.forEach((el,k)=>{const d=Math.abs(cxl(el)+tx-mid());if(d<bd){bd=d;b=k}});items.forEach((el,k)=>el.classList.toggle('on',k===b));if(items[b])showCap(+items[b].dataset.n);return b};
+  const apply=()=>{trk.style.transform=`translate3d(${tx}px,0,0)`};
+  const place=()=>{if(!n)return;tx=mid()-cxl(items[i]);apply();mark()};
+  const norm=()=>{if(!n)return;if(i<n||i>=2*n){const i1=n+(((i-n)%n)+n)%n;tx+=cxl(items[i])-cxl(items[i1]);i=i1;trk.classList.add('still');apply();void trk.offsetWidth;trk.classList.remove('still');mark()}};
+  const sched=()=>{clearTimeout(nt);nt=setTimeout(norm,1100)};
+  const readX=el=>{const t=getComputedStyle(el).transform;if(!t||t==='none')return 0;const M=W.DOMMatrix||W.WebKitCSSMatrix;if(M)return new M(t).m41;const m=/matrix\(([^)]+)\)/.exec(t);return m?parseFloat(m[1].split(',')[4])||0:0};
+  const freeze=()=>{clearTimeout(nt);tx=readX(trk);trk.classList.add('still');apply();norm();trk.classList.add('still')};
+  const restart=()=>{mvLeft=MVT;p=0;grn=0};
+  const settle=proj=>{let b=0,bd=1e9;items.forEach((el,k)=>{const d=Math.abs(cxl(el)+proj-mid());if(d<bd){bd=d;b=k}});i=b;trk.classList.remove('still');place();sched();restart()};
+  addEventListener('resize',()=>{trk.classList.add('still');place();void trk.offsetWidth;trk.classList.remove('still')});
+  const held=()=>!!trk.querySelector('.hold,.hv'),clearHold=()=>items.forEach(x=>x.classList.remove('hold','hv'));
+  trk.addEventListener('pointerover',e=>{if(e.pointerType!=='mouse'||down)return;const el=e.target.closest('.sp');if(el&&!el.sup)el.classList.add('hv')});
+  trk.addEventListener('pointerout',e=>{if(e.pointerType!=='mouse')return;const el=e.target.closest('.sp');if(!el||(e.relatedTarget&&el.contains(e.relatedTarget)))return;el.classList.remove('hv');el.sup=false});
+  vp.addEventListener('pointerdown',e=>{if(!n)return;if(e.button!==0&&e.pointerType==='mouse')return;down={x:e.clientX,x0:e.clientX,tx:0,id:e.pointerId,el:e.target.closest('.sp'),moved:false,h:[]}});
+  vp.addEventListener('pointermove',e=>{if(!down||e.pointerId!==down.id)return;
+    if(!down.moved&&Math.abs(e.clientX-down.x0)>8){down.moved=true;freeze();down.tx=tx;down.x=e.clientX;down.h=[[performance.now(),e.clientX]];vp.setPointerCapture(e.pointerId);vp.classList.add('dr');clearHold()}
+    if(down.moved){tx=down.tx+(e.clientX-down.x);apply();mark();const now=performance.now();down.h.push([now,e.clientX]);while(down.h.length>2&&now-down.h[0][0]>120)down.h.shift()}});
+  const up=e=>{if(!down||e.pointerId!==down.id)return;const d=down;down=null;vp.classList.remove('dr');
+    if(d.moved){const a=d.h[0],b=d.h[d.h.length-1],v=b[0]>a[0]?(b[1]-a[1])/(b[0]-a[0]):0;settle(tx+Math.max(-450,Math.min(450,v*260)))}
+    else if(d.el&&e.type==='pointerup'){if(d.el.classList.contains('hold')){d.el.classList.remove('hold','hv');d.el.sup=true}else{clearHold();d.el.classList.add('hold')}}};
+  vp.addEventListener('pointerup',up);vp.addEventListener('pointercancel',up);
+  let ts=null;vp.addEventListener('touchstart',e=>{const t=e.touches[0];ts={x:t.clientX,y:t.clientY,l:null}},{passive:true});
+  vp.addEventListener('touchmove',e=>{if(!ts)return;const t=e.touches[0],dx=t.clientX-ts.x,dy=t.clientY-ts.y;if(ts.l===null&&(Math.abs(dx)>3||Math.abs(dy)>3))ts.l=Math.abs(dx)>=Math.abs(dy)?'x':'y';if(ts.l==='x'&&e.cancelable)e.preventDefault()},{passive:false});
+  vp.addEventListener('touchend',()=>{ts=null});vp.addEventListener('touchcancel',()=>{ts=null});
+  vp.addEventListener('contextmenu',e=>e.preventDefault());vp.addEventListener('dragstart',e=>e.preventDefault());
+  D.addEventListener('pointerdown',e=>{if(!e.target.closest('#trk')&&held())clearHold()});
+  vp.addEventListener('wheel',e=>{if(!n)return;if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(!wheeling){wheeling=true;freeze();clearHold()}tx-=e.deltaX;apply();mark();clearTimeout(wt);wt=setTimeout(()=>{wheeling=false;settle(tx)},140)},{passive:false});
+  vp.addEventListener('keydown',e=>{if(!n)return;if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();freeze();clearHold();i+=e.key==='ArrowRight'?1:-1;trk.classList.remove('still');place();sched();restart()});
   const load=()=>{const g=++gen,t=th||curTheme(),ks=[];for(let k=1;k<=SHOT_MAX;k++)ks.push(k);setSeg();
-    Promise.all(ks.map(k=>shotFor(t,k).then(u=>u?[k,u]:null))).then(r=>{if(g!==gen)return;items=r.filter(Boolean);
-      trk.innerHTML=items.length?items.map(([k,u],i)=>`<figure class="gitem" data-i="${i}"><div class="phone"><div class="scr">${img(u,k,true)}</div></div><figcaption>${esc((CAP[k]||['স্ক্রিনশট '+bn(k)])[0])}${CAP[k]&&CAP[k][1]?`<small>${esc(CAP[k][1])}</small>`:''}</figcaption></figure>`).join(''):`<p class="gempty">এই থিমের স্ক্রিনশট এখনো যোগ করা হয়নি।</p>`;
-      trk.scrollLeft=0;navState()})};
+    Promise.all(ks.map(k=>shotFor(t,k).then(u=>u?[k,u]:null))).then(r=>{if(g!==gen)return;const list=r.filter(Boolean);curK=null;build(list);vp.hidden=!list.length;if(list.length){trk.classList.add('still');place();void trk.offsetWidth;trk.classList.remove('still');restart()}})};
   segs.forEach(b=>b.onclick=()=>{th=b.dataset.th;load()});
-  REFRESH.push(()=>{if(loaded&&!th)load()});
-  if('IntersectionObserver' in W)new IntersectionObserver((e,o)=>{if(e.some(z=>z.isIntersecting)){loaded=true;o.disconnect();load()}},{rootMargin:'800px 0px'}).observe(trk);else{loaded=true;load()}
-  const step=()=>{const f=trk.querySelector('.gitem');return f?f.getBoundingClientRect().width+20:300};
-  const pv=$('#screenshots .gnav .prev'),nx=$('#screenshots .gnav .next');
-  const navState=()=>{if(!pv)return;pv.disabled=trk.scrollLeft<8;nx.disabled=trk.scrollLeft+trk.clientWidth>=trk.scrollWidth-8};
-  pv&&(pv.onclick=()=>trk.scrollBy({left:-step()*2,behavior:'smooth'}));nx&&(nx.onclick=()=>trk.scrollBy({left:step()*2,behavior:'smooth'}));
-  trk.addEventListener('scroll',()=>requestAnimationFrame(navState),{passive:true});addEventListener('resize',navState);
-  // মাউসে টেনে স্ক্রল
-  let dr=null;trk.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;dr={x:e.clientX,s:trk.scrollLeft,m:false}});
-  addEventListener('pointermove',e=>{if(!dr)return;const dx=e.clientX-dr.x;if(Math.abs(dx)>5){dr.m=true;trk.style.scrollSnapType='none';trk.scrollLeft=dr.s-dx}});
-  addEventListener('pointerup',()=>{if(dr&&dr.m){trk.style.scrollSnapType='';trk._drag=Date.now()}dr=null});
-  trk.addEventListener('dragstart',e=>e.preventDefault());
-  // লাইটবক্স
-  let lb=null,li=0;const show=()=>{const[k,u]=items[li];lb.querySelector('img').src=u;lb.querySelector('img').alt=(CAP[k]||['স্ক্রিনশট'])[0];lb.querySelector('figcaption').textContent=`${(CAP[k]||['স্ক্রিনশট '+bn(k)])[0]} · ${bn(li+1)}/${bn(items.length)}`};
-  const close=()=>{if(!lb)return;lb.remove();lb=null;root.classList.remove('um-open');last&&last.focus()};let last=null;
-  const open=i=>{li=i;last=D.activeElement;lb=D.createElement('div');lb.className='lb';lb.setAttribute('role','dialog');lb.setAttribute('aria-modal','true');lb.setAttribute('aria-label','স্ক্রিনশট');
-    lb.innerHTML=`<figure style="margin:0"><img alt=""><figcaption></figcaption></figure><button class="x" type="button" aria-label="বন্ধ করুন"><svg class="i"><use href="#i-x"/></svg></button><button class="l" type="button" aria-label="আগের"><svg class="i"><use href="#i-arrow"/></svg></button><button class="r" type="button" aria-label="পরের"><svg class="i"><use href="#i-arrow"/></svg></button>`;
-    D.body.appendChild(lb);root.classList.add('um-open');show();lb.querySelector('.x').focus();
-    lb.onclick=e=>{if(e.target.closest('.x')||e.target===lb)close();else if(e.target.closest('.l')){li=(li-1+items.length)%items.length;show()}else if(e.target.closest('.r')){li=(li+1)%items.length;show()}};
-    let sx=null;lb.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});lb.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50){li=(li+(dx<0?1:-1)+items.length)%items.length;show()}sx=null})};
-  addEventListener('keydown',e=>{if(!lb)return;if(e.key==='Escape')close();if(e.key==='ArrowRight'){li=(li+1)%items.length;show()}if(e.key==='ArrowLeft'){li=(li-1+items.length)%items.length;show()}});
-  trk.addEventListener('click',e=>{if(trk._drag&&Date.now()-trk._drag<300)return;const f=e.target.closest('.gitem');if(f)open(+f.dataset.i)});
-  trk.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();trk.scrollBy({left:step(),behavior:'smooth'})}if(e.key==='ArrowLeft'){e.preventDefault();trk.scrollBy({left:-step(),behavior:'smooth'})}})})();
+  REFRESH.push(()=>{if(fetched&&!th)load()});
+  if('IntersectionObserver' in W)new IntersectionObserver((e,o)=>{if(e.some(z=>z.isIntersecting)){fetched=true;o.disconnect();load()}},{rootMargin:'900px 0px'}).observe(vp);else{fetched=true;load()}
+  let vis=true;if('IntersectionObserver' in W)new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(vp);
+  let lt=performance.now();
+  requestAnimationFrame(function f(now){const dt=Math.min(now-lt,100);lt=now;
+    if(n&&!D.hidden&&vis){
+      if((down&&down.moved)||wheeling){bar.set(0,'dim');restart()}
+      else if(held()||(down&&!down.moved)){bar.set(p,'pause')}
+      else if(mvLeft>0){mvLeft-=dt;bar.set(0)}
+      else if(grn>0){grn-=dt;bar.set(1,'done');if(grn<=0){i++;place();sched();restart()}}
+      else{p+=dt/FILL;if(p>=1){p=1;grn=GRN;bar.set(1,'done')}else bar.set(p)}}
+    requestAnimationFrame(f)})})();
 
 /* ================= মোট ডাউনলোড ================= */
 const DL={gh:0,sb:0};
@@ -361,6 +481,14 @@ async function reviews(){if(!SB_OK||!$('#reviews'))return;try{const d=await rpc(
 
 /* ================= প্রশ্নোত্তর: একটি খুললে বাকিগুলো বন্ধ ================= */
 $$('#acc details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$$('#acc details').forEach(o=>{if(o!==d)o.open=false})}));
+
+/* ================= প্রবেশ ও স্ক্রল-অ্যানিমেশন ================= */
+(function(){const sky=$('#sky');if(sky){const go=()=>{if(waiting()){setTimeout(go,120);return}requestAnimationFrame(()=>sky.classList.add('in'))};go()}
+  const els=$$('.sec .sh,.fx,.shots,.dl>*,.clog,.faq-grid>*,.band,#reviews .rvs');
+  if(!('IntersectionObserver' in W)){return}
+  els.forEach((el,k)=>{el.setAttribute('data-rv','');el.style.transitionDelay=(k%2)*.08+'s'});
+  const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('shown');io.unobserve(en.target)}}),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
+  els.forEach(el=>io.observe(el))})();
 
 prayerInit();
 const REL=releases();stats();reviews();
