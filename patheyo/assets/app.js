@@ -135,9 +135,9 @@ const SKY=(function(){
     const H0=c<=-1?Math.PI:c>=1?0:Math.acos(c),top=90-Math.abs(lat-q.dec/R);
     const az=mod(Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(p)-Math.tan(q.dec)*Math.cos(p))/R+180,360);
     return{H,alt,H0,top,az,dec:q.dec,p}}
-  let HZ=90,TOP=9,GK='';
+  let HZ=90,TOP=9,GK='',SW=1000,SH=1000;
   // মোবাইলে ফোনগুলো আকাশের মাঝখান জুড়ে থাকে, তাই সূর্যের পথ ফোনের ওপরের খোলা আকাশে: বাঁ দিকে একটু নিচে উঠে, মাঝে ওপরে, ডান দিকে একটু নিচে অস্ত
-  function geom(){const sky=$('#sky'),st=$('.stagewrap');if(!sky)return;const H=sky.offsetHeight||1;
+  function geom(){const sky=$('#sky'),st=$('.stagewrap');if(!sky)return;const H=sky.offsetHeight||1;SW=sky.offsetWidth||1000;SH=H;
     if(matchMedia('(max-width:760px)').matches&&st){const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68;
       // মোবাইলে সূর্যের পথ "পাথেয়" লেখার চারপাশে একটি চ্যাপ্টা বাঁক: বাঁ দিকে লেখার মাঝামাঝি উচ্চতায় ওঠে, লেখার ঠিক ওপর দিয়ে যায়, ডান দিকে একই উচ্চতায় ডোবে
       const h1=$('.hero h1'),sr=sky.getBoundingClientRect(),hr=h1?h1.getBoundingClientRect():null;
@@ -145,9 +145,14 @@ const SKY=(function(){
       if(HZ-TOP<2.5)HZ=TOP+2.5}else{
       // পিসিতে: পুরো চওড়া জুড়ে বড় খিলান — বাঁ কিনারে ডাউনলোড-সারির উচ্চতায় ওঠে, হেডারের ঠিক নিচ দিয়ে যায়, ডান কিনারে একই উচ্চতায় ডোবে
       const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68,sr=sky.getBoundingClientRect(),m=$('.hero .cta')||$('.hero-meta');
-      if(m){const r=m.getBoundingClientRect();HZ=(r.top+r.height*.1-sr.top)/H*100;TOP=(hdr+24)/H*100;if(HZ-TOP<20){HZ=62;TOP=11}}else{HZ=62;TOP=11}}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
+      if(m){const r=m.getBoundingClientRect();HZ=(r.top+r.height*.1-sr.top)/H*100;TOP=(hdr+24)/H*100;if(HZ-TOP<20){HZ=62;TOP=11}}else{HZ=62;TOP=11}}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)+'/'+SW}
   addEventListener('resize',()=>{clearTimeout(geom._t);geom._t=setTimeout(()=>{geom();last&&update(last)},250)});
-  const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+(matchMedia('(max-width:760px)').matches?46:47)*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
+  // সূর্য/চাঁদের পথ = একটি বৃত্তের ওপরের অংশ (পিক্সেলে সত্যিকারের বৃত্ত): বাঁ দিগন্ত → মাথার ওপরের চূড়া → ডান দিগন্ত, মাঝে কোনো ভাঁজ বা উঁচু-নিচু নেই।
+  // কোথায় আছে তা ঠিক হয় সূর্যের ঘণ্টা-কোণ দিয়ে (উদয় −১ … দুপুর ০ … অস্ত +১); দিগন্তের নিচে গেলে একই বৃত্ত ধরে একটু নিচে নামে।
+  const place=b=>{const f=b.H0>0?b.H/b.H0:2,mob=matchMedia('(max-width:760px)').matches,
+      a=(mob?46:47)/100*SW,s=Math.min(Math.max((HZ-TOP)/100*SH,1),a),Rr=(a*a+s*s)/(2*s),cx=SW/2,cy=TOP/100*SH+Rr,
+      th=Math.max(-1.5,Math.min(1.5,f))*Math.asin(Math.min(a/Rr,1)),px=cx+Rr*Math.sin(th),py=cy-Rr*Math.cos(th);
+    return{x:px/SW*100,y:py/SH*100,up:Math.abs(f)<=1}};
   // আকাশের রং: সূর্যের উচ্চতা → উপর/মাঝ/নিচ ও দিগন্তের আভা
   const ST=[[-90,'#020817','#071634','#0f2856',[0,0,0,0]],[-14,'#030c22','#0c1f49','#1d3a72',[70,80,170,.18]],[-8,'#0f1a45','#2f3a78','#7d5f95',[255,130,120,.32]],
     [-3,'#1e2c66','#5d5491','#e08f86',[255,150,110,.55]],[0,'#2c4a90','#9a7aa3','#ffb98a',[255,175,115,.7]],[4,'#4a84cc','#a7c5e6','#ffd7ab',[255,205,150,.55]],
