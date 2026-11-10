@@ -102,12 +102,17 @@ const SKY=(function(){
     const H0=c<=-1?Math.PI:c>=1?0:Math.acos(c),top=90-Math.abs(lat-q.dec/R);
     const az=mod(Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(p)-Math.tan(q.dec)*Math.cos(p))/R+180,360);
     return{H,alt,H0,top,az,dec:q.dec,p}}
-  const HZ=90,TOP=9;
+  let HZ=90,TOP=9,GK='';
+  // মোবাইলে ফোনগুলো আকাশের মাঝখান জুড়ে থাকে, তাই সূর্যের পথ ফোনের ওপরের খোলা আকাশে: বাঁ দিকে একটু নিচে উঠে, মাঝে ওপরে, ডান দিকে একটু নিচে অস্ত
+  function geom(){const sky=$('#sky'),st=$('.stagewrap');if(!sky)return;const H=sky.offsetHeight||1;
+    if(matchMedia('(max-width:760px)').matches&&st){const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68;
+      HZ=Math.max(18,(st.offsetTop+st.offsetHeight*.12)/H*100);TOP=Math.min(HZ-8,(hdr+40)/H*100)}else{HZ=90;TOP=9}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
+  addEventListener('resize',()=>{clearTimeout(geom._t);geom._t=setTimeout(()=>{geom();last&&update(last)},250)});
   const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+46*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
   // আকাশের রং: সূর্যের উচ্চতা → উপর/মাঝ/নিচ ও দিগন্তের আভা
   const ST=[[-90,'#020817','#071634','#0f2856',[0,0,0,0]],[-14,'#030c22','#0c1f49','#1d3a72',[70,80,170,.18]],[-8,'#0f1a45','#2f3a78','#7d5f95',[255,130,120,.32]],
     [-3,'#1e2c66','#5d5491','#e08f86',[255,150,110,.55]],[0,'#2c4a90','#9a7aa3','#ffb98a',[255,175,115,.7]],[4,'#4a84cc','#a7c5e6','#ffd7ab',[255,205,150,.55]],
-    [10,'#3e88da','#94c6f0','#ecf2ff',[255,236,200,.35]],[25,'#2f7fe0','#7fbdf3','#dceeff',[255,250,235,.22]],[90,'#2470d8','#6eb2f2','#cfe7ff',[255,255,255,.18]]];
+    [10,'#6fbdf0','#a4dbfb','#f2f6f4',[255,236,200,.32]],[25,'#86d4ff','#a2defe','#f2faff',[255,250,235,.18]],[90,'#82d2ff','#9fdcff','#f4fbff',[255,255,255,.14]]];
   const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
   const rgb=c=>`rgb(${c.slice(0,3).map(v=>Math.round(v)).join(',')})`,rgba=c=>`rgba(${c.slice(0,3).map(v=>Math.round(v)).join(',')},${(+c[3]).toFixed(3)})`;
@@ -124,16 +129,19 @@ const SKY=(function(){
     if(waxing)return`M${c} ${c-r} A${r} ${r} 0 0 1 ${c} ${c+r} A${rx} ${r} 0 0 ${big?1:0} ${c} ${c-r}Z`;
     return`M${c} ${c-r} A${r} ${r} 0 0 0 ${c} ${c+r} A${rx} ${r} 0 0 ${big?0:1} ${c} ${c-r}Z`}
   let WX=null,last=null;
-  function update(now){now=now||new Date();last=now;const sky=$('#sky');if(!sky||!LOC)return;const lat=+LOC.lat,lng=+LOC.lng;
+  function update(now){now=now||new Date();last=now;const sky=$('#sky');if(!sky||!LOC)return;if(!GK)geom();const lat=+LOC.lat,lng=+LOC.lng;
     const se=sunEq(now),sb=pos(se,now,lat,lng,-.833),me=moonEq(now),mb=pos(me,now,lat,lng,.125);
     const ov=WX?WX.over:0;                               // ০ = পরিষ্কার … ১ = ঘন মেঘ/বৃষ্টি
-    const P=palette(sb.alt),g=x=>mix(x,grey(x),ov*.85),dk=x=>mix(x,[0,0,0],ov*.18);
-    const s1=dk(g(P.s1)),s2=dk(g(P.s2)),s3=dk(g(P.s3)),st=sky.style;
+    // মেঘলা/বৃষ্টির আকাশ: দিনে স্লেট-ধূসর, বৃষ্টিতে আরও গাঢ়, রাতে প্রায় কালচে ধূসর
+    const P=palette(sb.alt),rainy=WX&&WX.rain,dayw=Math.min(Math.max((sb.alt+6)/12,0),1);
+    const SL=rainy?[[84,96,112],[110,121,136],[150,160,172]]:[[124,137,154],[152,163,177],[194,201,211]],SN=[[14,18,26],[24,30,40],[40,48,60]];
+    const slate=k=>mix(SN[k],SL[k],dayw);
+    const s1=mix(P.s1,slate(0),ov),s2=mix(P.s2,slate(1),ov),s3=mix(P.s3,slate(2),ov),st=sky.style;
     st.setProperty('--s1',rgb(s1));st.setProperty('--s2',rgb(s2));st.setProperty('--s3',rgb(s3));
     const sp=place(sb);st.setProperty('--gc',rgba([...P.g.slice(0,3),P.g[3]*(1-ov*.85)]));st.setProperty('--gx',Math.min(Math.max(sp.x,0),100).toFixed(1)+'%');
     const light=lum(s2)>.34;st.setProperty('--sfg',light?'#061a40':'#ffffff');st.setProperty('--sfg2',light?'rgba(6,26,64,.82)':'rgba(255,255,255,.86)');
     st.setProperty('--star',(Math.min(Math.max((-sb.alt-3)/9,0),1)*(1-ov)).toFixed(2));
-    const h=$('#hdr');h&&h.style.setProperty('--sky-fg',light?'#061a40':'#ffffff');
+    const h=$('#hdr');h&&h.style.setProperty('--sky-fg',light?'#061a40':'#ffffff');sky.classList.toggle('lt',light);
     // সূর্য: মেঘ ঘন হলে ঢাকা পড়ে
     const sun=$('#sun');if(sun){sun.style.setProperty('--x',sp.x.toFixed(2)+'%');sun.style.setProperty('--y',sp.y.toFixed(2)+'%');
       sun.style.setProperty('--o',(Math.min(Math.max((sb.alt+2.5)/3.5,0),1)*Math.max(0,1-ov*1.15)).toFixed(2));
@@ -143,7 +151,7 @@ const SKY=(function(){
     const moon=$('#moon');if(moon){moon.style.setProperty('--x',mp.x.toFixed(2)+'%');moon.style.setProperty('--y',mp.y.toFixed(2)+'%');
       const vis=(mp.up?Math.min(Math.max((mb.alt+1.5)/3,0),1):0)*(sb.alt>6?.5:1)*(k<.03?0:1)*Math.max(0,1-ov*1.1);moon.style.setProperty('--o',vis.toFixed(2));
       const ml=$('#mlit');ml&&ml.setAttribute('d',moonPath(k,waxing))}
-    sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2));STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
+    sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2)+GK);STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
     const si=$('#suninfo');if(si){const up=sb.alt>=-.83;
       const s1t=up?`<span><i></i>সূর্য এখন <b>${dir(sb.az)}</b> আকাশে, <b>${bn(Math.round(sb.alt))}°</b> উচ্চতায়</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sb.alt))}°</b> নিচে</span>`;
       const s2t=(mb.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ ${dir(mb.az)} আকাশে · <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
@@ -152,53 +160,47 @@ const SKY=(function(){
   return{update,setWeather,get:()=>WX}})();
 
 /* ================= মেঘ =================
-   ক্যানভাসে আঁকা নরম মেঘ (একবার আঁকা হয়, তারপর শুধু সরে) — দূরের মেঘ ছোট ও ধীর, কাছের মেঘ বড় ও দ্রুত। */
+   আসল আকাশের ছবি থেকে কেটে নেওয়া স্বচ্ছ মেঘের স্তর (assets/clouds.webp) — জোড়াহীনভাবে একটানা ডান দিকে ভেসে যায়।
+   আবহাওয়া অনুযায়ী স্তর বাড়ে-কমে: পরিষ্কার = ১টি হালকা স্তর, আংশিক মেঘলা = ২টি, মেঘলা/বৃষ্টি = ৩টি ঘন ও ধূসর স্তর। */
 const CLOUDS=(function(){const box=$('#clouds');if(!box)return{set(){},tint(){}};
-  let want=-1,anims=[];const R=Math.random;
-  function sprite(w,h,dark){const dpr=Math.min(devicePixelRatio||1,1.5),c=D.createElement('canvas');c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.width=w+'px';c.style.height=h+'px';
-    const x=c.getContext('2d');x.scale(dpr,dpr);const n=10+Math.round(R()*8);
-    for(let i=0;i<n;i++){const cx=w*(.14+.72*R()),cy=h*(.5+(R()-.35)*.38),r=h*(.2+.24*R())*(1-Math.abs(cx/w-.5)*.9);
-      const g=x.createRadialGradient(cx,cy-r*.25,r*.08,cx,cy,r);const top=dark?'rgba(222,228,238,':'rgba(255,255,255,';
-      g.addColorStop(0,top+'.95)');g.addColorStop(.55,top+'.72)');g.addColorStop(.8,(dark?'rgba(188,198,214,':'rgba(236,242,250,')+'.35)');g.addColorStop(1,'rgba(255,255,255,0)');
-      x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,6.2832);x.fill()}
-    // নিচের দিকটা একটু ছায়াময় — আসল মেঘের মতো
-    x.globalCompositeOperation='source-atop';const sh=x.createLinearGradient(0,h*.35,0,h);sh.addColorStop(0,'rgba(0,0,0,0)');sh.addColorStop(1,dark?'rgba(70,80,100,.35)':'rgba(120,140,170,.22)');x.fillStyle=sh;x.fillRect(0,0,w,h);
-    return c}
-  function set(n,heavy){if(n===want)return;want=n;anims.forEach(a=>a.cancel());anims=[];box.innerHTML='';
-    const W=box.clientWidth||innerWidth,Hh=box.clientHeight||700,mob=W<700;
-    for(let i=0;i<n;i++){const layer=i%3,s=(layer===0?.55:layer===1?.8:1.05)*(heavy?1.35:1)*(mob?.62:1);
-      const w=Math.round((260+R()*260)*s),h=Math.round(w*(.34+R()*.14)),c=sprite(w,h,heavy);
-      const y=Hh*(.04+R()*(heavy?.62:.5));c.style.top=y+'px';c.style.opacity=(layer===0?.55:layer===1?.75:.92)*(heavy?1:.92);box.appendChild(c);
-      const dur=(layer===0?210:layer===1?150:100)*(.8+R()*.5)*1000*(mob?.75:1);
-      const a=c.animate([{transform:`translate3d(${-w-40}px,0,0)`},{transform:`translate3d(${W+40}px,0,0)`}],{duration:dur,iterations:Infinity,easing:'linear'});
-      a.currentTime=R()*dur;anims.push(a)}}
-  let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const n=want;want=-1;set(n,box.dataset.h==='1')},400)});
-  // দিনের আলো অনুযায়ী মেঘের রং: রাতে গাঢ়, গোধূলিতে উষ্ণ
+  const SRC=BASE+'assets/clouds.webp',AR=1800/1005;let level=-1,heavy=false,anims=[];
+  // [উচ্চতা (আকাশের %), স্বচ্ছতা, সময় (সেকেন্ড), উল্টানো, ওপর থেকে দূরত্ব %]
+  const L=[[62,.95,170,false,-2],[44,.6,260,true,6],[88,.85,120,false,-6]];
+  function build(){anims.forEach(a=>a.cancel());anims=[];box.innerHTML='';if(level<1)return;
+    const W=box.clientWidth||innerWidth,H=box.clientHeight||700,mob=W<700;
+    for(let i=0;i<Math.min(level,3);i++){const [hp,op,dur,flip,top]=L[i],h=Math.round(H*(mob?hp*.62:hp)/100),tw=Math.round(h*AR),n=Math.ceil(W/tw)+1;
+      const d=D.createElement('div');d.className='cl';d.style.cssText=`top:${top}%;height:${h}px;width:${tw*n}px;background-size:${tw}px ${h}px;opacity:${(heavy?Math.min(1,op+.15):op).toFixed(2)};${flip?'transform:scaleX(-1)':''}`;
+      d.style.backgroundImage=`url(${SRC})`;const w=D.createElement('div');w.className='clw';w.appendChild(d);box.appendChild(w);
+      const a=w.animate([{transform:'translate3d(0,0,0)'},{transform:`translate3d(${flip?'':'-'}${tw}px,0,0)`}],{duration:dur*1000*(mob?.8:1),iterations:Infinity,easing:'linear'});
+      a.currentTime=Math.random()*dur*1000;anims.push(a)}}
+  function set(n,h){const lv=n>=10?3:n>=6?2:1;if(lv===level&&!!h===heavy)return;level=lv;heavy=!!h;box.classList.toggle('heavy',heavy);build()}
+  let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(build,400)});
+  // দিনের আলো অনুযায়ী রং: রাতে চাঁদের আলোয় গাঢ় নীল-ধূসর, গোধূলিতে উষ্ণ, বৃষ্টিতে ধূসর
   function tint(alt,ov){const night=Math.min(Math.max((-alt+2)/10,0),1),dusk=Math.max(0,1-Math.abs(alt-1)/7);
-    box.style.setProperty('--cf',`brightness(${(1-night*.68-ov*.12).toFixed(2)}) sepia(${(dusk*.45).toFixed(2)}) saturate(${(1+dusk*.6).toFixed(2)})`);
-    box.style.setProperty('--co',(.92-night*.3).toFixed(2))}
+    box.style.setProperty('--cf',`brightness(${(1-night*.62-ov*.42).toFixed(2)}) saturate(${Math.max(0,1-ov*.95+dusk*.5).toFixed(2)}) contrast(${(1+ov*.12).toFixed(2)}) sepia(${(dusk*.4).toFixed(2)})`);
+    box.style.setProperty('--co',(.95-night*.3).toFixed(2))}
   D.addEventListener('visibilitychange',()=>anims.forEach(a=>D.hidden?a.pause():a.play()));
-  return{set:(n,h)=>{box.dataset.h=h?'1':'';set(n,h)},tint}})();
+  return{set,tint}})();
 
 /* ================= বৃষ্টি ও বজ্রপাত ================= */
 const RAIN=(function(){const cv=$('#rain');if(!cv)return{set(){}};let x;try{x=cv.getContext('2d')}catch{}if(!x)return{set(){}};
   let on=false,drops=[],w=0,h=0,raf=0,lf=0,storm=false,ft=0,snow=false;
   const size=()=>{const r=cv.getBoundingClientRect();w=r.width;h=r.height;cv.width=Math.round(w);cv.height=Math.round(h)};
-  const mk=()=>({x:Math.random()*(w+200)-100,y:Math.random()*h,l:snow?2+Math.random()*2.5:10+Math.random()*16,v:snow?40+Math.random()*50:520+Math.random()*380,a:snow?.5+Math.random()*.4:.18+Math.random()*.3});
+  const mk=()=>({x:Math.random()*(w+200)-100,y:Math.random()*h,l:snow?2+Math.random()*2.5:16+Math.random()*20,v:snow?40+Math.random()*50:620+Math.random()*420,a:snow?.5+Math.random()*.4:.28+Math.random()*.35});
   function loop(t){raf=requestAnimationFrame(loop);if(D.hidden||t-lf<30)return;const dt=Math.min((t-lf)/1000,.05);lf=t;x.clearRect(0,0,w,h);
     x.lineCap='round';for(const d of drops){d.y+=d.v*dt;d.x+=(snow?Math.sin(t/900+d.l)*12:-d.v*.18)*dt;if(d.y>h+20){d.y=-20;d.x=Math.random()*(w+200)-100}
-      if(snow){x.fillStyle=`rgba(255,255,255,${d.a})`;x.beginPath();x.arc(d.x,d.y,d.l,0,6.2832);x.fill()}else{x.strokeStyle=`rgba(225,235,250,${d.a})`;x.lineWidth=1;x.beginPath();x.moveTo(d.x,d.y);x.lineTo(d.x-d.l*.18,d.y-d.l);x.stroke()}}
+      if(snow){x.fillStyle=`rgba(255,255,255,${d.a})`;x.beginPath();x.arc(d.x,d.y,d.l,0,6.2832);x.fill()}else{x.strokeStyle=`rgba(232,238,248,${d.a})`;x.lineWidth=1.3;x.beginPath();x.moveTo(d.x,d.y);x.lineTo(d.x-d.l*.18,d.y-d.l);x.stroke()}}
     if(storm&&t>ft){ft=t+6000+Math.random()*12000;const f=$('#flash');if(f){f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}}}
   function set(intensity,isStorm,isSnow){storm=!!isStorm;snow=!!isSnow;if(intensity<=0){on=false;cv.classList.remove('on');setTimeout(()=>{if(!on){cancelAnimationFrame(raf);raf=0;x.clearRect(0,0,w,h)}},1600);return}
-    on=true;size();const n=Math.round(Math.min(380,(snow?60:90)+intensity*90)*(w<700?.55:1));drops=Array.from({length:n},mk);cv.classList.add('on');if(!raf){lf=performance.now();raf=requestAnimationFrame(loop)}}
+    on=true;size();const n=Math.round(Math.min(520,(snow?60:140)+intensity*130)*(w<700?.6:1));drops=Array.from({length:n},mk);cv.classList.add('on');if(!raf){lf=performance.now();raf=requestAnimationFrame(loop)}}
   addEventListener('resize',()=>{if(on)size()});return{set}})();
 
 /* ================= আবহাওয়া (Open-Meteo, ফ্রী) ================= */
 const WXN={0:['পরিষ্কার আকাশ','☀️'],1:['প্রায় পরিষ্কার','🌤️'],2:['আংশিক মেঘলা','⛅'],3:['মেঘলা','☁️'],45:['কুয়াশা','🌫️'],48:['কুয়াশা','🌫️'],51:['হালকা গুঁড়ি বৃষ্টি','🌦️'],53:['গুঁড়ি বৃষ্টি','🌦️'],55:['ঘন গুঁড়ি বৃষ্টি','🌧️'],56:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],57:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],61:['হালকা বৃষ্টি','🌦️'],63:['বৃষ্টি','🌧️'],65:['ভারী বৃষ্টি','🌧️'],66:['ঠান্ডা বৃষ্টি','🌧️'],67:['ঠান্ডা ভারী বৃষ্টি','🌧️'],71:['হালকা তুষার','🌨️'],73:['তুষারপাত','🌨️'],75:['ভারী তুষার','❄️'],77:['তুষারকণা','🌨️'],80:['হালকা ঝরো বৃষ্টি','🌦️'],81:['ঝরো বৃষ্টি','🌧️'],82:['প্রবল ঝরো বৃষ্টি','⛈️'],85:['তুষার ঝড়','🌨️'],86:['প্রবল তুষার ঝড়','❄️'],95:['বজ্রসহ বৃষ্টি','⛈️'],96:['বজ্র ও শিলাবৃষ্টি','⛈️'],99:['প্রবল বজ্র ও শিলাবৃষ্টি','⛈️']};
 function applyWx(c){if(!c)return;const code=+c.weather_code,cc=+c.cloud_cover||0,rainy=(code>=51&&code<=67)||(code>=80&&code<=82)||code>=95,snowy=(code>=71&&code<=77)||code===85||code===86,fog=code===45||code===48;
   const over=Math.min(1,Math.max(rainy||snowy?.9:code===3?.75:fog?.6:0,cc>=85?.7:cc>=60?.35:cc>=35?.15:0));
-  SKY.setWeather({over,code});
-  CLOUDS.set(rainy||snowy?16:code===3||cc>=85?14:code===2||cc>=40?9:fog?11:5,over>=.6);
+  SKY.setWeather({over,code,rain:rainy||snowy||code>=95});
+  CLOUDS.set(rainy||snowy?12:code===3||cc>=85?10:code===2||cc>=40?6:fog?8:3,over>=.6);
   RAIN.set(rainy?(code===65||code===82||code>=95?3:code===63||code===81?2:1):snowy?1:0,code>=95,snowy);
   const n=WXN[code]||['—',''],el=$('#wx');if(el){el.hidden=false;el.innerHTML=`<span>${n[1]} <b>${n[0]}</b></span><span>তাপমাত্রা <b>${bn(Math.round(c.temperature_2m))}°সে</b></span><span>আর্দ্রতা <b>${bn(Math.round(c.relative_humidity_2m))}%</b></span><span>মেঘ <b>${bn(Math.round(cc))}%</b></span><small>আবহাওয়া: Open-Meteo</small>`}}
 let wxT=0;
@@ -206,8 +208,8 @@ async function weather(){if(!LOC)return;const key='pat_wx_'+(+LOC.lat).toFixed(2
   try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c&&Date.now()-c.t<15*60e3){applyWx(c.d);return}}catch{}
   try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+LOC.lat).toFixed(3)}&longitude=${(+LOC.lng).toFixed(3)}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,precipitation,is_day&timezone=auto`;
     const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();applyWx(j.current);try{sessionStorage.setItem(key,JSON.stringify({t:Date.now(),d:j.current}))}catch{}}
-  catch{CLOUDS.set(5,false)}}
-function wxInit(){CLOUDS.set(5,false);weather();clearInterval(wxT);wxT=setInterval(()=>{if(!D.hidden)weather()},15*60e3)}
+  catch{CLOUDS.set(3,false)}}
+function wxInit(){CLOUDS.set(3,false);weather();clearInterval(wxT);wxT=setInterval(()=>{if(!D.hidden)weather()},15*60e3)}
 
 /* ================= তারা ================= */
 const STARS={};
@@ -238,10 +240,13 @@ async function anyShot(n,th){return(await shotFor(th||curTheme(),n))||(await sho
 (function(){const ps=[...$$('.hp')];if(!ps.length)return;let gen=0;const NUMS=(C.HERO_SHOTS||[1,2,3]).slice(0,3);
   const fill=()=>{const g=++gen;ps.forEach((p,i)=>anyShot(NUMS[i]).then(u=>{if(g!==gen)return;const box=p.querySelector('.scr');if(u){box.innerHTML=img(u,NUMS[i]);p.style.visibility=''}else{box.innerHTML='';p.style.visibility='hidden'}}))};
   REFRESH.push(fill);fill();
-  const P=['translate3d(0,0,0) rotate(0deg) scale(1)','translate3d(62%,-3%,0) rotate(6deg) scale(.84)','translate3d(-62%,-3%,0) rotate(-6deg) scale(.84)'];
-  const Dm=1500,FL=.3,out=()=>matchMedia('(max-width:480px)').matches?96:108;
-  const fly=(p,from,to)=>{if(!p.animate)return;let kf;
-    if(from===1&&to===0){const O=`translate3d(${out()}%,-4%,0) rotate(8deg) scale(.88)`;kf=[{transform:P[1],zIndex:1,offset:0,easing:'cubic-bezier(.3,.7,.4,1)'},{transform:O,zIndex:1,offset:FL},{transform:O,zIndex:4,offset:FL,easing:'cubic-bezier(.5,0,.2,1)'},{transform:P[0],zIndex:4,offset:1}]}
+  // CSS-এর [data-pos] অবস্থানের সাথে হুবহু মিল — অ্যানিমেশন শেষে কোনো লাফ/কাঁপুনি হয় না
+  const MOB=matchMedia('(max-width:760px)');
+  const PP=()=>MOB.matches?['translate3d(0,0,0) rotate(0deg) scale(1)','translate3d(56%,-2%,0) rotate(6deg) scale(.82)','translate3d(-56%,-2%,0) rotate(-6deg) scale(.82)']
+                        :['translate3d(0,0,0) rotate(0deg) scale(1)','translate3d(62%,-3%,0) rotate(6deg) scale(.84)','translate3d(-62%,-3%,0) rotate(-6deg) scale(.84)'];
+  const Dm=1500,FL=.3,out=()=>MOB.matches?92:108;
+  const fly=(p,from,to)=>{if(!p.animate)return;const P=PP();let kf;
+    if(from===1&&to===0){const O=`translate3d(${out()}%,-3%,0) rotate(8deg) scale(.86)`;kf=[{transform:P[1],zIndex:1,offset:0,easing:'cubic-bezier(.3,.7,.4,1)'},{transform:O,zIndex:1,offset:FL},{transform:O,zIndex:4,offset:FL,easing:'cubic-bezier(.5,0,.2,1)'},{transform:P[0],zIndex:4,offset:1}]}
     else if(from===0&&to===2){const M='translate3d(-14%,0,0) rotate(-2deg) scale(.95)';kf=[{transform:P[0],zIndex:3,offset:0,easing:'cubic-bezier(.3,.7,.4,1)'},{transform:M,zIndex:3,offset:FL},{transform:M,zIndex:2,offset:FL,easing:'cubic-bezier(.5,0,.2,1)'},{transform:P[2],zIndex:2,offset:1}]}
     else kf=[{transform:P[2],zIndex:1,offset:0,easing:'cubic-bezier(.55,0,.25,1)'},{transform:P[1],zIndex:1,offset:1}];
     try{p.animate(kf,{duration:Dm})}catch{}};
