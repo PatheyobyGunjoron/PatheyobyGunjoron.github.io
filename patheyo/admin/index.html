@@ -436,6 +436,7 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../config.js"></script>
+<script src="../assets/dialog.js"></script>
 <script>
 (function(){
 'use strict';
@@ -569,7 +570,7 @@ $('#pSend').onclick=async()=>{
   if(KIND==='announcement'){if(!title||!message)return toast('শিরোনাম ও বার্তা দুটোই দিন',1);const l=$('#pL').value.trim(),i=$('#pI').value.trim();
     if(l&&!/^https:\/\//.test(l))return toast('লিংক https:// দিয়ে শুরু হতে হবে',1);if(i&&!/^https:\/\//.test(i))return toast('ছবির লিংক https:// দিয়ে শুরু হতে হবে',1);body.link=l;body.image=i}
   else{const r=await loadLatest();if(!r)return toast('সর্বশেষ রিলিজের তথ্য পাওয়া যায়নি',1);Object.assign(body,{version_name:r.version,apk_url:r.apk,size_mb:r.mb,notes:r.notes})}
-  if(!confirm(`“${title||'আপডেট রিমাইন্ডার'}” — ${tv?'শুধু v'+tv+'-এর ইউজারদের':'সব ইউজারকে'} পাঠানো হবে। নিশ্চিত?`))return;
+  if(!await PTDialog.ask({tone:'send',title:'নোটিফিকেশন পাঠাবেন?',message:tv?'শুধু v'+tv+'-এর ইউজারদের কাছে যাবে।':'সব ইউজারের কাছে যাবে।',quote:title||'আপডেট রিমাইন্ডার',ok:'পাঠান'}))return;
   $('#pSend').disabled=true;$('#pSend').textContent='পাঠানো হচ্ছে…';
   try{const r=await authFetch(body);
     if(r.ok){toast('✅ নোটিফিকেশন পাঠানো হয়েছে');if(KIND==='announcement'){['#pT','#pM','#pL','#pI'].forEach(s=>$(s).value='');pv()}loadHist()}
@@ -695,7 +696,7 @@ $('#pnSend').onclick=async()=>{const title=$('#pnT').value.trim(),message=$('#pn
   if(!title||!message)return toast('শিরোনাম ও বার্তা দুটোই দিন',1);if(link&&!/^https:\/\//.test(link))return toast('লিংক https:// দিয়ে শুরু হতে হবে',1);
   const codes=target==='codes'?pnCodes():[];if(target==='codes'&&!codes.length)return toast('অন্তত একটি সঠিক সদস্য কোড দিন',1);
   const n=pnCount();if(!n&&target!=='codes')return toast('এই দলে এখন কোনো সদস্য নেই',1);
-  if(!confirm(`“${title}” — ${$('#pnTarget').selectedOptions[0].textContent} (${num(n)} জন)-কে পাঠানো হবে। নিশ্চিত?`))return;
+  if(!await PTDialog.ask({tone:'send',title:'নোটিফিকেশন পাঠাবেন?',message:$('#pnTarget').selectedOptions[0].textContent+' — '+num(n)+' জনের কাছে যাবে।',quote:title,ok:'পাঠান'}))return;
   const b=$('#pnSend');b.disabled=true;b.textContent='পাঠানো হচ্ছে…';
   try{const r=await pmFn({action:'send',target,codes,title,message,link});
     if(r.ok){toast('✅ সদস্যদের নোটিফিকেশন পাঠানো হয়েছে');['#pnT','#pnM','#pnL'].forEach(s=>$(s).value='');pnPv();if(target==='codes'){PM_SEL.clear();pmRender()}pmHist()}
@@ -707,7 +708,7 @@ $('#pnSend').onclick=async()=>{const title=$('#pnT').value.trim(),message=$('#pn
 async function loadRel(){const{data,error}=await sb.from('releases').select('*').order('release_date',{ascending:false});if(error){toast('রিলিজ লোড হয়নি',1);return}
   window.R=data||[];$('#rBody').innerHTML=R.map(a=>`<tr><td>${esc(a.version)}${a.is_latest?' ★':''}</td><td>${esc(a.release_date)}</td><td>${esc(a.status)}</td><td><button class="btn sm" data-e="${esc(a.id)}">এডিট</button> <button class="btn sm d" data-x="${esc(a.id)}">মুছুন</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">কোনো রিলিজ নেই</td></tr>'}
 $('#rBody').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const a=R.find(z=>z.id===(b.dataset.e||b.dataset.x));if(!a)return;
-  if(b.dataset.x){if(confirm('v'+a.version+' মুছে ফেলবেন?')){const{error}=await sb.from('releases').delete().eq('id',a.id);error?toast('মুছতে ব্যর্থ',1):loadRel()}return}
+  if(b.dataset.x){if(await PTDialog.ask({tone:'danger',title:'রিলিজ মুছবেন?',message:'এটা আর ফেরত আনা যাবে না।',quote:'v'+a.version,ok:'হ্যাঁ, মুছুন'})){const{error}=await sb.from('releases').delete().eq('id',a.id);error?toast('মুছতে ব্যর্থ',1):loadRel()}return}
   $('#rid').value=a.id;$('#rv').value=a.version;$('#rd').value=a.release_date;$('#rs').value=a.file_size||'';$('#ru').value=a.download_url;$('#rst').value=a.status;$('#rl').value=String(a.is_latest);
   fill('#nf',a.new_features);fill('#im',a.improvements);fill('#bf',a.bug_fixes);fill('#ot',a.other_changes);$('#rfT').textContent='এডিট v'+a.version;$('#rf').scrollIntoView({behavior:'smooth'})};
 $('#rrs').onclick=()=>{$('#rf').reset();$('#rid').value='';$('#rfT').textContent='নতুন রিলিজ'};
@@ -768,7 +769,7 @@ $('#adBody').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)
   if(b.dataset.a==='edit'){fillAdForm(a);return}
   if(b.dataset.a==='dup'){fillAdForm(a,true);return}
   if(b.dataset.a==='tog'){const{error}=await sb.from('app_ads').update({is_active:!a.is_active}).eq('id',a.id);error?toast('বদলানো যায়নি',1):(toast(a.is_active?'এড বন্ধ হয়েছে':'এড চালু হয়েছে'),loadAds());return}
-  if(b.dataset.a==='del'){if(!confirm(`“${a.title}” মুছে ফেলবেন? এর পরিসংখ্যানও মুছে যাবে।`))return;const{error}=await sb.from('app_ads').delete().eq('id',a.id);error?toast('মুছতে ব্যর্থ',1):(toast('মুছে ফেলা হয়েছে'),loadAds());return}
+  if(b.dataset.a==='del'){if(!await PTDialog.ask({tone:'danger',title:'এড মুছবেন?',message:'এর পরিসংখ্যানও মুছে যাবে। এটা আর ফেরত আনা যাবে না।',quote:a.title,ok:'হ্যাঁ, মুছুন'}))return;const{error}=await sb.from('app_ads').delete().eq('id',a.id);error?toast('মুছতে ব্যর্থ',1):(toast('মুছে ফেলা হয়েছে'),loadAds());return}
   if(b.dataset.a==='up'||b.dataset.a==='dn'){
     const grp=ADS.filter(x=>x.placement===a.placement).sort((p,q)=>p.sort_order-q.sort_order||new Date(q.created_at)-new Date(p.created_at));
     const i=grp.findIndex(x=>x.id===a.id),j=i+(b.dataset.a==='up'?-1:1);if(j<0||j>=grp.length)return;[grp[i],grp[j]]=[grp[j],grp[i]];
@@ -932,7 +933,7 @@ $('#mList').addEventListener('click',async e=>{const h=e.target.closest('.mh');i
   if(b.dataset.a==='save'){const r=$('#mReply').value.trim();await upd(id,{reply:r||null,admin_note:$('#mNote').value.trim()||null,replied_by:r?(SESSION&&SESSION.user.email):m.replied_by})}
   if(b.dataset.a==='star')await upd(id,{starred:!m.starred});
   if(b.dataset.a==='mail'){const r=$('#mReply').value.trim();if(r&&r!==m.reply)upd(id,{reply:r,replied_by:SESSION&&SESSION.user.email},true)}
-  if(b.dataset.a==='del'){if(!confirm('এই বার্তাটি স্থায়ীভাবে মুছে ফেলবেন?'))return;const{error}=await sb.from('contact_messages').delete().eq('id',id);if(error){toast('মোছা যায়নি',1);return}toast('মুছে ফেলা হয়েছে');mOpen=null;loadMsgs(true)}});
+  if(b.dataset.a==='del'){if(!await PTDialog.ask({tone:'danger',title:'বার্তাটি মুছবেন?',message:'এটা স্থায়ীভাবে মুছে যাবে, ফেরত আনা যাবে না।',ok:'হ্যাঁ, মুছুন'}))return;const{error}=await sb.from('contact_messages').delete().eq('id',id);if(error){toast('মোছা যায়নি',1);return}toast('মুছে ফেলা হয়েছে');mOpen=null;loadMsgs(true)}});
 $('#mList').addEventListener('change',e=>{const box=e.target.closest('.mi');if(!box)return;const id=+box.dataset.id;
   if(e.target.id==='mSt')upd(id,{status:e.target.value});if(e.target.id==='mPub')upd(id,{is_public:e.target.checked})});
 $('#mKind').onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;mKind=b.dataset.k;$$('#mKind button').forEach(x=>x.setAttribute('aria-pressed',x===b));mOff=0;loadMsgs(false)};

@@ -16,6 +16,9 @@ window.PATHEYO={
   // হিজরি তারিখ = aladhan + Firebase prayer_config (hijri_adjustment / hijri_override) — Firebase-এ বদলালেই ওয়েবসাইটেও বদলায়;
   // নামাজ = বাংলাদেশে ইসলামিক ফাউন্ডেশনের সূচি, বাইরে aladhan; মাযহাব হানাফি; মাগরিবে +৩ মিনিট।
 
+  // দান (ডোনেশন): অ্যাপের পেমেন্ট সার্ভার (server/payments, Vercel) — বিকাশ · নগদ · রকেট · ব্যাংক। খালি রাখলে দানের বাটন "শীঘ্রই" দেখায়।
+  PAY_API_URL:"https://patheyo-pay-delta.vercel.app",
+
   SUPABASE_URL:"https://zullugdawmkajmzxwrwx.supabase.co",       // সক্রিয় ব্যবহারকারী, ডাউনলোড গণনা, যোগাযোগ বার্তা ও অ্যাডমিন প্যানেলের জন্য
   SUPABASE_ANON_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bGx1Z2Rhd21rYWptenh3cnd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjIyOTQsImV4cCI6MjEwNjkzODI5NH0.CUrhF4YHcVuxgvvXeSbY2SExI2rbiTdHiIgynPIBZmc"
 };

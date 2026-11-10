@@ -142,9 +142,12 @@ const SKY=(function(){
       // মোবাইলে সূর্যের পথ "পাথেয়" লেখার চারপাশে একটি চ্যাপ্টা বাঁক: বাঁ দিকে লেখার মাঝামাঝি উচ্চতায় ওঠে, লেখার ঠিক ওপর দিয়ে যায়, ডান দিকে একই উচ্চতায় ডোবে
       const h1=$('.hero h1'),sr=sky.getBoundingClientRect(),hr=h1?h1.getBoundingClientRect():null;
       if(hr){HZ=(hr.top+hr.height*.55-sr.top)/H*100;TOP=Math.max((hdr+14)/H*100,(hr.top-4-sr.top)/H*100)}else{HZ=16;TOP=8}
-      if(HZ-TOP<2.5)HZ=TOP+2.5}else{HZ=90;TOP=9}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
+      if(HZ-TOP<2.5)HZ=TOP+2.5}else{
+      // পিসিতে: পুরো চওড়া জুড়ে বড় খিলান — বাঁ কিনারে ডাউনলোড-সারির উচ্চতায় ওঠে, হেডারের ঠিক নিচ দিয়ে যায়, ডান কিনারে একই উচ্চতায় ডোবে
+      const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68,sr=sky.getBoundingClientRect(),m=$('.hero .cta')||$('.hero-meta');
+      if(m){const r=m.getBoundingClientRect();HZ=(r.top+r.height*.1-sr.top)/H*100;TOP=(hdr+24)/H*100;if(HZ-TOP<20){HZ=62;TOP=11}}else{HZ=62;TOP=11}}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
   addEventListener('resize',()=>{clearTimeout(geom._t);geom._t=setTimeout(()=>{geom();last&&update(last)},250)});
-  const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+46*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
+  const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+(matchMedia('(max-width:760px)').matches?46:47)*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
   // আকাশের রং: সূর্যের উচ্চতা → উপর/মাঝ/নিচ ও দিগন্তের আভা
   const ST=[[-90,'#020817','#071634','#0f2856',[0,0,0,0]],[-14,'#030c22','#0c1f49','#1d3a72',[70,80,170,.18]],[-8,'#0f1a45','#2f3a78','#7d5f95',[255,130,120,.32]],
     [-3,'#1e2c66','#5d5491','#e08f86',[255,150,110,.55]],[0,'#2c4a90','#9a7aa3','#ffb98a',[255,175,115,.7]],[4,'#4a84cc','#a7c5e6','#ffd7ab',[255,205,150,.55]],
@@ -478,7 +481,7 @@ const goUrl=u=>{const a=D.createElement('a');a.href=u;a.rel='noopener';a.setAttr
 function startDl(id,url,force){if(!url)url=RELPAGE;
   if(INAPP&&!force){snack('এই অ্যাপের ভেতরের ব্রাউজারে ডাউনলোড আটকে যেতে পারে। Chrome-এ খুলুন।',[
       {t:'Chrome-এ খুলুন',f:()=>{location.href='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end'}},
-      {t:'লিংক কপি',f:()=>{const u=location.href.split('#')[0];(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>snack('লিংক কপি হয়েছে'),()=>prompt('লিংকটি কপি করুন',u))}},
+      {t:'লিংক কপি',f:()=>{const u=location.href.split('#')[0];(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>snack('লিংক কপি হয়েছে'),()=>PTDialog.copy({title:'লিংক কপি করুন',message:'নিচের লিংকটি কপি করে Chrome-এ খুলুন।',value:u}))}},
       {t:'তবুও ডাউনলোড',f:()=>startDl(id,url,true)}],16000);return}
   try{if(SB_OK)fetch(C.SUPABASE_URL+'/rest/v1/rpc/track_download',{method:'POST',headers:H,body:JSON.stringify({p_version:id}),keepalive:true}).catch(()=>{})}catch{}
   if(id)try{localStorage.setItem('pat_inst',String(id))}catch{}
