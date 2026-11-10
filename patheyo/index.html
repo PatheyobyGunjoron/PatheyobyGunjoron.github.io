@@ -99,6 +99,20 @@ addEventListener('resize',fit);})();
 <canvas id="stars" aria-hidden="true"></canvas><i class="hglow" aria-hidden="true"></i>
 <svg class="spath" id="spath" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path id="sp-arc" d=""/></svg>
 <i class="sun" id="sun" aria-hidden="true"><i></i></i><i class="moon" id="moon" aria-hidden="true"><svg viewBox="0 0 100 100"><circle class="mb" cx="50" cy="50" r="48"/><path class="ml" id="mlit" d=""/></svg></i><div class="clouds" id="clouds" aria-hidden="true"></div><canvas id="rain" aria-hidden="true"></canvas><i class="flash" id="flash" aria-hidden="true"></i>
+<script>/* পেজ আঁকার আগেই আকাশের সঠিক রং — রিফ্রেশে কালো থেকে বদলানো যাতে না দেখা যায় */(function(){var d=document,s=d.getElementById('sky'),h=d.getElementById('hdr');if(!s)return;
+var sun=d.getElementById('sun'),mo=d.getElementById('moon');sun&&sun.style.setProperty('--o','0');mo&&mo.style.setProperty('--o','0');
+function ap(v,lt){for(var k in v)s.style.setProperty(k,v[k]);s.classList.toggle('lt',!!lt);h&&h.style.setProperty('--sky-fg',lt?'#061a40':'#ffffff')}
+var L=null;try{L=JSON.parse(localStorage.getItem('pat_loc')||'null')||JSON.parse(sessionStorage.getItem('pat_auto')||'null')}catch(e){}
+var la=L&&isFinite(L.lat)?+L.lat:23.8103,lo=L&&isFinite(L.lng)?+L.lng:90.4125;
+try{var c=JSON.parse(localStorage.getItem('pat_sky')||'null');if(c&&Date.now()-c.t<12e5&&c.la===la.toFixed(2)&&c.lo===lo.toFixed(2)){ap(c.v,c.lt);return}}catch(e){}
+var R=Math.PI/180,n=Date.now()/864e5+2440587.5-2451545,m=function(a,b){return((a%b)+b)%b},Lm=m(280.46+.9856474*n,360),g=m(357.528+.9856003*n,360)*R,lam=(Lm+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R,
+ra=Math.atan2(Math.cos(e)*Math.sin(lam),Math.cos(lam)),de=Math.asin(Math.sin(e)*Math.sin(lam)),H=(m(280.46061837+360.98564736629*n,360)+lo)*R-ra,p=la*R,
+al=Math.asin(Math.sin(p)*Math.sin(de)+Math.cos(p)*Math.cos(de)*Math.cos(H))/R;
+var T=[[-90,'020817','071634','0f2856'],[-14,'030c22','0c1f49','1d3a72'],[-8,'0f1a45','2f3a78','7d5f95'],[-3,'1e2c66','5d5491','e08f86'],[0,'2c4a90','9a7aa3','ffb98a'],[4,'4a84cc','a7c5e6','ffd7ab'],[10,'6fbdf0','a4dbfb','f2f6f4'],[25,'86d4ff','a2defe','f2faff'],[90,'82d2ff','9fdcff','f4fbff']],i=0;
+while(i<T.length-2&&al>T[i+1][0])i++;var A=T[i],B=T[i+1],t=Math.min(Math.max((al-A[0])/(B[0]-A[0]),0),1);t=t*t*(3-2*t);
+function cl(j){var x=parseInt(A[j],16),y=parseInt(B[j],16),r=[16,8,0].map(function(q){var a=(x>>q)&255,b=(y>>q)&255;return Math.round(a+(b-a)*t)});return r}
+var c1=cl(1),c2=cl(2),c3=cl(3),f=function(v){v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)},lt=(.2126*f(c2[0])+.7152*f(c2[1])+.0722*f(c2[2]))>.34,rg=function(c){return'rgb('+c.join(',')+')'};
+ap({'--s1':rg(c1),'--s2':rg(c2),'--s3':rg(c3),'--sfg':lt?'#061a40':'#ffffff','--sfg2':lt?'rgba(6,26,64,.82)':'rgba(255,255,255,.86)','--star':String(Math.min(Math.max((-al-3)/9,0),1))},lt)})()</script>
 <div class="hero" id="home"><div class="wrap">
 <div class="hero-t">
 <h1 id="h1">পাথেয়<span class="vh"> – Patheyo Islamic App by Gunjoron</span></h1>
@@ -123,15 +137,21 @@ addEventListener('resize',fit);})();
 </section>
 
 <section class="today" aria-label="আজকের নামাজের সময়"><div class="wrap"><div class="tcard" id="tcard">
-<div class="tc-l">
+<div class="tc-top">
 <div class="tc-place"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg><label class="vh" for="loc">এলাকা</label><select id="loc" class="locsel"></select></div>
-<div class="tc-clock num" id="clock" aria-live="off">--:--:--</div>
-<div class="tc-dates" id="dates"><span>—</span></div>
-<div class="tc-sun" id="suninfo" aria-live="off"></div>
-<div class="tc-wx" id="wx" hidden></div>
+<div class="tc-dates" id="dates"><span class="dp">—</span></div>
+<div class="tc-wxp" id="wxp" hidden></div>
 </div>
-<ol class="waqts" id="waqts"></ol>
-<div class="tc-foot"><span id="wnow">হিসাব করা হচ্ছে…</span><small>সময় এই ব্রাউজারেই হিসাব হয়েছে — অ্যাপের মতোই, ইন্টারনেট ছাড়া।</small></div>
+<div class="tc-mid">
+<div class="tc-now">
+<div class="tc-clock num" id="clock" aria-live="off">--:--:--</div>
+<div class="tc-st" id="wnow">হিসাব করা হচ্ছে…</div>
+<div class="tc-prog" id="wprog" aria-hidden="true"><i></i></div>
+<div class="tc-cd" id="wcd"></div>
+</div>
+<div class="tl" id="tl"><div class="tl-track" aria-hidden="true"><i class="tl-fill"></i><i class="tl-now"></i></div><ol class="waqts" id="waqts"></ol></div>
+</div>
+<div class="tc-foot"><div class="tc-meta"><span class="tc-sun" id="suninfo"></span><span class="tc-wxm" id="wxmeta"></span></div><small>সময় এই ব্রাউজারেই হিসাব হয় — অ্যাপের মতোই, ইন্টারনেট ছাড়া।</small></div>
 </div></div></section>
 
 <section class="sec" id="features" aria-labelledby="fh"><div class="wrap">

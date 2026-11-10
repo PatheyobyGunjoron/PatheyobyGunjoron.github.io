@@ -43,21 +43,21 @@ function times(d){const P=W.PtPrayer;if(!P)return null;
 function state(now,T){
   const t=now.getHours()*60+now.getMinutes()+now.getSeconds()/60,F=toM(T.Fajr),SR=toM(T.Sunrise),Dh=toM(T.Dhuhr),A=toM(T.Asr),M=toM(T.Maghrib),I=toM(T.Isha);
   const nextDay=times(new Date(now.getTime()+864e5)),F2=toM(nextDay&&nextDay.Fajr)+1440;
-  let w,ends,sky,forbid=null,next,nextAt;
-  if(t<F){w='Isha';ends=F;sky='isha';next='Fajr';nextAt=F}
-  else if(t<SR){w='Fajr';ends=SR;sky='fajr';next='Dhuhr';nextAt=Dh}
-  else if(t<SR+15){w=null;forbid='সূর্যোদয়';ends=SR+15;sky='sunrise';next='Dhuhr';nextAt=Dh}
-  else if(t<Dh-12){w=null;ends=Dh-12;sky=t<SR+60?'sunrise':'duha';next='Dhuhr';nextAt=Dh}
-  else if(t<Dh){w=null;forbid='দুপুর (জাওয়াল)';ends=Dh;sky='dhuhr';next='Dhuhr';nextAt=Dh}
-  else if(t<A){w='Dhuhr';ends=A;sky='dhuhr';next='Asr';nextAt=A}
-  else if(t<M-15){w='Asr';ends=M;sky=t<M-35?'asr':'maghrib';next='Maghrib';nextAt=M}
-  else if(t<M){w='Asr';forbid='সূর্যাস্ত';ends=M;sky='maghrib';next='Maghrib';nextAt=M}
-  else if(t<I){w='Maghrib';ends=I;sky=t<M+30?'maghrib':'isha';next='Isha';nextAt=I}
-  else{w='Isha';ends=F2;sky='isha';next='Fajr';nextAt=F2}
+  let w,ends,sky,forbid=null,next,nextAt,st;
+  if(t<F){st=I-1440;w='Isha';ends=F;sky='isha';next='Fajr';nextAt=F}
+  else if(t<SR){st=F;w='Fajr';ends=SR;sky='fajr';next='Dhuhr';nextAt=Dh}
+  else if(t<SR+15){st=SR;w=null;forbid='সূর্যোদয়';ends=SR+15;sky='sunrise';next='Dhuhr';nextAt=Dh}
+  else if(t<Dh-12){st=SR+15;w=null;ends=Dh-12;sky=t<SR+60?'sunrise':'duha';next='Dhuhr';nextAt=Dh}
+  else if(t<Dh){st=Dh-12;w=null;forbid='দুপুর (জাওয়াল)';ends=Dh;sky='dhuhr';next='Dhuhr';nextAt=Dh}
+  else if(t<A){st=Dh;w='Dhuhr';ends=A;sky='dhuhr';next='Asr';nextAt=A}
+  else if(t<M-15){st=A;w='Asr';ends=M;sky=t<M-35?'asr':'maghrib';next='Maghrib';nextAt=M}
+  else if(t<M){st=M-15;w='Asr';forbid='সূর্যাস্ত';ends=M;sky='maghrib';next='Maghrib';nextAt=M}
+  else if(t<I){st=M;w='Maghrib';ends=I;sky=t<M+30?'maghrib':'isha';next='Isha';nextAt=I}
+  else{st=I;w='Isha';ends=F2;sky='isha';next='Fajr';nextAt=F2}
   // সূর্য/চাঁদের অবস্থান
   let p,moon;if(t>=SR&&t<M){p=(t-SR)/(M-SR);moon=false}else{p=((t<M?t+1440:t)-M)/(F+1440-M);moon=true}
   p=Math.min(Math.max(p,0),1);
-  return{w,ends,sky,forbid,next,nextAt,t,p,moon}}
+  return{w,ends,sky,forbid,next,nextAt,t,p,moon,st,T:[F,SR,Dh,A,M,I]}}
 function tick(force){
   const now=new Date(),key=now.toDateString()+LOC.lat+LOC.lng;
   if(force||key!==TDAY){TT=times(now);TDAY=key;renderWaqts()}
@@ -68,19 +68,25 @@ function tick(force){
   // সারি হাইলাইট
   const cur=S.w||'',key2=cur+'|'+S.next;if(key2!==lastWaqt){lastWaqt=key2;$$('#waqts li').forEach(li=>{li.classList.toggle('now',li.dataset.k===cur);li.classList.toggle('next',li.dataset.k===S.next&&li.dataset.k!==cur)});
     if(cur)$$('#waqts li.now').forEach(li=>li.setAttribute('aria-current','true'));$$('#waqts li:not(.now)').forEach(li=>li.removeAttribute('aria-current'))}
-  const left=(S.ends-S.t)*60,nl=(S.nextAt-S.t)*60;let msg;
-  if(S.forbid)msg=`<span class="forbid">নিষিদ্ধ সময় চলছে — ${S.forbid}</span> · শেষ হতে <span class="cd">${cd(left)}</span>`;
-  else if(S.w)msg=`এখন <b>${WN[S.w]}</b>-এর ওয়াক্ত · শেষ হতে <span class="cd">${cd(left)}</span>`;
-  else msg=`এখন চাশতের সময় · <b>যোহর</b> শুরু হতে <span class="cd">${cd(nl)}</span>`;
-  if(S.w&&S.next&&S.next!==S.w)msg+=` <span style="color:var(--ink-3)">· পরবর্তী ${WN[S.next]} ${h12(S.nextAt)}</span>`;
-  const wn=$('#wnow');if(wn)wn.innerHTML=msg;
+  // অবস্থা, অগ্রগতি ও কাউন্টডাউন
+  const left=(S.ends-S.t)*60,nl=(S.nextAt-S.t)*60;let head,sub;
+  if(S.forbid){head=`<span class="forbid">নিষিদ্ধ সময় · ${S.forbid}</span>`;sub=`শেষ হতে <b class="cd">${cd(left)}</b>`}
+  else if(S.w){head=`এখন <b>${WN[S.w]}</b>-এর ওয়াক্ত`;sub=`শেষ হতে <b class="cd">${cd(left)}</b>`}
+  else{head=`এখন <b>চাশতের</b> সময়`;sub=`যোহর শুরু হতে <b class="cd">${cd(nl)}</b>`}
+  if(S.next&&S.next!==S.w)sub+=`<span class="nx">পরবর্তী ${WN[S.next]} · ${h12(S.nextAt)}</span>`;
+  const wn=$('#wnow');if(wn&&wn._h!==head){wn.innerHTML=head;wn._h=head}
+  const wc=$('#wcd');if(wc)wc.innerHTML=sub;
+  const pr=$('#wprog');if(pr){const f=Math.min(Math.max((S.t-S.st)/Math.max(S.ends-S.st,1),0),1);pr.style.setProperty('--f',f.toFixed(4));pr.classList.toggle('fb',!!S.forbid)}
+  // দিনের টাইমলাইনে "এখন" চিহ্ন: ফজর থেকে এশা পর্যন্ত
+  const tl=$('#tl');if(tl){const T=S.T;let pos;if(S.t<T[0])pos=0;else if(S.t>=T[5])pos=1;else{let k=0;while(k<4&&S.t>=T[k+1])k++;pos=(k+(S.t-T[k])/(T[k+1]-T[k]))/5}
+    tl.style.setProperty('--pos',pos.toFixed(4));$$('#waqts li').forEach((li,k)=>li.classList.toggle('past',S.t>=S.T[k]))}
   // তারিখ (মাগরিবের পর হিজরি তারিখ পরের দিনে যায়)
   if(force||!tick._d||tick._d!==now.getDate()+'-'+(S.t>=toM(TT.Maghrib))){tick._d=now.getDate()+'-'+(S.t>=toM(TT.Maghrib));
     const P=W.PtPrayer,hd=S.t>=toM(TT.Maghrib)?new Date(now.getTime()+864e5):now;
     const hj=P.hijri(hd,+C.HIJRI_ADJUST||0),bg=P.bangla(now);
-    $('#dates').innerHTML=`<span>${DAYS[now.getDay()]}, ${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span>${bn(hj)} হিজরি</span>`:''}<span>${bn(bg)} বঙ্গাব্দ</span>`}}
+    $('#dates').innerHTML=`<span class="dp"><small>${DAYS[now.getDay()]}</small>${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span class="dp"><small>হিজরি</small>${bn(hj).replace(/\s*হিজরি$/,'')}</span>`:''}<span class="dp"><small>বঙ্গাব্দ</small>${bn(bg)}</span>`}}
 function renderWaqts(){const ol=$('#waqts');if(!ol||!TT)return;lastWaqt='';
-  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
+  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><i class="dot" aria-hidden="true"></i><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
 function prayerInit(){if(!W.PtPrayer||!$('#tcard'))return;LOC=loadLoc();locSelect();tick(true);wxInit();detectLoc();setInterval(()=>{if(!D.hidden)tick()},1000);D.addEventListener('visibilitychange',()=>{if(!D.hidden)tick(true)})}
 
 
@@ -106,7 +112,10 @@ const SKY=(function(){
   // মোবাইলে ফোনগুলো আকাশের মাঝখান জুড়ে থাকে, তাই সূর্যের পথ ফোনের ওপরের খোলা আকাশে: বাঁ দিকে একটু নিচে উঠে, মাঝে ওপরে, ডান দিকে একটু নিচে অস্ত
   function geom(){const sky=$('#sky'),st=$('.stagewrap');if(!sky)return;const H=sky.offsetHeight||1;
     if(matchMedia('(max-width:760px)').matches&&st){const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68;
-      HZ=Math.max(18,(st.offsetTop+st.offsetHeight*.12)/H*100);TOP=Math.min(HZ-8,(hdr+40)/H*100)}else{HZ=90;TOP=9}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
+      // মোবাইলে সূর্যের পথ "পাথেয়" লেখার চারপাশে একটি চ্যাপ্টা বাঁক: বাঁ দিকে লেখার মাঝামাঝি উচ্চতায় ওঠে, লেখার ঠিক ওপর দিয়ে যায়, ডান দিকে একই উচ্চতায় ডোবে
+      const h1=$('.hero h1'),sr=sky.getBoundingClientRect(),hr=h1?h1.getBoundingClientRect():null;
+      if(hr){HZ=(hr.top+hr.height*.55-sr.top)/H*100;TOP=Math.max((hdr+14)/H*100,(hr.top-4-sr.top)/H*100)}else{HZ=16;TOP=8}
+      if(HZ-TOP<2.5)HZ=TOP+2.5}else{HZ=90;TOP=9}GK=HZ.toFixed(1)+'/'+TOP.toFixed(1)}
   addEventListener('resize',()=>{clearTimeout(geom._t);geom._t=setTimeout(()=>{geom();last&&update(last)},250)});
   const place=b=>{const f=b.H0>0?b.H/b.H0:2;return{x:50+46*f,y:b.alt>=0?HZ-Math.min(b.alt/Math.max(b.top,1),1)*(HZ-TOP):HZ+Math.min(-b.alt,10)*1.6,up:Math.abs(f)<=1}};
   // আকাশের রং: সূর্যের উচ্চতা → উপর/মাঝ/নিচ ও দিগন্তের আভা
@@ -128,6 +137,14 @@ const SKY=(function(){
   function moonPath(k,waxing){const r=48,c=50,rx=Math.abs(1-2*k)*r,big=k>.5;
     if(waxing)return`M${c} ${c-r} A${r} ${r} 0 0 1 ${c} ${c+r} A${rx} ${r} 0 0 ${big?1:0} ${c} ${c-r}Z`;
     return`M${c} ${c-r} A${r} ${r} 0 0 0 ${c} ${c+r} A${rx} ${r} 0 0 ${big?0:1} ${c} ${c-r}Z`}
+  // পেজ খুললে সূর্য/চাঁদ উদয়ের জায়গা (বাঁ দিকের দিগন্ত) থেকে নিজের আসল পথ ধরে এখনকার জায়গায় আসে
+  let intro=true;const easeO=t=>1-Math.pow(1-t,3);
+  function rise(el,b,dur,opac){if(!el||!(b.H0>0))return false;const H1=Math.min(b.H,b.H0),H0s=-b.H0;el.classList.add('nt');
+    const q0=place({H:H0s,H0:b.H0,alt:-.8,top:b.top});el.style.setProperty('--x',q0.x.toFixed(2)+'%');el.style.setProperty('--y',q0.y.toFixed(2)+'%');el.style.setProperty('--o','0');
+    const go=()=>{if(waiting()){setTimeout(go,120);return}setTimeout(()=>{const t0=performance.now();requestAnimationFrame(function f(now){const k=Math.min((now-t0)/dur,1),e=easeO(k),H=H0s+(H1-H0s)*e;
+      const alt=Math.asin(Math.sin(b.p)*Math.sin(b.dec)+Math.cos(b.p)*Math.cos(b.dec)*Math.cos(H))/R,q=place({H,H0:b.H0,alt,top:b.top});
+      el.style.setProperty('--x',q.x.toFixed(2)+'%');el.style.setProperty('--y',q.y.toFixed(2)+'%');el.style.setProperty('--o',opac(alt).toFixed(2));
+      if(k<1)requestAnimationFrame(f);else el.classList.remove('nt')})},350)};go();return true}
   let WX=null,last=null;
   function update(now){now=now||new Date();last=now;const sky=$('#sky');if(!sky||!LOC)return;if(!GK)geom();const lat=+LOC.lat,lng=+LOC.lng;
     const se=sunEq(now),sb=pos(se,now,lat,lng,-.833),me=moonEq(now),mb=pos(me,now,lat,lng,.125);
@@ -141,20 +158,21 @@ const SKY=(function(){
     const sp=place(sb);st.setProperty('--gc',rgba([...P.g.slice(0,3),P.g[3]*(1-ov*.85)]));st.setProperty('--gx',Math.min(Math.max(sp.x,0),100).toFixed(1)+'%');
     const light=lum(s2)>.34;st.setProperty('--sfg',light?'#061a40':'#ffffff');st.setProperty('--sfg2',light?'rgba(6,26,64,.82)':'rgba(255,255,255,.86)');
     st.setProperty('--star',(Math.min(Math.max((-sb.alt-3)/9,0),1)*(1-ov)).toFixed(2));
+    try{const v={};['--s1','--s2','--s3','--gc','--gx','--sfg','--sfg2','--star'].forEach(k=>v[k]=st.getPropertyValue(k));localStorage.setItem('pat_sky',JSON.stringify({t:Date.now(),v,lt:light,la:lat.toFixed(2),lo:lng.toFixed(2)}))}catch{}
     const h=$('#hdr');h&&h.style.setProperty('--sky-fg',light?'#061a40':'#ffffff');sky.classList.toggle('lt',light);
     // সূর্য: মেঘ ঘন হলে ঢাকা পড়ে
-    const sun=$('#sun');if(sun){sun.style.setProperty('--x',sp.x.toFixed(2)+'%');sun.style.setProperty('--y',sp.y.toFixed(2)+'%');
-      sun.style.setProperty('--o',(Math.min(Math.max((sb.alt+2.5)/3.5,0),1)*Math.max(0,1-ov*1.15)).toFixed(2));
+    const sunO=alt=>Math.min(Math.max((alt+2.5)/3.5,0),1)*Math.max(0,1-ov*1.15),first=intro;
+    const sun=$('#sun');if(sun){if(!(first&&sb.alt>-1&&rise(sun,sb,2800,sunO))){if(!sun.classList.contains('nt')){sun.style.setProperty('--x',sp.x.toFixed(2)+'%');sun.style.setProperty('--y',sp.y.toFixed(2)+'%');sun.style.setProperty('--o',sunO(sb.alt).toFixed(2))}}
       const warm=Math.min(Math.max(1-sb.alt/16,0),1);sun.style.setProperty('--sc',rgb(mix([255,240,200],[255,150,80],warm)))}
     // চাঁদ
     const el=Math.acos(Math.cos(me.lat)*Math.cos(me.lon-se.lon)),k=(1-Math.cos(el))/2,waxing=mod(me.lon-se.lon,2*Math.PI)<Math.PI,mp=place(mb);
-    const moon=$('#moon');if(moon){moon.style.setProperty('--x',mp.x.toFixed(2)+'%');moon.style.setProperty('--y',mp.y.toFixed(2)+'%');
-      const vis=(mp.up?Math.min(Math.max((mb.alt+1.5)/3,0),1):0)*(sb.alt>6?.5:1)*(k<.03?0:1)*Math.max(0,1-ov*1.1);moon.style.setProperty('--o',vis.toFixed(2));
+    const moon=$('#moon');if(moon){const mo=alt=>(alt>-1.5?Math.min(Math.max((alt+1.5)/3,0),1):0)*(sb.alt>6?.5:1)*(k<.03?0:1)*Math.max(0,1-ov*1.1);
+      if(!(first&&mb.alt>-1&&rise(moon,mb,2800,mo))&&!moon.classList.contains('nt')){moon.style.setProperty('--x',mp.x.toFixed(2)+'%');moon.style.setProperty('--y',mp.y.toFixed(2)+'%');moon.style.setProperty('--o',(mp.up?mo(mb.alt):0).toFixed(2))}
       const ml=$('#mlit');ml&&ml.setAttribute('d',moonPath(k,waxing))}
-    sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2)+GK);STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
+    intro=false;sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2)+GK);STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
     const si=$('#suninfo');if(si){const up=sb.alt>=-.83;
-      const s1t=up?`<span><i></i>সূর্য এখন <b>${dir(sb.az)}</b> আকাশে, <b>${bn(Math.round(sb.alt))}°</b> উচ্চতায়</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sb.alt))}°</b> নিচে</span>`;
-      const s2t=(mb.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ ${dir(mb.az)} আকাশে · <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
+      const s1t=up?`<span><i></i>সূর্য <b>${dir(sb.az)}</b> আকাশে · <b>${bn(Math.round(sb.alt))}°</b> উঁচুতে</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sb.alt))}°</b> নিচে</span>`;
+      const s2t=(mb.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
       si.innerHTML=s1t+s2t}}
   function setWeather(w){WX=w;if(last)update(last)}
   return{update,setWeather,get:()=>WX}})();
@@ -202,7 +220,8 @@ function applyWx(c){if(!c)return;const code=+c.weather_code,cc=+c.cloud_cover||0
   SKY.setWeather({over,code,rain:rainy||snowy||code>=95});
   CLOUDS.set(rainy||snowy?12:code===3||cc>=85?10:code===2||cc>=40?6:fog?8:3,over>=.6);
   RAIN.set(rainy?(code===65||code===82||code>=95?3:code===63||code===81?2:1):snowy?1:0,code>=95,snowy);
-  const n=WXN[code]||['—',''],el=$('#wx');if(el){el.hidden=false;el.innerHTML=`<span>${n[1]} <b>${n[0]}</b></span><span>তাপমাত্রা <b>${bn(Math.round(c.temperature_2m))}°সে</b></span><span>আর্দ্রতা <b>${bn(Math.round(c.relative_humidity_2m))}%</b></span><span>মেঘ <b>${bn(Math.round(cc))}%</b></span><small>আবহাওয়া: Open-Meteo</small>`}}
+  const n=WXN[code]||['—',''],el=$('#wxp');if(el){el.hidden=false;el.innerHTML=`<span class="we" aria-hidden="true">${n[1]}</span><span class="wv"><b>${bn(Math.round(c.temperature_2m))}°</b><small>${n[0]}</small></span>`}
+  const m=$('#wxmeta');if(m)m.innerHTML=`<span>আর্দ্রতা <b>${bn(Math.round(c.relative_humidity_2m))}%</b></span><span>মেঘ <b>${bn(Math.round(cc))}%</b></span><span class="src">আবহাওয়া: Open-Meteo</span>`}
 let wxT=0;
 async function weather(){if(!LOC)return;const key='pat_wx_'+(+LOC.lat).toFixed(2)+','+(+LOC.lng).toFixed(2);
   try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c&&Date.now()-c.t<15*60e3){applyWx(c.d);return}}catch{}

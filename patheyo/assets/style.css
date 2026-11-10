@@ -916,3 +916,82 @@ body{background:var(--paper)}
 .clouds .clw{position:absolute;inset:0;will-change:transform}
 .clouds .cl{position:absolute;left:0;background-repeat:repeat-x;background-position:0 0}
 .clouds.heavy .cl{background-position:0 0}
+
+/* ===== v6: আজকের নামাজের কার্ড — নতুন বিন্যাস ===== */
+.sun.nt,.moon.nt{transition:opacity .4s ease!important}
+.tcard{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;border-radius:28px}
+.tcard>*{padding-left:clamp(18px,2.6vw,30px);padding-right:clamp(18px,2.6vw,30px)}
+.tc-top{display:flex;align-items:center;gap:.8rem 1.2rem;flex-wrap:wrap;padding-top:18px;padding-bottom:16px;border-bottom:1px solid var(--glass-ln)}
+.tc-place{display:flex;align-items:center;gap:.45rem;color:var(--ink-3)}
+.tc-dates{display:flex;flex-wrap:wrap;gap:.5rem;margin-right:auto;font-size:.92rem}
+.tc-dates .dp{display:inline-flex;flex-direction:column;line-height:1.25;padding:.35rem .8rem;border-radius:12px;background:var(--glass-2);border:1px solid var(--glass-bd);color:var(--ink);font-weight:700;white-space:nowrap}
+.tc-dates .dp small{font-size:.72rem;font-weight:400;color:var(--ink-3)}
+.tc-wxp{display:inline-flex;align-items:center;gap:.6rem;padding:.3rem .9rem .3rem .5rem;border-radius:16px;background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent);border:1px solid var(--glass-bd)}
+.tc-wxp .we{font-size:1.75rem;line-height:1}
+.tc-wxp .wv{display:flex;flex-direction:column;line-height:1.15}
+.tc-wxp .wv b{font-family:"Plus Jakarta Sans",var(--f);font-size:1.3rem;font-weight:800;color:var(--ink)}
+.tc-wxp .wv small{font-size:.78rem;color:var(--ink-2)}
+.tc-mid{display:grid;grid-template-columns:minmax(230px,.75fr) minmax(0,2fr);gap:clamp(18px,3vw,40px);align-items:center;padding-top:22px;padding-bottom:22px}
+.tc-now{display:flex;flex-direction:column;gap:.35rem}
+.tc-clock{font-size:clamp(40px,4.6vw,56px);letter-spacing:-.03em}
+.tc-st{font-size:1.05rem;color:var(--ink-2)}
+.tc-st b{color:var(--ink)}
+.tc-st .forbid{color:var(--ember);font-weight:700}
+.tc-prog{position:relative;height:6px;border-radius:99px;background:var(--glass-2);border:1px solid var(--glass-ln);overflow:hidden;margin:.2rem 0 .1rem}
+.tc-prog i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--f,0));border-radius:inherit;background:linear-gradient(90deg,#5b8cff,#2159F5);transition:transform 1s linear}
+.tc-prog.fb i{background:linear-gradient(90deg,#ff8a8f,var(--ember))}
+.tc-cd{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .7rem;font-size:.95rem;color:var(--ink-2)}
+.tc-cd .cd{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;color:var(--accent);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tc-cd .nx{color:var(--ink-3);font-size:.88rem}
+/* দিনের টাইমলাইন */
+.tl{position:relative;--pos:0}
+.tl-track{position:absolute;left:calc(100% / 12);right:calc(100% / 12);top:19px;height:3px;border-radius:99px;background:var(--glass-ln)}
+.tl-fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--pos) * 100%);border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 40%,transparent),var(--accent));transition:width 1s linear}
+.tl-now{position:absolute;top:50%;left:calc(var(--pos) * 100%);width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 22%,transparent);transition:left 1s linear;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 8%,transparent)}}
+.tl .waqts{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0}
+.tl .waqts li{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:0 .2rem;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;text-align:center;color:var(--ink)}
+.tl .waqts .dot{width:16px;height:16px;margin:12px 0 .35rem;border-radius:50%;background:var(--surface);border:2px solid var(--line-2);transition:background-color .3s,border-color .3s}
+.tl .waqts li.past .dot{background:color-mix(in srgb,var(--accent) 30%,var(--surface));border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.tl .waqts li.srw .dot{border-color:var(--gold)}
+.tl .waqts li.srw .wn::before{display:none}
+.tl .waqts .wn{font-size:.9rem;font-weight:700;color:var(--ink-2)}
+.tl .waqts .wt{font-size:clamp(14px,1.5vw,18px);font-weight:800;color:var(--ink)}
+.tl .waqts li.now{color:inherit}
+.tl .waqts li.now .wn{color:var(--accent)}
+.tl .waqts li.now .wt{color:#fff;background:linear-gradient(160deg,#4a80ff,#1f4fe0);padding:.15rem .6rem;border-radius:10px;box-shadow:0 8px 18px -10px #2159F5}
+.tl .waqts li.now .dot{background:var(--accent);border-color:var(--accent);opacity:0}
+.tl .waqts li.next .wt{color:var(--accent)}
+.tc-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;padding-top:12px;padding-bottom:14px;background:color-mix(in srgb,var(--glass-2) 70%,transparent);border-top:1px solid var(--glass-ln)!important;margin:0}
+.tc-meta{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:.86rem;color:var(--ink-3)}
+.tc-meta>span{display:inline-flex;flex-wrap:wrap;gap:.3rem 1rem}
+.tc-meta b{color:var(--ink-2)}
+.tc-meta .tc-sun{margin:0;font-size:inherit}
+.tc-meta .src{opacity:.8}
+.tc-foot>small{color:var(--ink-3);font-size:.8rem}
+@media (max-width:900px){.tc-mid{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .tcard{border-radius:24px}
+  .tc-top{flex-direction:column;align-items:center;gap:.7rem}
+  .tc-dates{margin:0;justify-content:center}
+  .tc-dates .dp{align-items:center;font-size:.85rem;padding:.3rem .65rem}
+  .tc-now{align-items:center;text-align:center}
+  .tc-prog{width:min(100%,280px)}
+  .tc-cd{justify-content:center}
+  .tl .waqts .wn{font-size:.78rem}
+  .tl .waqts .wt{font-size:.9rem}
+  .tl .waqts li.now .wt{padding:.1rem .4rem}
+  .tc-foot{flex-direction:column;justify-content:center;text-align:center}
+  .tc-meta{justify-content:center}
+  .tc-meta>span{justify-content:center}
+}
+
+/* ===== v7: আকাশ নিচে পেজের রঙে মিশে যায়, মসজিদ শুধু রেখায়, কার্ড একটু নিচে ===== */
+.sky::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,color-mix(in srgb,var(--paper) 35%,transparent) 45%,color-mix(in srgb,var(--paper) 80%,transparent) 75%,var(--paper) 100%)}
+.skyline .msq{--sky-top-o:0;--sky-bot-o:0}
+.skyline .msq .sky-body path{fill:none!important;stroke:color-mix(in srgb,var(--gold) 90%,transparent);stroke-width:1.15}
+.skyline .gnd::after{background:none;border-top:1px solid color-mix(in srgb,var(--gold) 70%,transparent);height:13.5%}
+.skyline::after{display:none}
+.today{margin-top:clamp(26px,3.4vw,48px)}
+@media (max-width:760px){.today{margin-top:22px}}
