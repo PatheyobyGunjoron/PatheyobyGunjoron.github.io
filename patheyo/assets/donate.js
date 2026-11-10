@@ -96,7 +96,7 @@
     try { localStorage.setItem('pat_dn', JSON.stringify({ a: v, m: st.m })); } catch (e) {}
     var back = location.origin + location.pathname + location.search;
     fetch(API + '/donate/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: v, method: st.m, src: 'web', back: back }) })
-      .then(function (r) { return r.json(); })
+      .then(function (r) { if (r.status === 404) return { ok: false, msg: 'ডোনেশন ব্যবস্থা এখনো চালু হয়নি (সার্ভার আপডেট বাকি)। একটু পরে আবার চেষ্টা করুন।' }; return r.json(); })
       .then(function (j) {
         if (j && j.ok && /^https:\/\//.test(j.url)) { location.href = j.url; return; }
         st.busy = false; paint(); note((j && j.msg) || 'পেমেন্ট পেজ খোলা যায়নি। একটু পরে চেষ্টা করুন।');
