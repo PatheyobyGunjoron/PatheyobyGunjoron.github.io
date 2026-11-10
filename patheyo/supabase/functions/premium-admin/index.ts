@@ -1,6 +1,7 @@
 // Patheyo — premium-admin (Supabase Edge Function, Deno)
 // অ্যাডমিন প্যানেলের "প্রিমিয়াম" ট্যাবের জন্য দুটি কাজ:
 //   action "sync" → Firebase Realtime Database থেকে প্রিমিয়ামের হিসাব এনে Supabase-এর premium_* টেবিলে বসায়
+//   action "donations" → Firebase-এর donations/ থেকে ডোনেশনের তালিকা (শুধু অঙ্ক, পদ্ধতি, অবস্থা, সময়)
 //   action "send" → শুধু প্রিমিয়াম সদস্য / নির্দিষ্ট সদস্যদের পুশ নোটিফিকেশন পাঠায় (FCM টপিক)
 //
 // গোপনীয়তা: Firebase থেকে uid পড়া হলেও Supabase-এ শুধু বেনামী সদস্য কোড, প্ল্যান, মেয়াদ ও টাকার অঙ্ক যায়।
@@ -148,6 +149,33 @@ Deno.serve(async (req) => {
       const info = { at: new Date().toISOString(), members: members.length, payments: payments.length, scanned: uids.size, full: !!b.full };
       await admin.from("premium_meta").upsert({ k: "sync", v: info, updated_at: new Date().toISOString() });
       return json({ ok: true, ...info });
+    } catch (e) {
+      return json({ ok: false, error: String((e as Error).message ?? e).slice(0, 300) }, 502);
+    }
+  }
+
+  /* ------------------------------------------------------------ ডোনেশন তালিকা (v276)
+     Firebase-এর donations/{id} সরাসরি পড়ে ফেরত দেয় — কোথাও কপি রাখা হয় না।
+     প্রতিটি দানে থাকে শুধু অঙ্ক, পদ্ধতি, কোথা থেকে (অ্যাপ/ওয়েবসাইট), অবস্থা ও সময় — কোনো নাম/নম্বর নেই। */
+  if (b.action === "donations") {
+    try {
+      const RTDB = (Deno.env.get("RTDB_URL") || "https://hijri-tarikh-default-rtdb.firebaseio.com").replace(/\/$/, "");
+      const tok = await accessToken(sa, "https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email");
+      const r = await fetch(`${RTDB}/donations.json?access_token=${encodeURIComponent(tok)}&orderBy=%22$key%22&limitToLast=2000`);
+      if (!r.ok) throw new Error(`Firebase donations: ${r.status} ${(await r.text()).slice(0, 120)}`);
+      const raw: Record<string, Record<string, unknown>> = (await r.json()) || {};
+      const list = Object.entries(raw).filter(([, d]) => d && typeof d === "object").map(([id, d]) => ({
+        id: clip(id, 40),
+        amount: Number(d.amount) || 0,
+        status: clip(d.status, 16) || "pending",
+        pref: clip(d.pref, 12) || null,
+        method: clip(d.method, 40) || null,
+        src: d.src === "web" ? "web" : "app",
+        gateway: clip(d.gateway, 20) || null,
+        at: iso(d.at),
+        paid_at: iso(d.paidAt),
+      })).sort((x, y) => String(y.paid_at || y.at).localeCompare(String(x.paid_at || x.at)));
+      return json({ ok: true, list });
     } catch (e) {
       return json({ ok: false, error: String((e as Error).message ?? e).slice(0, 300) }, 502);
     }

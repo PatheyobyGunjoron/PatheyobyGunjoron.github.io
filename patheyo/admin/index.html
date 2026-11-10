@@ -239,6 +239,7 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
       <button data-t="msg"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13h5"/></svg>বার্তা<span class="nb" id="msgBadge" hidden></span></button>
       <button data-t="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.3 3.5 5.2"/></svg>ইউজার</button>
       <button data-t="prem"><svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/><path d="M5 19h14"/></svg>প্রিমিয়াম</button>
+      <button data-t="don"><svg viewBox="0 0 24 24"><path d="M12 11.5s-4.3-2.5-4.3-5.8A2.4 2.4 0 0 1 12 4.3a2.4 2.4 0 0 1 4.3 1.4c0 3.3-4.3 5.8-4.3 5.8Z"/><path d="M2.5 14.5h3v6h-3zM5.5 15.5c1.6-.8 3.3-.8 4.9 0l2.7 1.2a1 1 0 0 1-.5 2H9.5M5.5 19.6h2.2c1 0 2.1.5 3.2.5 1.2 0 2.6-.5 3.7-1.2l5-3.1a1.1 1.1 0 0 0-1.2-1.9l-4 2.3"/></svg>ডোনেশন</button>
       <button data-t="push"><svg viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1 1 12 0v6l2 2H4zM10 21a2 2 0 0 0 4 0"/></svg>নোটিফিকেশন</button>
       <button data-t="ads"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15.5 8.5a5 5 0 0 1 0 7M18.2 5.8a9 9 0 0 1 0 12.4"/></svg>এড</button>
       <button data-t="rel"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 20h14"/></svg>রিলিজ</button>
@@ -410,6 +411,26 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
         </div>
       </section>
 
+      <!-- ডোনেশন -->
+      <section id="t-don" hidden>
+        <div class="panel">
+          <div class="pm-head"><div><h2>ডোনেশন তালিকা</h2><p class="sub" style="margin:0">অ্যাপ ও ওয়েবসাইট থেকে আসা সব ডোনেশন · <span class="pm-sync" id="dnStamp">লোড হয়নি</span></p></div>
+            <div class="acts"><button class="btn p" id="dnReload" type="button">⟳ রিফ্রেশ</button><button class="btn" id="dnCsv" type="button">⬇ CSV</button></div></div>
+        </div>
+        <div class="privacy"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><div><b>গোপনীয়তা রক্ষিত।</b> দাতার নাম, ফোন নম্বর বা ইমেইল কোথাও নেওয়া বা রাখা হয় না — এখানে শুধু অঙ্ক, পেমেন্ট পদ্ধতি, কোথা থেকে এসেছে ও সময় দেখা যায়। তথ্য সরাসরি Firebase থেকে পড়া হয়।</div></div>
+        <div class="warn" id="dnWarn" hidden></div>
+        <div class="cards" id="dnCards"></div>
+        <div class="grid2">
+          <div class="panel"><h2>পেমেন্ট পদ্ধতি</h2><p class="sub">সফল ডোনেশন কোন পদ্ধতিতে কত এসেছে</p><div id="dnBy"></div></div>
+          <div class="panel"><h2>কোথা থেকে এসেছে</h2><p class="sub">অ্যাপ বনাম ওয়েবসাইট</p><div id="dnSrc"></div></div>
+        </div>
+        <div class="panel"><h2>সব ডোনেশন</h2><p class="sub">নতুনগুলো আগে</p>
+          <div class="seg" id="dnSeg" role="group" aria-label="অবস্থা"><button type="button" data-f="paid" aria-pressed="true">✅ সফল</button><button type="button" data-f="pending" aria-pressed="false">⏳ অসম্পূর্ণ</button><button type="button" data-f="cancelled" aria-pressed="false">✕ বাতিল</button><button type="button" data-f="" aria-pressed="false">সব</button></div>
+          <div class="filters"><select id="dnM" aria-label="পদ্ধতি"><option value="">সব পদ্ধতি</option><option value="bkash">বিকাশ</option><option value="nagad">নগদ</option><option value="rocket">রকেট</option><option value="bank">ব্যাংক / কার্ড</option></select><select id="dnS" aria-label="কোথা থেকে"><option value="">অ্যাপ ও ওয়েবসাইট</option><option value="app">শুধু অ্যাপ</option><option value="web">শুধু ওয়েবসাইট</option></select><select id="dnP" aria-label="সময়"><option value="">সব সময়</option><option value="today">আজ</option><option value="7">গত ৭ দিন</option><option value="30">গত ৩০ দিন</option><option value="month">এই মাস</option></select></div>
+          <div class="tw"><table><thead><tr><th>সময়</th><th style="text-align:right">টাকা</th><th>পদ্ধতি</th><th>কোথা থেকে</th><th>অবস্থা</th><th>রেফারেন্স</th></tr></thead><tbody id="dnBody"></tbody></table></div>
+          <div class="pg"><span id="dnInfo"></span><button class="btn sm" id="dnPrev" type="button">← আগের</button><button class="btn sm" id="dnNext" type="button">পরের →</button></div></div>
+      </section>
+
       <!-- রিলিজ -->
       <section id="t-rel" hidden>
         <div class="panel"><h2>রিলিজ নোট (ডাটাবেস)</h2><p class="sub">ওয়েবসাইটের পাবলিক পেজ আসল APK ও নোট পায় GitHub Releases থেকে। এখানকার তালিকা ঐচ্ছিক — আগের মতোই কাজ করে।</p>
@@ -479,10 +500,11 @@ $('#logoutBtn').onclick=async()=>{await sb.auth.signOut();SESSION=null;show(fals
 
 // ---- ট্যাব ----
 function go(t){tab=t;$$('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'page':'false'));
-  ['dash','msg','users','prem','push','ads','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
+  ['dash','msg','users','prem','don','push','ads','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
   if(t==='dash'){loadDash();timer=setInterval(()=>{if(!document.hidden)loadDash(true)},30000)}
   if(t==='users'){loadUsers(true)}
   if(t==='prem'){loadPrem()}
+  if(t==='don'){loadDon()}
   if(t==='push'){initPush()}
   if(t==='ads'){loadAds()}
   if(t==='rel'){loadRel()}
@@ -588,6 +610,50 @@ let PM=null,PMS={f:'active',off:0},PM_ALL=[],PM_SEL=new Set();const PM_PAGE=25;
 const fdate=d=>d?new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
 function pmFn(body){return sb.auth.getSession().then(({data:{session}})=>fetch(C.SUPABASE_URL.replace(/\/$/,'')+'/functions/v1/premium-admin',{method:'POST',headers:{'Content-Type':'application/json',apikey:C.SUPABASE_ANON_KEY,Authorization:'Bearer '+(session?session.access_token:'')},body:JSON.stringify(body)})).then(async r=>{let j={};try{j=await r.json()}catch{}return{ok:r.ok&&j.ok,status:r.status,j}})}
 const memState=m=>{if(m.plan==='lifetime')return{a:true,left:Infinity};const left=Math.ceil((new Date(m.until).getTime()-Date.now())/DAY);return{a:left>0,left}};
+// ---- ডোনেশন (v276): premium-admin → action "donations" (Firebase-এর donations/ সরাসরি) ----
+const DNM={bkash:'বিকাশ',nagad:'নগদ',rocket:'রকেট',bank:'ব্যাংক / কার্ড'},DNC={bkash:'#E2136E',nagad:'#F26A21',rocket:'#8C3494',bank:'#1F6FD1'};
+const DNST={paid:['সফল','g'],pending:['অসম্পূর্ণ','a'],cancelled:['বাতিল','r']};
+let DN=[],dnF='paid',dnOff=0;const DNPG=50;
+function dnMethod(d){const m=String(d.method||'').toLowerCase();if(/bkash/.test(m))return'bkash';if(/nagad/.test(m))return'nagad';if(/dbbl|rocket/.test(m))return'rocket';if(m)return'bank';return d.pref||''}
+function dnTime(d){return new Date(d.paid_at||d.at||0)}
+function dnBD(dt){return new Date(dt.getTime()+6*3600e3)}            // বাংলাদেশ সময়
+async function loadDon(){
+  $('#dnStamp').textContent='লোড হচ্ছে…';$('#dnWarn').hidden=true;
+  let r;try{r=await pmFn({action:'donations'})}catch{r={ok:false,status:0,j:{}}}
+  if(!r.ok){const w=$('#dnWarn');w.hidden=false;
+    w.innerHTML=r.status===404?'<b>premium-admin</b> ফাংশন ডিপ্লয় করা নেই, বা পুরোনো সংস্করণ চলছে। নতুন <code>patheyo/supabase/functions/premium-admin/index.ts</code> দিয়ে আবার ডিপ্লয় করুন (ধাপ: SETUP-PREMIUM-BANGLA.md)।':esc((r.j&&r.j.error)||('তালিকা আনা যায়নি ('+r.status+')'))+(r.j&&!r.j.error&&r.status===400?' — ফাংশনটি নতুন করে ডিপ্লয় করুন।':'');
+    $('#dnStamp').textContent='লোড হয়নি';DN=[];dnPaint();return}
+  DN=(r.j.list||[]).sort((x,y)=>dnTime(y)-dnTime(x));$('#dnStamp').textContent='সর্বশেষ: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});dnPaint()}
+function dnPaint(){
+  const paid=DN.filter(d=>d.status==='paid'),now=dnBD(new Date()),sod=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-6*3600e3,som=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)-6*3600e3;
+  const sum=a=>a.reduce((t,d)=>t+d.amount,0),inT=(a,f)=>a.filter(d=>dnTime(d).getTime()>=f);
+  const tot=sum(paid),today=inT(paid,sod),mon=inT(paid,som),avg=paid.length?Math.round(tot/paid.length):0;
+  $('#dnCards').innerHTML=`<div class="card money"><b>${tk(tot)}</b><span>মোট ডোনেশন</span><small>${num(paid.length)}টি সফল</small></div>
+    <div class="card gold"><b>${tk(sum(mon))}</b><span>এই মাসে</span><small>${num(mon.length)}টি</small></div>
+    <div class="card"><b>${tk(sum(today))}</b><span>আজ</span><small>${num(today.length)}টি</small></div>
+    <div class="card"><b>${tk(avg)}</b><span>গড় ডোনেশন</span><small>সর্বোচ্চ ${tk(paid.reduce((m,d)=>Math.max(m,d.amount),0))}</small></div>`;
+  const bar=(rows)=>{const mx=Math.max(1,...rows.map(x=>x[2]));return rows.map(([l,c,v,n])=>`<div class="bar"><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};margin-right:.35rem;vertical-align:0"></i>${l}</span><i><u style="width:${(v/mx*100).toFixed(1)}%;background:${c}"></u></i><em>${tk(v)} · ${num(n)}টি</em></div>`).join('')||'<p class="empty">এখনো কোনো সফল ডোনেশন নেই</p>'};
+  const by={};paid.forEach(d=>{const k=dnMethod(d)||'other';(by[k]=by[k]||[0,0]);by[k][0]+=d.amount;by[k][1]++});
+  $('#dnBy').innerHTML=paid.length?bar(Object.entries(by).sort((a,b)=>b[1][0]-a[1][0]).map(([k,v])=>[DNM[k]||'অন্যান্য',DNC[k]||'#8a97ab',v[0],v[1]])):bar([]);
+  const sr={app:[0,0],web:[0,0]};paid.forEach(d=>{sr[d.src][0]+=d.amount;sr[d.src][1]++});
+  $('#dnSrc').innerHTML=paid.length?bar([['📱 অ্যাপ','#235FFE',sr.app[0],sr.app[1]],['🌐 ওয়েবসাইট','#13925E',sr.web[0],sr.web[1]]]):bar([]);
+  dnTable()}
+function dnRows(){const m=$('#dnM').value,sc=$('#dnS').value,pp=$('#dnP').value,now=dnBD(new Date());
+  let from=0;if(pp==='today')from=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-6*3600e3;else if(pp==='month')from=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)-6*3600e3;else if(pp)from=Date.now()-Number(pp)*864e5;
+  return DN.filter(d=>(!dnF||d.status===dnF)&&(!m||dnMethod(d)===m)&&(!sc||d.src===sc)&&(!from||dnTime(d).getTime()>=from))}
+function dnTable(){const rows=dnRows(),pg=rows.slice(dnOff,dnOff+DNPG);
+  $('#dnBody').innerHTML=pg.map(d=>{const t=dnTime(d),st=DNST[d.status]||[esc(d.status),''],mk=dnMethod(d);
+    return`<tr><td>${t.getTime()?t.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Dhaka'}):'—'}</td><td style="text-align:right;font-weight:800">${tk(d.amount)}</td><td>${mk?`<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DNC[mk]||'#8a97ab'};margin-right:.35rem"></i>${DNM[mk]||'অন্যান্য'}`:'—'}${d.method?`<small style="display:block;color:var(--mut)">${esc(d.method)}</small>`:''}</td><td>${d.src==='web'?'🌐 ওয়েবসাইট':'📱 অ্যাপ'}</td><td><span class="tag ${st[1]}">${st[0]}</span></td><td class="code" title="${esc(d.id)}">${esc(d.id.slice(-8))}</td></tr>`}).join('')||'<tr><td colspan="6" class="empty">এই ফিল্টারে কোনো ডোনেশন নেই</td></tr>';
+  const tot=rows.reduce((t,d)=>t+(d.status==='paid'?d.amount:0),0);
+  $('#dnInfo').textContent=rows.length?`${num(dnOff+1)}–${num(Math.min(dnOff+DNPG,rows.length))} / ${num(rows.length)}টি · সফল ${tk(tot)}`:'';
+  $('#dnPrev').disabled=dnOff<=0;$('#dnNext').disabled=dnOff+DNPG>=rows.length}
+$('#dnSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;dnF=b.dataset.f;$$('#dnSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));dnOff=0;dnTable()};
+['#dnM','#dnS','#dnP'].forEach(id=>$(id).onchange=()=>{dnOff=0;dnTable()});
+$('#dnPrev').onclick=()=>{dnOff=Math.max(0,dnOff-DNPG);dnTable()};$('#dnNext').onclick=()=>{dnOff+=DNPG;dnTable()};
+$('#dnReload').onclick=()=>loadDon();
+$('#dnCsv').onclick=()=>{const rows=dnRows();if(!rows.length)return toast('ডাউনলোডের মতো কিছু নেই',1);
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',lines=[['time_bd','amount_bdt','method','gateway_method','source','status','reference'].join(',')].concat(rows.map(d=>[dnTime(d).toLocaleString('en-GB',{timeZone:'Asia/Dhaka'}),d.amount,DNM[dnMethod(d)]||'',d.method||'',d.src,d.status,d.id].map(q).join(',')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv'}));a.download='patheyo-donations-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
 async function loadPrem(quiet){
   const{data,error}=await sb.rpc('admin_premium_summary');
   if(error||!data){$('#pmWarn').hidden=false;$('#pmCards').innerHTML='';$('#pmBody').innerHTML='<tr><td colspan="9" class="empty">তথ্য নেই</td></tr>';return}

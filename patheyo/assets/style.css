@@ -1211,3 +1211,19 @@ html.dnm-on{overflow:hidden}
 }
 @media(max-width:350px){.dm-art{width:76px;height:76px}.dm-disc{width:50px;height:50px}.dm-t{font-size:1.1rem}}
 @media(prefers-reduced-motion:reduce){.dn-mini::after{animation:none}}
+
+/* ===== v11.2 — ডোনেটে কোনো লাফানো, আলোর রিং বা ক্লিকের নড়াচড়া নেই; ঝলক মসৃণ (transform দিয়ে) ===== */
+.dnb::after{content:none;animation:none}
+.dnb-h .i{animation:none}
+.dnb:hover,.dnb:active{transform:none;box-shadow:0 10px 22px -12px rgba(210,155,42,.95),inset 0 1px 0 rgba(255,255,255,.65)}
+.dn-go:hover,.dn-go:active,.dn-mini:active,.dnm-amts button:active,.dnm-ms button:active,.dnm-go:active{transform:none}
+.dv-disc,.dv-chip{animation:none}
+.dv-sp{animation:dntw2 3.2s ease-in-out infinite}
+@keyframes dntw2{0%,100%{opacity:.3}50%{opacity:1}}
+.dnm-burst::before{animation:none;opacity:.6}
+.dnm-c{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.dn-shine,.dn-mini::after{left:0;width:38%;background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,.06) 35%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.06) 65%,transparent 100%);
+  transform:translate3d(-150%,0,0) skewX(-18deg);will-change:transform;backface-visibility:hidden;animation:dnsweep 8s cubic-bezier(.45,.05,.3,1) 1.2s infinite}
+@keyframes dnsweep{0%{transform:translate3d(-150%,0,0) skewX(-18deg)}38%,100%{transform:translate3d(380%,0,0) skewX(-18deg)}}
+@media(max-width:760px){.dn-mini::after{left:0;width:42%;transform:translate3d(-150%,0,0) skewX(-18deg);animation:dnsweep 7s cubic-bezier(.45,.05,.3,1) 1.2s infinite}}
+@media(prefers-reduced-motion:reduce){.dn-shine,.dn-mini::after,.dv-sp{animation:none}}

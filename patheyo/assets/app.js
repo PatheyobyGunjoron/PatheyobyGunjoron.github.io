@@ -141,7 +141,7 @@ const SKY=(function(){
     if(matchMedia('(max-width:760px)').matches&&st){const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68;
       // মোবাইলে সূর্যের পথ "পাথেয়" লেখার চারপাশে একটি চ্যাপ্টা বাঁক: বাঁ দিকে লেখার মাঝামাঝি উচ্চতায় ওঠে, লেখার ঠিক ওপর দিয়ে যায়, ডান দিকে একই উচ্চতায় ডোবে
       const h1=$('.hero h1'),sr=sky.getBoundingClientRect(),hr=h1?h1.getBoundingClientRect():null;
-      if(hr){HZ=(hr.top+hr.height*.55-sr.top)/H*100;TOP=Math.max((hdr+14)/H*100,(hr.top-4-sr.top)/H*100)}else{HZ=16;TOP=8}
+      if(hr){HZ=(hr.top+hr.height*.18-sr.top)/H*100;TOP=Math.min((hdr+8-sr.top)/H*100,HZ-2.5)}else{HZ=14;TOP=8}
       if(HZ-TOP<2.5)HZ=TOP+2.5}else{
       // পিসিতে: পুরো চওড়া জুড়ে বড় খিলান — বাঁ কিনারে ডাউনলোড-সারির উচ্চতায় ওঠে, হেডারের ঠিক নিচ দিয়ে যায়, ডান কিনারে একই উচ্চতায় ডোবে
       const hdr=parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||68,sr=sky.getBoundingClientRect(),m=$('.hero .cta')||$('.hero-meta');
