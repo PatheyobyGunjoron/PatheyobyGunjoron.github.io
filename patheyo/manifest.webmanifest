@@ -1,0 +1,15 @@
+{
+  "name": "Patheyo by Gunjoron",
+  "short_name": "Patheyo",
+  "description": "পাথেয় – চিরস্থায়ী সফরের পরম সঙ্গী। নামাজের সময়সূচি, কুরআন, হাদিস, দোয়া, কিবলা ও তাসবিহ এক অ্যাপে।",
+  "lang": "bn",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#002657",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
