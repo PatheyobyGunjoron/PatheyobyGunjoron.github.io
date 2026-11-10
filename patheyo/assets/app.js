@@ -26,20 +26,47 @@ async function detectLoc(){if(!LOC||!LOC.def)return;
     if(st.state==='granted'){navigator.geolocation.getCurrentPosition(p=>use(p.coords.latitude,p.coords.longitude,'আপনার অবস্থান'),()=>{},{timeout:10000,maximumAge:3600e3});return}}}catch{}
   try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch('https://get.geojs.io/v1/ip/geo.json',{signal:c.signal});const j=await r.json();
     const lat=parseFloat(j.latitude),lng=parseFloat(j.longitude);if(isFinite(lat)&&isFinite(lng))use(lat,lng,j.city||j.region||'আপনার এলাকা')}catch{}}
-function locSelect(){const sel=$('#loc');if(!sel)return;
-  sel.innerHTML=(LOC.i==='auto'?`<option value="auto">📍 ${esc(LOC.name)}</option>`:'')+CITIES.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('')+(LOC.i==='geo'?`<option value="geo">${esc(LOC.name)}</option>`:'')+'<option value="me">📍 আমার অবস্থান</option>';
-  sel.value=String(LOC.i);
-  sel.onchange=()=>{const v=sel.value;
-    if(v==='me'){if(!navigator.geolocation){snack('এই ব্রাউজারে লোকেশন পাওয়া যায় না।');sel.value=String(LOC.i);return}
-      sel.disabled=true;navigator.geolocation.getCurrentPosition(p=>{sel.disabled=false;
-        LOC={name:`আমার অবস্থান (${bn(p.coords.latitude.toFixed(2))}°, ${bn(p.coords.longitude.toFixed(2))}°)`,lat:p.coords.latitude,lng:p.coords.longitude,i:'geo'};save()},
-        ()=>{sel.disabled=false;sel.value=String(LOC.i);snack('লোকেশন পাওয়া যায়নি। তালিকা থেকে শহর বেছে নিন।')},{timeout:12000,maximumAge:3600e3});return}
-    if(v==='geo'||v==='auto')return;const c=CITIES[+v];LOC={name:c[0],lat:c[1],lng:c[2],i:+v};save()};
-  function save(){try{localStorage.setItem('pat_loc',JSON.stringify(LOC))}catch{}locSelect();tick(true);weather()}}
+// এলাকা বাছাই — নিজস্ব ড্রপডাউন (আসল ভেক্টর আইকনসহ, কিবোর্ড দিয়েও চলে)
+const BNC={dhaka:'ঢাকা',chittagong:'চট্টগ্রাম',chattogram:'চট্টগ্রাম',sylhet:'সিলেট',rajshahi:'রাজশাহী',khulna:'খুলনা',barisal:'বরিশাল',barishal:'বরিশাল',rangpur:'রংপুর',mymensingh:'ময়মনসিংহ',comilla:'কুমিল্লা',cumilla:'কুমিল্লা',gazipur:'গাজীপুর',narayanganj:'নারায়ণগঞ্জ',savar:'সাভার',bogra:'বগুড়া',bogura:'বগুড়া',jessore:'যশোর',jashore:'যশোর',"cox's bazar":'কক্সবাজার',dinajpur:'দিনাজপুর',tangail:'টাঙ্গাইল',narsingdi:'নরসিংদী',feni:'ফেনী',noakhali:'নোয়াখালী',pabna:'পাবনা',kushtia:'কুষ্টিয়া',faridpur:'ফরিদপুর',brahmanbaria:'ব্রাহ্মণবাড়িয়া'};
+const bnCity=n=>BNC[String(n||'').trim().toLowerCase()]||n;
+const IPIN='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5s-7-6.1-7-11.8A7 7 0 0 1 19 9.7c0 5.7-7 11.8-7 11.8z"/><circle cx="12" cy="9.6" r="2.6"/></svg>';
+const ILOC='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg>';
+const ICHK='<svg class="i ck" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+function locSelect(){const box=$('.tc-place');if(!box)return;
+  const opts=[];if(LOC.i==='auto')opts.push({v:'auto',t:bnCity(LOC.name),ic:IPIN,sub:'আপনার এলাকা'});
+  CITIES.forEach((c,i)=>opts.push({v:String(i),t:c[0],ic:IPIN}));
+  if(LOC.i==='geo')opts.push({v:'geo',t:'আমার অবস্থান',ic:ILOC,sub:`${bn(LOC.lat.toFixed(2))}°, ${bn(LOC.lng.toFixed(2))}°`});
+  opts.push({v:'me',t:'আমার অবস্থান নিন',ic:ILOC,sub:'ফোনের জিপিএস দিয়ে',act:1});
+  const cur=String(LOC.i),label=LOC.i==='auto'?bnCity(LOC.name):LOC.i==='geo'?'আমার অবস্থান':LOC.name;
+  box.innerHTML=`<div class="lsel"><button type="button" class="ls-b" id="loc" aria-haspopup="listbox" aria-expanded="false" aria-label="এলাকা: ${esc(label)} — বদলাতে চাপুন">${LOC.i==='geo'?ILOC:IPIN}<span>${esc(label)}</span><svg class="i cv" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
+    <ul class="ls-l" role="listbox" aria-label="এলাকা বেছে নিন" tabindex="-1" hidden>${opts.map(o=>`<li role="option" data-v="${o.v}" tabindex="-1" aria-selected="${o.v===cur}" class="${o.act?'act':''}">${o.ic}<span class="lt"><b>${esc(o.t)}</b>${o.sub?`<small>${esc(o.sub)}</small>`:''}</span>${o.v===cur?ICHK:''}</li>`).join('')}</ul></div>`;
+  const btn=box.querySelector('.ls-b'),list=box.querySelector('.ls-l'),items=[...list.children];
+  const open=o=>{list.hidden=!o;btn.setAttribute('aria-expanded',o);box.classList.toggle('open',o);if(o){(items.find(x=>x.getAttribute('aria-selected')==='true')||items[0]).focus()}};
+  btn.onclick=()=>open(list.hidden);
+  btn.onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();open(true)}};
+  list.onkeydown=e=>{const i=items.indexOf(D.activeElement);
+    if(e.key==='ArrowDown'){e.preventDefault();items[Math.min(i+1,items.length-1)].focus()}else if(e.key==='ArrowUp'){e.preventDefault();items[Math.max(i-1,0)].focus()}
+    else if(e.key==='Home'){e.preventDefault();items[0].focus()}else if(e.key==='End'){e.preventDefault();items[items.length-1].focus()}
+    else if(e.key==='Enter'||e.key===' '){e.preventDefault();D.activeElement.click()}else if(e.key==='Escape'||e.key==='Tab'){open(false);if(e.key==='Escape')btn.focus()}};
+  list.onclick=e=>{const li=e.target.closest('li');if(!li)return;open(false);btn.focus();pick(li.dataset.v)};
+  D.addEventListener('pointerdown',function f(e){if(!box.isConnected){D.removeEventListener('pointerdown',f);return}if(!box.contains(e.target))open(false)});
+  function pick(v){
+    if(v==='me'){if(!navigator.geolocation){snack('এই ব্রাউজারে লোকেশন পাওয়া যায় না।');return}
+      btn.classList.add('busy');navigator.geolocation.getCurrentPosition(p=>{btn.classList.remove('busy');
+        LOC={name:'আমার অবস্থান',lat:p.coords.latitude,lng:p.coords.longitude,i:'geo'};save()},
+        ()=>{btn.classList.remove('busy');snack('লোকেশন পাওয়া যায়নি। তালিকা থেকে শহর বেছে নিন।')},{timeout:12000,maximumAge:3600e3});return}
+    if(v==='geo'||v==='auto'||v===String(LOC.i))return;const c=CITIES[+v];LOC={name:c[0],lat:c[1],lng:c[2],i:+v};save()}
+  function save(){try{localStorage.setItem('pat_loc',JSON.stringify(LOC))}catch{}try{localStorage.removeItem('pat_sky')}catch{}locSelect();syncApp(true);tick(true);weather()}}
 let TT=null,TDAY='',lastWaqt='';
-function times(d){const P=W.PtPrayer;if(!P)return null;
-  const m=P.effectiveMethod(C.PRAYER_METHOD||'0',C.PRAYER_METHOD_DEFAULT||'1',LOC.lat,LOC.lng);
+// অ্যাপের মতোই: পদ্ধতি "স্বয়ংক্রিয়" (বাংলাদেশে ইসলামিক ফাউন্ডেশন = ১০০, বাইরে করাচি = ১), মাযহাব হানাফি ("1")
+const methodNow=()=>W.PtPrayer.effectiveMethod('0','1',LOC.lat,LOC.lng);
+function times(d){const P=W.PtPrayer;if(!P)return null;const m=methodNow();
+  const live=W.PtSync&&W.PtSync.times(d,LOC.lat,LOC.lng,m);if(live)return live;     // বাংলাদেশের বাইরে অনলাইনে: aladhan (+৩ মিনিট মাগরিব), অ্যাপের মতো
   return P.times(d,{lat:LOC.lat,lng:LOC.lng,method:m,school:'1'})}
+// অ্যাপের উৎস থেকে হিজরি ভিত্তি, Firebase সমন্বয় ও (বাইরে হলে) aladhan-এর সময় আনা; এলে সব আবার হিসাব
+let syncKey='';
+function syncApp(force){if(!W.PtSync||!LOC)return;const k=new Date().toDateString()+'|'+(+LOC.lat).toFixed(3)+','+(+LOC.lng).toFixed(3);if(!force&&k===syncKey)return;syncKey=k;
+  W.PtSync.load(LOC.lat,LOC.lng,methodNow(),'1').then(()=>{TDAY='';tick._d=null;tick(true)})}
 function state(now,T){
   const t=now.getHours()*60+now.getMinutes()+now.getSeconds()/60,F=toM(T.Fajr),SR=toM(T.Sunrise),Dh=toM(T.Dhuhr),A=toM(T.Asr),M=toM(T.Maghrib),I=toM(T.Isha);
   const nextDay=times(new Date(now.getTime()+864e5)),F2=toM(nextDay&&nextDay.Fajr)+1440;
@@ -81,9 +108,9 @@ function tick(force){
   const tl=$('#tl');if(tl){const T=S.T;let pos;if(S.t<T[0])pos=0;else if(S.t>=T[5])pos=1;else{let k=0;while(k<4&&S.t>=T[k+1])k++;pos=(k+(S.t-T[k])/(T[k+1]-T[k]))/5}
     tl.style.setProperty('--pos',pos.toFixed(4));$$('#waqts li').forEach((li,k)=>li.classList.toggle('past',S.t>=S.T[k]))}
   // তারিখ (মাগরিবের পর হিজরি তারিখ পরের দিনে যায়)
-  if(force||!tick._d||tick._d!==now.getDate()+'-'+(S.t>=toM(TT.Maghrib))){tick._d=now.getDate()+'-'+(S.t>=toM(TT.Maghrib));
+  const dk=now.getDate()+'-'+(S.t>=toM(TT.Maghrib))+'-'+now.getMinutes();if(force||!tick._d||tick._d!==dk){tick._d=dk;syncApp();
     const P=W.PtPrayer,hd=S.t>=toM(TT.Maghrib)?new Date(now.getTime()+864e5):now;
-    const hj=P.hijri(hd,+C.HIJRI_ADJUST||0),bg=P.bangla(now);
+    const hj=W.PtSync?W.PtSync.hijri(now,TT.Maghrib):P.hijri(hd,0),bg=P.bangla(now);
     $('#dates').innerHTML=`<span class="dp"><small>${DAYS[now.getDay()]}</small>${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span class="dp"><small>হিজরি</small>${bn(hj).replace(/\s*হিজরি$/,'')}</span>`:''}<span class="dp"><small>বঙ্গাব্দ</small>${bn(bg)}</span>`}}
 function renderWaqts(){const ol=$('#waqts');if(!ol||!TT)return;lastWaqt='';
   ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><i class="dot" aria-hidden="true"></i><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}

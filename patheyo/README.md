@@ -89,7 +89,7 @@ Body: {"p_installation":"<random UUID>","p_version":"1.6.0","p_version_code":6,"
 Google Search Console-এ সাইট যোগ করুন (URL prefix: https://patheyobygunjoron.github.io/), `sitemap.xml` জমা দিন এবং "URL পরিদর্শন → ইনডেক্সের অনুরোধ" দিন।
 
 ## ফোল্ডার
-- `fonts/` — Kothamala (Regular, Bold, Light), সব বাংলা লেখা এই ফন্টে; ইংরেজি ও সংখ্যা Plus Jakarta Sans
+- `fonts/` — Gunjoron-Font (Thin, Normal, Bold — শুধু বাংলা অক্ষর), সব বাংলা লেখা এই ফন্টে; ইংরেজি ও সংখ্যা Plus Jakarta Sans
 - `screenshots/` — `Dark-1`…`Dark-30` ও `Light-1`…`Light-30` (একই নম্বর = একই স্ক্রিন)
 - সোশ্যাল লিংক: `config.js` এর `SOCIAL`
 - ফিচারের আইকন: `ic0`–`ic14`; `data/features.json` এ `"svg":"icN"` দিন
