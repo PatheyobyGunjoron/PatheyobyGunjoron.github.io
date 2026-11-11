@@ -10,7 +10,7 @@ var css='.ptd-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-it
 +'-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);font-family:"Plus Jakarta Sans",Gunjoron,system-ui,sans-serif;line-height:1.55;transform:translateY(14px) scale(.96);transition:transform .22s cubic-bezier(.2,.9,.3,1.2)}'
 +'.ptd-ov.in .ptd{transform:none}'
 +':root[data-theme=dark] .ptd,.ptd.dk{--bg:rgba(14,28,54,.9);--fg:#f3f7fc;--mut:#a9bad0;--ln:rgba(255,255,255,.14);--soft:rgba(255,255,255,.07);--sh:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08)}'
-+'.ptd.danger{--b:#E5252E}.ptd.send{--b:#235FFE}.ptd.info{--b:#0E8F6A}'
++'.ptd.danger{--b:#E5252E}.ptd.send{--b:#235FFE}.ptd.info{--b:#0E8F6A}.ptd.loc{--b:#235FFE}'
 +'.ptd-ic{width:3.6rem;height:3.6rem;margin:0 auto .85rem;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--b) 14%,transparent);color:var(--b);box-shadow:0 0 0 6px color-mix(in srgb,var(--b) 7%,transparent)}'
 +'.ptd-ic svg{width:1.7rem;height:1.7rem;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
 +'.ptd h2{margin:0 0 .35rem;font-size:1.18rem;font-weight:800;line-height:1.35}'
@@ -28,6 +28,7 @@ var css='.ptd-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-it
 var ICON={
 danger:'<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v5M14 11v5"/></svg>',
 send:'<svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>',
+loc:'<svg viewBox="0 0 24 24"><path d="M12 21.5s-7-6.1-7-11.8A7 7 0 0 1 19 9.7c0 5.7-7 11.8-7 11.8z"/><circle cx="12" cy="9.6" r="2.6"/></svg>',
 info:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>'};
 function inject(){if(D.getElementById('ptd-css'))return;var s=D.createElement('style');s.id='ptd-css';s.textContent=css;D.head.appendChild(s)}
 function el(t,c,x){var e=D.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}

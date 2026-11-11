@@ -18,14 +18,30 @@ const h12=m=>{m=((m%1440)+1440)%1440;let h=Math.floor(m/60)%12||12;return bn(Str
 const cd=sec=>{sec=Math.max(0,Math.round(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return bn((h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'))};
 let LOC=null;
 function loadLoc(){try{const j=JSON.parse(localStorage.getItem('pat_loc')||'null');if(j&&isFinite(j.lat)&&isFinite(j.lng))return j}catch{}
-  try{const a=JSON.parse(sessionStorage.getItem('pat_auto')||'null');if(a&&isFinite(a.lat))return a}catch{}const c=CITIES[0];return{name:c[0],lat:c[1],lng:c[2],i:0,def:1}}
-// নিজে থেকে এলাকা: আগে অনুমতি দেওয়া থাকলে ফোনের লোকেশন, নইলে ইন্টারনেট সংযোগের আনুমানিক শহর (কোনো অনুমতি চাওয়া হয় না)
-async function detectLoc(){if(!LOC||!LOC.def)return;
-  const use=(lat,lng,name)=>{if(!LOC.def)return;LOC={name:name||'আপনার এলাকা',lat,lng,i:'auto'};try{sessionStorage.setItem('pat_auto',JSON.stringify(LOC))}catch{}locSelect();tick(true);weather()};
-  try{if(navigator.permissions&&navigator.geolocation){const st=await navigator.permissions.query({name:'geolocation'});
-    if(st.state==='granted'){navigator.geolocation.getCurrentPosition(p=>use(p.coords.latitude,p.coords.longitude,'আপনার অবস্থান'),()=>{},{timeout:10000,maximumAge:3600e3});return}}}catch{}
-  try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch('https://get.geojs.io/v1/ip/geo.json',{signal:c.signal});const j=await r.json();
-    const lat=parseFloat(j.latitude),lng=parseFloat(j.longitude);if(isFinite(lat)&&isFinite(lng))use(lat,lng,j.city||j.region||'আপনার এলাকা')}catch{}}
+  try{const a=JSON.parse(sessionStorage.getItem('pat_auto')||'null');if(a&&isFinite(a.lat))return a}catch{}
+  try{const a=JSON.parse(localStorage.getItem('pat_auto_ls')||'null');if(a&&isFinite(a.lat)&&Date.now()-a.t<12*3600e3)return a.l}catch{}const c=CITIES[0];return{name:c[0],lat:c[1],lng:c[2],i:0,def:1}}
+// নিজে থেকে এলাকা: আগে অনুমতি দেওয়া থাকলে সরাসরি ফোনের/ডিভাইসের লোকেশন (সবচেয়ে নির্ভুল);
+// না থাকলে আপাতত ইন্টারনেট সংযোগের আনুমানিক শহর দেখায় আর নিজস্ব পপআপে কারণ বলে লোকেশন চায় (অনুমতি আগে "না" বললে ৭ দিন পর্যন্ত আর চায় না)
+async function detectLoc(){if(!LOC||(!LOC.def&&LOC.i!=='auto'))return;
+  const use=(lat,lng,name,gps)=>{if(!(LOC.def||(gps&&LOC.i==='auto')))return;LOC={name:name||'আপনার এলাকা',lat,lng,i:'auto'};
+    try{sessionStorage.setItem('pat_auto',JSON.stringify(LOC))}catch{}try{localStorage.setItem('pat_auto_ls',JSON.stringify({t:Date.now(),l:LOC}))}catch{}
+    locSelect();tick(true);weather()};
+  const ip=async()=>{try{const c=new AbortController();setTimeout(()=>c.abort(),6000);const r=await fetch('https://get.geojs.io/v1/ip/geo.json',{signal:c.signal});const j=await r.json();
+    const lat=parseFloat(j.latitude),lng=parseFloat(j.longitude);if(isFinite(lat)&&isFinite(lng))use(lat,lng,j.city||j.region||'আপনার এলাকা',false)}catch{}};
+  const gps=(onFail,opt)=>navigator.geolocation.getCurrentPosition(p=>use(p.coords.latitude,p.coords.longitude,'আপনার অবস্থান',true),onFail,opt||{timeout:12000,maximumAge:600e3});
+  if(!navigator.geolocation){if(LOC.def)ip();return}
+  let state='prompt';try{if(navigator.permissions){state=(await navigator.permissions.query({name:'geolocation'})).state}}catch{}
+  if(state==='granted'){gps(()=>{if(LOC.def)ip()});return}
+  if(LOC.def)ip();
+  if(state==='denied')return;
+  askLoc(()=>gps(e=>{if(e&&e.code===1)snack('লোকেশনের অনুমতি দেওয়া হয়নি। এলাকার তালিকা থেকে নিজের এলাকা বেছে নিন।')},{timeout:15000,maximumAge:0}))}
+// লোকেশন চাওয়ার আগে নিজস্ব পপআপ — কেন চাই তা বলা হয়
+function askLoc(go){if(!W.PTDialog)return;let last=0;try{last=+localStorage.getItem('pat_locask')||0}catch{}
+  if(Date.now()-last<7*864e5)return;
+  const show=()=>{if(waiting()){setTimeout(show,400);return}
+    W.PTDialog.ask({tone:'loc',title:'আপনার লোকেশন দিন',message:'আপনার এলাকার সঠিক আবহাওয়া, সঠিক নামাজের সময় ও সঠিক হিজরি তারিখ দেখানোর জন্য আমরা আপনার বর্তমান অবস্থান জানতে চাই। অবস্থান আমাদের সার্ভারে জমা রাখা হয় না।',ok:'অনুমতি দিন',cancel:'এখন নয়'})
+      .then(ok=>{try{localStorage.setItem('pat_locask',String(Date.now()))}catch{}if(ok)go()})};
+  setTimeout(show,1500)}
 // এলাকা বাছাই — নিজস্ব ড্রপডাউন (আসল ভেক্টর আইকনসহ, কিবোর্ড দিয়েও চলে)
 const BNC={dhaka:'ঢাকা',chittagong:'চট্টগ্রাম',chattogram:'চট্টগ্রাম',sylhet:'সিলেট',rajshahi:'রাজশাহী',khulna:'খুলনা',barisal:'বরিশাল',barishal:'বরিশাল',rangpur:'রংপুর',mymensingh:'ময়মনসিংহ',comilla:'কুমিল্লা',cumilla:'কুমিল্লা',gazipur:'গাজীপুর',narayanganj:'নারায়ণগঞ্জ',savar:'সাভার',bogra:'বগুড়া',bogura:'বগুড়া',jessore:'যশোর',jashore:'যশোর',"cox's bazar":'কক্সবাজার',dinajpur:'দিনাজপুর',tangail:'টাঙ্গাইল',narsingdi:'নরসিংদী',feni:'ফেনী',noakhali:'নোয়াখালী',pabna:'পাবনা',kushtia:'কুষ্টিয়া',faridpur:'ফরিদপুর',brahmanbaria:'ব্রাহ্মণবাড়িয়া'};
 const bnCity=n=>BNC[String(n||'').trim().toLowerCase()]||n;
@@ -250,7 +266,11 @@ const RAIN=(function(){const cv=$('#rain');if(!cv)return{set(){}};let x;try{x=cv
 
 /* ================= আবহাওয়া (Open-Meteo, ফ্রী) ================= */
 const WXN={0:['পরিষ্কার আকাশ','☀️'],1:['প্রায় পরিষ্কার','🌤️'],2:['আংশিক মেঘলা','⛅'],3:['মেঘলা','☁️'],45:['কুয়াশা','🌫️'],48:['কুয়াশা','🌫️'],51:['হালকা গুঁড়ি বৃষ্টি','🌦️'],53:['গুঁড়ি বৃষ্টি','🌦️'],55:['ঘন গুঁড়ি বৃষ্টি','🌧️'],56:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],57:['ঠান্ডা গুঁড়ি বৃষ্টি','🌧️'],61:['হালকা বৃষ্টি','🌦️'],63:['বৃষ্টি','🌧️'],65:['ভারী বৃষ্টি','🌧️'],66:['ঠান্ডা বৃষ্টি','🌧️'],67:['ঠান্ডা ভারী বৃষ্টি','🌧️'],71:['হালকা তুষার','🌨️'],73:['তুষারপাত','🌨️'],75:['ভারী তুষার','❄️'],77:['তুষারকণা','🌨️'],80:['হালকা ঝরো বৃষ্টি','🌦️'],81:['ঝরো বৃষ্টি','🌧️'],82:['প্রবল ঝরো বৃষ্টি','⛈️'],85:['তুষার ঝড়','🌨️'],86:['প্রবল তুষার ঝড়','❄️'],95:['বজ্রসহ বৃষ্টি','⛈️'],96:['বজ্র ও শিলাবৃষ্টি','⛈️'],99:['প্রবল বজ্র ও শিলাবৃষ্টি','⛈️']};
-function applyWx(c){if(!c)return;const code=+c.weather_code,cc=+c.cloud_cover||0,rainy=(code>=51&&code<=67)||(code>=80&&code<=82)||code>=95,snowy=(code>=71&&code<=77)||code===85||code===86,fog=code===45||code===48;
+function applyWx(c){if(!c)return;let code=+c.weather_code;const cc=+c.cloud_cover||0,pr=Math.max(+c.precipitation||0,(+c.rain||0)+(+c.showers||0)),sf=+c.snowfall||0,tp=+c.temperature_2m;
+  // মডেলের কোডে "পরিষ্কার/মেঘলা" থাকলেও এই মুহূর্তে বৃষ্টি/তুষার পড়ার পরিমাণ থাকলে সেটাই ধরা হয়
+  if(code<51&&(pr>=.1||sf>0)){if(sf>0||tp<=.5)code=(sf>=.5||pr>=2)?75:(pr>=.5?73:71);else code=pr>=4?65:pr>=1?63:61}
+  c=Object.assign({},c,{weather_code:code});
+  const rainy=(code>=51&&code<=67)||(code>=80&&code<=82)||code>=95,snowy=(code>=71&&code<=77)||code===85||code===86,fog=code===45||code===48;
   const over=Math.min(1,Math.max(rainy||snowy?.9:code===3?.75:fog?.6:0,cc>=85?.7:cc>=60?.35:cc>=35?.15:0));
   SKY.setWeather({over,code,rain:rainy||snowy||code>=95});
   CLOUDS.set(rainy||snowy?12:code===3||cc>=85?10:code===2||cc>=40?6:fog?8:3,over>=.6);
@@ -259,11 +279,11 @@ function applyWx(c){if(!c)return;const code=+c.weather_code,cc=+c.cloud_cover||0
   const m=$('#wxmeta');if(m)m.innerHTML=`<span>আর্দ্রতা <b>${bn(Math.round(c.relative_humidity_2m))}%</b></span><span>মেঘ <b>${bn(Math.round(cc))}%</b></span><span class="src">আবহাওয়া: Open-Meteo</span>`}
 let wxT=0;
 async function weather(){if(!LOC)return;const key='pat_wx_'+(+LOC.lat).toFixed(2)+','+(+LOC.lng).toFixed(2);
-  try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c&&Date.now()-c.t<15*60e3){applyWx(c.d);return}}catch{}
-  try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+LOC.lat).toFixed(3)}&longitude=${(+LOC.lng).toFixed(3)}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,precipitation,is_day&timezone=auto`;
+  try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c&&Date.now()-c.t<10*60e3){applyWx(c.d);return}}catch{}
+  try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${(+LOC.lat).toFixed(3)}&longitude=${(+LOC.lng).toFixed(3)}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,precipitation,rain,showers,snowfall,is_day&timezone=auto`;
     const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();applyWx(j.current);try{sessionStorage.setItem(key,JSON.stringify({t:Date.now(),d:j.current}))}catch{}}
   catch{CLOUDS.set(3,false)}}
-function wxInit(){CLOUDS.set(3,false);weather();clearInterval(wxT);wxT=setInterval(()=>{if(!D.hidden)weather()},15*60e3)}
+function wxInit(){CLOUDS.set(3,false);weather();clearInterval(wxT);wxT=setInterval(()=>{if(!D.hidden)weather()},10*60e3)}
 
 /* ================= তারা ================= */
 const STARS={};
