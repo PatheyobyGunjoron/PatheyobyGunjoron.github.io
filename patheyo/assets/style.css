@@ -1,5 +1,5 @@
 /* পাথেয় ওয়েবসাইট — ডিজাইন সিস্টেম v2
-   বাংলা: Gunjoron (Gunjoron-এর ব্র্যান্ড ফন্ট) · ইংরেজি ও সংখ্যা: Plus Jakarta Sans
+   বাংলা অক্ষর: Noto Serif Bengali · বাংলা সংখ্যা: Gunjoron ব্র্যান্ড ফন্ট (দুটোই "Gunjoron" নামের ফন্ট-পরিবারে) · ইংরেজি ও সংখ্যা: Plus Jakarta Sans
    রং: নেভি #002657 · অ্যাপের নীল #235FFE · লাল #EC1C24 (শুধু ব্র্যান্ড চিহ্নে)
    হিরোর আকাশ সূর্যের আসল অবস্থান (উচ্চতা ও দিক) থেকে প্রতি মুহূর্তে হিসাব হয়; বাকি পেজ কাচের (glass) প্যানেলে, লাইট/ডার্ক থিম মানে। */
 
@@ -7,9 +7,13 @@
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-500.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-700.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-800.woff2) format("woff2");font-weight:800 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Thin.woff2) format("woff2");font-weight:100 300;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Normal.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Bold.woff2) format("woff2");font-weight:600 900;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
+/* বাংলা অক্ষর: Noto Serif Bengali · বাংলা সংখ্যা: ব্র্যান্ড ফন্ট (একই ফাইলে, মাপ ও বেসলাইন মেলানো) — সব ফাইল সাইটেই, নেট থেকে কিছু আনতে হয় না */
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Light.woff2) format("woff2");font-weight:100 349;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Regular.woff2) format("woff2");font-weight:350 449;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Medium.woff2) format("woff2");font-weight:450 549;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-SemiBold.woff2) format("woff2");font-weight:550 649;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Bold.woff2) format("woff2");font-weight:650 749;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-ExtraBold.woff2) format("woff2");font-weight:750 900;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
 
 :root{
   color-scheme:light;
@@ -753,7 +757,9 @@ body{background:var(--paper)}
 .skyline .msq{position:static;display:block;flex:0 1 auto;width:min(100%,1040px);height:auto;margin:0 auto -1px;--sky-top:var(--paper);--sky-top-o:.16;--sky-bot:var(--paper);--sky-bot-o:.9;overflow:visible}
 .skyline .msq .sky-body path{stroke:color-mix(in srgb,var(--gold) 85%,transparent);stroke-width:1;vector-effect:non-scaling-stroke}
 .skyline .msq .sky-lines path{stroke:color-mix(in srgb,var(--gold) 80%,transparent)}
-.skyline .msq .sky-moon{fill:var(--gold);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--gold) 60%,transparent))}
+.skyline .msq .sky-moon{fill:var(--gold)}
+/* আভা পুরো চাঁদের গ্রুপে — মাস্কের ভেতরে ফিল্টার দিলে আভা চৌকো হয়ে কাটা পড়ত আর চাঁদের পাশে কালো গোল দাগ পড়ত */
+.skyline .msq .sky-moon-glow{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--gold) 55%,transparent))}
 .skyline .gnd{flex:1 1 0;align-self:stretch;position:relative}
 .skyline .gnd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:13.5%;background:linear-gradient(color-mix(in srgb,var(--paper) 70%,transparent),var(--paper));border-top:1px solid color-mix(in srgb,var(--gold) 70%,transparent)}
 .skyline::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:var(--paper)}
@@ -1227,3 +1233,9 @@ html.dnm-on{overflow:hidden}
 @keyframes dnsweep{0%{transform:translate3d(-150%,0,0) skewX(-18deg)}38%,100%{transform:translate3d(380%,0,0) skewX(-18deg)}}
 @media(max-width:760px){.dn-mini::after{left:0;width:42%;transform:translate3d(-150%,0,0) skewX(-18deg);animation:dnsweep 7s cubic-bezier(.45,.05,.3,1) 1.2s infinite}}
 @media(prefers-reduced-motion:reduce){.dn-shine,.dn-mini::after,.dv-sp{animation:none}}
+
+/* ===== v12: লাইট থিমে রাতের আকাশ — নিচের সাদাটে আভায় সোনালি রেখা ঝাপসা দেখাত, তাই শুধু রেখার রং গাঢ় নেভি
+   (মসজিদের নকশা আগের মতোই; দিনের আকাশ ও ডার্ক থিমে সোনালিই থাকে) ===== */
+:root:not([data-theme=dark]) .sky:not(.lt) .skyline .msq .sky-body path,
+:root:not([data-theme=dark]) .sky:not(.lt) .skyline .msq .sky-lines path{stroke:#1E3A6E}
+:root:not([data-theme=dark]) .sky:not(.lt) .skyline .gnd::after{border-top-color:#1E3A6E}

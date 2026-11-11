@@ -8,9 +8,13 @@
 <title>Patheyo অ্যাডমিন প্যানেল</title>
 <link rel="icon" type="image/png" href="../assets/icon-192.png">
 <style>
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Thin.woff2) format("woff2");font-weight:100 300;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Normal.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/Gunjoron-Bold.woff2) format("woff2");font-weight:600 900;font-display:swap;unicode-range:U+0980-09FF,U+200C-200D,U+0964-0965,U+25CC}
+/* বাংলা অক্ষর: Noto Serif Bengali · বাংলা সংখ্যা: ব্র্যান্ড ফন্ট (একই ফাইলে, মাপ ও বেসলাইন মেলানো) — সব ফাইল সাইটেই, নেট থেকে কিছু আনতে হয় না */
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Light.woff2) format("woff2");font-weight:100 349;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Regular.woff2) format("woff2");font-weight:350 449;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Medium.woff2) format("woff2");font-weight:450 549;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-SemiBold.woff2) format("woff2");font-weight:550 649;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Bold.woff2) format("woff2");font-weight:650 749;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-ExtraBold.woff2) format("woff2");font-weight:750 900;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-500.woff2) format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-700.woff2) format("woff2");font-weight:700;font-display:swap}
 :root{color-scheme:light;--font:"Plus Jakarta Sans",Gunjoron,system-ui,sans-serif;
@@ -65,7 +69,7 @@ table{width:100%;border-collapse:collapse;font-size:.9rem;min-width:620px}
 th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
 th{background:var(--soft);font-weight:700;font-size:.82rem;color:var(--mut)}
 tr:last-child td{border-bottom:0}
-.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Gunjoron,monospace;font-size:.85rem}
 label{display:block;margin:.8rem 0 .25rem;font-weight:700;font-size:.92rem}
 input,select,textarea{width:100%;padding:.62rem .8rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,93,146,.18)}
@@ -189,7 +193,7 @@ nav.side button{position:relative}
 .pm-left i u{display:block;height:100%;border-radius:99px;background:var(--green)}
 .pm-left.wn i u{background:var(--amber)}.pm-left.bad i u{background:var(--red)}
 .pm-left em{font-style:normal;font-size:.82rem;white-space:nowrap;min-width:64px;text-align:right}
-.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:.03em;font-size:.86rem}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Gunjoron,monospace;font-weight:700;letter-spacing:.03em;font-size:.86rem}
 .pm-sel{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin:.6rem 0 0;padding:.55rem .8rem;border-radius:12px;background:var(--soft);font-size:.9rem}
 .pm-tpl{display:flex;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .2rem}
 .pm-cnt{font-size:.86rem;color:var(--mut);margin:.35rem 0 0}
