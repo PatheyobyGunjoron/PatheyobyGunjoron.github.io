@@ -1,17 +1,7 @@
 এই ফোল্ডারে সাইটের সব ফন্ট আছে — সাইট চালাতে ইন্টারনেট থেকে কোনো ফন্ট আনতে হয় না।
 
-বাংলা: "Gunjoron" ফন্ট-পরিবার (CSS-এ নাম আগের মতোই)
-- বাংলা অক্ষর: Noto Serif Bengali (SIL Open Font License 1.1 — LICENSE-NotoSerifBengali.txt)
-- বাংলা সংখ্যা ০-৯: Gunjoron-Font ব্র্যান্ড ফন্ট (© Gunjoron | গুঞ্জরণ) — একই ফাইলে বসানো,
-  মাত্রা-রেখা ও বেসলাইন Noto-র সাথে মেলানো, ওজন (weight) প্রতিটি ফাইলের সাথে মিলিয়ে বাছাই করা।
-- NotoSerifBengaliPatheyo-BN-Light.woff2     → font-weight 100–349
-- NotoSerifBengaliPatheyo-BN-Regular.woff2   → font-weight 350–449
-- NotoSerifBengaliPatheyo-BN-Medium.woff2    → font-weight 450–549
-- NotoSerifBengaliPatheyo-BN-SemiBold.woff2  → font-weight 550–649
-- NotoSerifBengaliPatheyo-BN-Bold.woff2      → font-weight 650–749
-- NotoSerifBengaliPatheyo-BN-ExtraBold.woff2 → font-weight 750–900
-ফাইলগুলোতে শুধু বাংলা অক্ষর রাখা হয়েছে (unicode-range: U+0980-09FF ইত্যাদি), তাই ইংরেজি লেখা আগের ফন্টেই থাকে।
-মাপ অ্যাপের মতোই (unitsPerEm 1170) — অ্যাপ ও ওয়েবসাইটে লেখা একই রকম দেখায়।
-
-ইংরেজি ও সংখ্যা: Plus Jakarta Sans (SIL Open Font License; লাইসেন্স ফাইল সাথে আছে)
-- PlusJakartaSans-300/500/700/800.woff2
+ব্র্যান্ড ফন্ট: Noto Serif by Gunjoron ("NotoSerifByGunjoron") — বাংলা লেখা, বাংলা সংখ্যা (০-৯) ও ইংরেজি সংখ্যা (0-9)। (© Gunjoron | গুঞ্জরণ, SIL OFL 1.1 — OFL-NotoSerifByGunjoron.txt)
+- NotoSerifByGunjoron-Light / Regular / Medium / SemiBold / Bold / ExtraBold.woff2 → ওজন 300 / 400 / 500 / 600 / 700 / 800
+- ফাইলে শুধু বাংলা, সংখ্যা ও কয়েকটি চিহ্ন রাখা (সাবসেট) — ছোট ফাইল। অ্যাপের মূল ফন্ট থেকে tools/fonts-এর মতো করে বানানো: pyftsubset ... --flavor=woff2
+- মাপ অ্যাপের মতোই: ফন্ট ১০০০ UPM, তাই CSS-এ size-adjust:85.47% + ascent/descent override — লেআউট আগের মাপেই থাকে।
+ইংরেজি অক্ষর: Plus Jakarta Sans (SIL OFL; লাইসেন্স ফাইল সাথে আছে) — PlusJakartaSans-300/500/700/800.woff2

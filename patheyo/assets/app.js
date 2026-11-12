@@ -127,6 +127,7 @@ function tick(force){
   const dk=now.getDate()+'-'+(S.t>=toM(TT.Maghrib))+'-'+now.getMinutes();if(force||!tick._d||tick._d!==dk){tick._d=dk;syncApp();
     const P=W.PtPrayer,hd=S.t>=toM(TT.Maghrib)?new Date(now.getTime()+864e5):now;
     const hj=W.PtSync?W.PtSync.hijri(now,TT.Maghrib):P.hijri(hd,0),bg=P.bangla(now);
+    {const m=hj&&String(hj).replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).match(/\d+/);window.PT_HDAY=m?+m[0]:0}   // চাঁদের আকার হিজরি তারিখ থেকে
     $('#dates').innerHTML=`<span class="dp"><small>${DAYS[now.getDay()]}</small>${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span class="dp"><small>হিজরি</small>${bn(hj).replace(/\s*হিজরি$/,'')}</span>`:''}<span class="dp"><small>বঙ্গাব্দ</small>${bn(bg)}</span>`}}
 function renderWaqts(){const ol=$('#waqts');if(!ol||!TT)return;lastWaqt='';
   ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><i class="dot" aria-hidden="true"></i><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
@@ -216,14 +217,19 @@ const SKY=(function(){
     const sun=$('#sun');if(sun){if(!(first&&sb.alt>-1&&rise(sun,sb,2800,sunO))){if(!sun.classList.contains('nt')){sun.style.setProperty('--x',sp.x.toFixed(2)+'%');sun.style.setProperty('--y',sp.y.toFixed(2)+'%');sun.style.setProperty('--o',sunO(sb.alt).toFixed(2))}}
       const warm=Math.min(Math.max(1-sb.alt/16,0),1);sun.style.setProperty('--sc',rgb(mix([255,240,200],[255,150,80],warm)))}
     // চাঁদ
-    const el=Math.acos(Math.cos(me.lat)*Math.cos(me.lon-se.lon)),k=(1-Math.cos(el))/2,waxing=mod(me.lon-se.lon,2*Math.PI)<Math.PI,mp=place(mb);
-    const moon=$('#moon');if(moon){const mo=alt=>(alt>-1.5?Math.min(Math.max((alt+1.5)/3,0),1):0)*(sb.alt>6?.5:1)*(k<.03?0:1)*Math.max(0,1-ov*1.1);
-      if(!(first&&mb.alt>-1&&rise(moon,mb,2800,mo))&&!moon.classList.contains('nt')){moon.style.setProperty('--x',mp.x.toFixed(2)+'%');moon.style.setProperty('--y',mp.y.toFixed(2)+'%');moon.style.setProperty('--o',(mp.up?mo(mb.alt):0).toFixed(2))}
+    let el=Math.acos(Math.cos(me.lat)*Math.cos(me.lon-se.lon)),k=(1-Math.cos(el))/2,waxing=mod(me.lon-se.lon,2*Math.PI)<Math.PI;
+    // চাঁদের আকার হিজরি তারিখের সাথে মেলে: ১ তারিখে চিকন বাঁকা, ৭-৮ তারিখে অর্ধেক, ১৪-১৫ তারিখে পূর্ণ, তারপর আবার কমে
+    const hd=window.PT_HDAY;if(hd>0){const age=Math.min(Math.max(hd-.3,.3),29.2);k=Math.max((1-Math.cos(2*Math.PI*age/29.53))/2,.045);waxing=age<14.765}
+    // চাঁদ শুধু সূর্য ডোবার পরে দেখা যায়: ডান দিগন্ত থেকে উঠে রাতের সময় ধরে আকাশ পেরিয়ে বাঁ দিগন্তে ডোবে (সূর্যের উল্টো দিকে)। দিনে চাঁদ থাকে না।
+    const moon=$('#moon'),HH=mod(sb.H,2*Math.PI),nightOK=sb.H0>0&&sb.H0<Math.PI&&HH>=sb.H0&&HH<=2*Math.PI-sb.H0,
+      nf=nightOK?(HH-sb.H0)/(2*Math.PI-2*sb.H0):0,mq=place({H:1-2*nf,H0:1,top:sb.top});
+    if(moon){const mo=(Math.min(Math.max((-sb.alt-1)/3,0),1))*(!(hd>0)&&k<.03?0:1)*Math.max(0,1-ov*1.1)*(nightOK?1:0);
+      moon.style.setProperty('--x',mq.x.toFixed(2)+'%');moon.style.setProperty('--y',mq.y.toFixed(2)+'%');moon.style.setProperty('--o',mo.toFixed(2));
       const ml=$('#mlit');ml&&ml.setAttribute('d',moonPath(k,waxing))}
     intro=false;sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2)+GK);STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
     const si=$('#suninfo');if(si){const up=sb.alt>=-.83;
       const s1t=up?`<span><i></i>সূর্য <b>${dir(sb.az)}</b> আকাশে · <b>${bn(Math.round(sb.alt))}°</b> উঁচুতে</span>`:`<span><i></i>সূর্য দিগন্তের <b>${bn(Math.round(-sb.alt))}°</b> নিচে</span>`;
-      const s2t=(mb.alt>0&&k>=.03)?`<span><i class="m"></i>চাঁদ <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
+      const s2t=(nightOK&&sb.alt<-1&&k>=.03)?`<span><i class="m"></i>চাঁদ <b>${bn(Math.round(k*100))}%</b> আলোকিত</span>`:'';
       si.innerHTML=s1t+s2t}}
   function setWeather(w){WX=w;if(last)update(last)}
   return{update,setWeather,get:()=>WX}})();
@@ -572,3 +578,6 @@ $$('#acc details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$$('#ac
 prayerInit();
 const REL=releases();stats();reviews();
 })(window,document);
+
+/* ট্যাব লুকানো থাকলে অ্যানিমেশন থামে (ব্যাটারি সাশ্রয়) */
+document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('hid',document.hidden));

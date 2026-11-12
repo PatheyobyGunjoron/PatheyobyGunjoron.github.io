@@ -1,5 +1,5 @@
 /* পাথেয় ওয়েবসাইট — ডিজাইন সিস্টেম v2
-   বাংলা অক্ষর: Noto Serif Bengali · বাংলা সংখ্যা: Gunjoron ব্র্যান্ড ফন্ট (দুটোই "Gunjoron" নামের ফন্ট-পরিবারে) · ইংরেজি ও সংখ্যা: Plus Jakarta Sans
+   ব্র্যান্ড ফন্ট Noto Serif by Gunjoron: বাংলা লেখা, বাংলা ও ইংরেজি সংখ্যা ("NotoSerifByGunjoron") · ইংরেজি অক্ষর: Plus Jakarta Sans
    রং: নেভি #002657 · অ্যাপের নীল #235FFE · লাল #EC1C24 (শুধু ব্র্যান্ড চিহ্নে)
    হিরোর আকাশ সূর্যের আসল অবস্থান (উচ্চতা ও দিক) থেকে প্রতি মুহূর্তে হিসাব হয়; বাকি পেজ কাচের (glass) প্যানেলে, লাইট/ডার্ক থিম মানে। */
 
@@ -7,17 +7,17 @@
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-500.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-700.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Plus Jakarta Sans";src:url(../fonts/PlusJakartaSans-800.woff2) format("woff2");font-weight:800 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD}
-/* বাংলা অক্ষর: Noto Serif Bengali · বাংলা সংখ্যা: ব্র্যান্ড ফন্ট (একই ফাইলে, মাপ ও বেসলাইন মেলানো) — সব ফাইল সাইটেই, নেট থেকে কিছু আনতে হয় না */
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Light.woff2) format("woff2");font-weight:100 349;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Regular.woff2) format("woff2");font-weight:350 449;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Medium.woff2) format("woff2");font-weight:450 549;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-SemiBold.woff2) format("woff2");font-weight:550 649;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-Bold.woff2) format("woff2");font-weight:650 749;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
-@font-face{font-family:Gunjoron;src:url(../fonts/NotoSerifBengaliPatheyo-BN-ExtraBold.woff2) format("woff2");font-weight:750 900;font-display:swap;unicode-range:U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC}
+/* বাংলা অক্ষর, বাংলা ও ইংরেজি সংখ্যা: ব্র্যান্ড ফন্ট Noto Serif by Gunjoron (সাইটেই, নেট থেকে কিছু আনতে হয় না) · ইংরেজি অক্ষর: Plus Jakarta Sans */
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-Light.woff2) format("woff2");font-weight:300;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-Regular.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-Medium.woff2) format("woff2");font-weight:500;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-SemiBold.woff2) format("woff2");font-weight:600;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-Bold.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
+@font-face{font-family:NotoSerifByGunjoron;src:url(../fonts/NotoSerifByGunjoron-ExtraBold.woff2) format("woff2");font-weight:800;font-display:swap;unicode-range:U+0030-0039,U+0964-0965,U+0980-09FF,U+200C-200D,U+25CC;size-adjust:85.47%;ascent-override:97.2%;descent-override:35%;line-gap-override:0%}
 
 :root{
   color-scheme:light;
-  --f:"Plus Jakarta Sans",Gunjoron,system-ui,sans-serif;
+  --f:"NotoSerifByGunjoron","Plus Jakarta Sans",system-ui,sans-serif;
   --navy:#002657;--blue:#235FFE;--blue-2:#4F86FF;--ember:#EC1C24;--ok:#13925E;--warn:#B7791F;--gold:#D29B2A;
   --paper:#F2F6FC;--surface:#FFFFFF;--surface-2:#E9F0FA;--ink:#0A1A33;--ink-2:#46566F;--ink-3:#6B7A90;
   --line:rgba(10,26,51,.10);--line-2:rgba(10,26,51,.18);
@@ -54,7 +54,7 @@ p{margin:0}
 .sr:focus{position:fixed!important;left:12px;top:12px;width:auto;height:auto;clip:auto;z-index:1000;background:var(--surface);padding:.5rem 1rem;border-radius:10px;box-shadow:var(--shadow-2)}
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 var(--gut)}
 .i{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.num,.en{font-family:"Plus Jakarta Sans",var(--f);font-variant-numeric:tabular-nums}
+.num,.en{font-family:var(--f);font-variant-numeric:tabular-nums}
 
 /* ---------- বাটন ---------- */
 .btn{--bg:var(--surface);--fg:var(--ink);--bd:var(--line-2);display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:48px;padding:.55em 1.25em;border-radius:999px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);font-weight:700;font-size:1rem;line-height:1.2;text-decoration:none;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease;white-space:nowrap;-webkit-tap-highlight-color:transparent}
@@ -66,7 +66,7 @@ p{margin:0}
 .btn.sm{min-height:38px;padding:.35em .95em;font-size:.99rem}
 .btn.lg{min-height:58px;padding:.6em 1.6em;font-size:1.08rem}
 .btn .i{width:1.25em;height:1.25em}
-.btn small{display:block;font-weight:500;font-size:.74em;opacity:.8;font-family:"Plus Jakarta Sans",var(--f)}
+.btn small{display:block;font-weight:500;font-size:.74em;opacity:.8;font-family:var(--f)}
 .btn .bt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25}
 .lk{background:none;border:0;padding:.3em 0;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .chip{display:inline-flex;align-items:center;gap:.4em;padding:.15em .7em;border-radius:999px;font-size:.92rem;font-weight:700;background:var(--accent-soft);color:var(--accent)}
@@ -77,9 +77,9 @@ p{margin:0}
 .hdr.s::before,.hdr.solid::before,html.nav-open .hdr::before{opacity:1}
 .hdr.s,.hdr.solid,html.nav-open .hdr{color:var(--ink)}
 .hdr .bar{position:relative;height:100%;display:flex;align-items:center;gap:1rem}
-.brand{display:flex;align-items:center;gap:.6rem;color:inherit;text-decoration:none;font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:1.02rem;letter-spacing:-.01em;margin-right:auto}
+.brand{display:flex;align-items:center;gap:.6rem;color:inherit;text-decoration:none;font-family:var(--f);font-weight:800;font-size:1.02rem;letter-spacing:-.01em;margin-right:auto}
 .brand img{width:38px;height:38px;border-radius:50%;box-shadow:0 4px 12px -4px rgba(0,38,87,.45)}
-.brand b{font-family:Gunjoron,var(--f);font-size:1.4rem;font-weight:700;line-height:1}
+.brand b{font-family:NotoSerifByGunjoron,var(--f);font-size:1.4rem;font-weight:700;line-height:1}
 .brand span{display:flex;flex-direction:column;line-height:1.1}
 .brand small{font-weight:500;font-size:.85rem;opacity:.75;letter-spacing:.01em}
 .nav{display:flex;align-items:center;gap:.15rem}
@@ -110,8 +110,8 @@ p{margin:0}
 .hero{position:relative;padding:calc(var(--hdr) + clamp(28px,6vw,72px)) 0 0}
 .hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:clamp(16px,4vw,56px)}
 .hero-t{position:relative;z-index:2;padding-bottom:clamp(40px,8vw,120px)}
-.hero h1{font-family:Gunjoron,var(--f);font-weight:700;font-size:clamp(62px,10vw,128px);line-height:1;letter-spacing:-.01em;margin:0 0 .12em;text-shadow:0 10px 40px rgba(0,0,0,.18)}
-.hero .tag{font-family:Gunjoron,var(--f);font-size:clamp(22px,2.8vw,34px);line-height:1.35;color:var(--sfg);opacity:.95;margin:0 0 .9rem}
+.hero h1{font-family:NotoSerifByGunjoron,var(--f);font-weight:700;font-size:clamp(62px,10vw,128px);line-height:1;letter-spacing:-.01em;margin:0 0 .12em;text-shadow:0 10px 40px rgba(0,0,0,.18)}
+.hero .tag{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(22px,2.8vw,34px);line-height:1.35;color:var(--sfg);opacity:.95;margin:0 0 .9rem}
 .hero .lede{font-size:clamp(16px,1.5vw,18.5px);color:var(--sfg2);max-width:34em;margin:0 0 1.6rem}
 .cta{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
 .sky .btn.p{--bg:var(--sfg);--fg:var(--s1);box-shadow:0 14px 30px -14px rgba(0,0,0,.55)}
@@ -155,7 +155,7 @@ p{margin:0}
 .tc-place b{color:var(--ink)}
 .locsel{appearance:none;-webkit-appearance:none;border:1px solid var(--line-2);background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7A90' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") right .55rem center/16px no-repeat;border-radius:999px;padding:.3rem 2rem .3rem .85rem;font-weight:700;font-size:1.02rem;color:var(--ink);cursor:pointer;max-width:100%;min-height:36px}
 .locsel:hover{border-color:var(--accent)}
-.tc-clock{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:clamp(34px,4.4vw,48px);line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tc-clock{font-family:var(--f);font-weight:800;font-size:clamp(34px,4.4vw,48px);line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .tc-clock small{font-size:.38em;font-weight:700;margin-left:.3em;color:var(--accent);vertical-align:.9em}
 .tc-dates{display:flex;flex-wrap:wrap;gap:.1rem .9rem;font-size:1rem;color:var(--ink-2)}
 .tc-dates span{white-space:nowrap}
@@ -163,7 +163,7 @@ p{margin:0}
 .waqts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
 .waqts li{position:relative;border-radius:var(--r-m);padding:.75rem .4rem .7rem;text-align:center;background:var(--surface-2);border:1px solid transparent;transition:background-color .3s,border-color .3s}
 .waqts .wn{display:block;font-size:.99rem;font-weight:700;color:var(--ink-2)}
-.waqts .wt{display:block;font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:clamp(15px,1.6vw,19px);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.waqts .wt{display:block;font-family:var(--f);font-weight:800;font-size:clamp(15px,1.6vw,19px);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .waqts .wt small{font-size:.62em;font-weight:700;color:var(--ink-3);margin-left:.15em}
 .waqts li.now{background:var(--accent);color:var(--accent-ink);box-shadow:0 12px 26px -14px var(--accent)}
 .waqts li.now .wn,.waqts li.now .wt small{color:inherit;opacity:.85}
@@ -171,7 +171,7 @@ p{margin:0}
 .waqts li.srw .wn::before{content:"";display:inline-block;width:.45em;height:.45em;border-radius:50%;background:var(--gold);margin-right:.3em;vertical-align:.15em}
 .tc-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem 1rem;border-top:1px dashed var(--line-2);padding-top:.8rem;font-size:1rem;color:var(--ink-2)}
 .tc-foot b{color:var(--ink)}
-.tc-foot .cd{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.tc-foot .cd{font-family:var(--f);font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
 .tc-foot .forbid{color:var(--ember);font-weight:700}
 .tc-foot small{color:var(--ink-3)}
 
@@ -180,13 +180,13 @@ p{margin:0}
 .sec.tint{background:var(--surface)}
 .sh{max-width:46rem;margin:0 0 clamp(28px,4vw,48px)}
 .sh.c{margin-left:auto;margin-right:auto;text-align:center}
-.sh h2{font-family:Gunjoron,var(--f);font-size:clamp(32px,4.6vw,52px);line-height:1.2;margin:0 0 .5rem}
+.sh h2{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(32px,4.6vw,52px);line-height:1.2;margin:0 0 .5rem}
 .sh p{color:var(--ink-2);font-size:clamp(16px,1.5vw,18.5px)}
 
 /* স্ট্যাট সারি */
 .stats{display:flex;flex-wrap:wrap;gap:clamp(18px,4vw,64px);justify-content:center;padding:clamp(40px,6vw,64px) 0 0}
 .stat{text-align:center;min-width:120px}
-.stat b{display:block;font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:clamp(30px,3.6vw,44px);letter-spacing:-.02em;line-height:1.1}
+.stat b{display:block;font-family:var(--f);font-weight:800;font-size:clamp(30px,3.6vw,44px);letter-spacing:-.02em;line-height:1.1}
 .stat span{color:var(--ink-2);font-size:1.02rem}
 
 /* ---------- ফিচার এক্সপ্লোরার ---------- */
@@ -199,14 +199,14 @@ p{margin:0}
 .fx-list .gi{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--surface-2);color:var(--accent);flex:none;transition:background-color .2s,color .2s}
 .fx-list button[aria-selected=true] .gi{background:var(--accent);color:var(--accent-ink)}
 .fx-list .gi .i{width:19px;height:19px}
-.fx-list .ct{margin-left:auto;font-family:"Plus Jakarta Sans",var(--f);font-size:.91rem;font-weight:700;color:var(--ink-3)}
+.fx-list .ct{margin-left:auto;font-family:var(--f);font-size:.91rem;font-weight:700;color:var(--ink-3)}
 .fx-phone{position:sticky;top:calc(var(--hdr) + 16px)}
 .fx-phone .phone{max-width:300px;margin:0 auto}
 .fx-dots{display:flex;justify-content:center;gap:6px;margin-top:12px;min-height:8px}
 .fx-dots button{width:8px;height:8px;border-radius:99px;border:0;padding:0;background:var(--line-2);cursor:pointer;transition:width .25s,background-color .25s}
 .fx-dots button[aria-current=true]{width:22px;background:var(--accent)}
 .fx-body{min-width:0;padding-top:.4rem}
-.fx-body h3{font-family:Gunjoron,var(--f);font-size:clamp(26px,3vw,36px);line-height:1.25;margin:0 0 .4rem}
+.fx-body h3{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(26px,3vw,36px);line-height:1.25;margin:0 0 .4rem}
 .fx-body .d{color:var(--ink-2);font-size:1.05rem;margin:0 0 1.2rem;max-width:38em}
 .ticks{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
 .ticks>li{position:relative;padding:.5rem 0 .5rem 2.1rem;border-bottom:1px solid var(--line)}
@@ -256,8 +256,8 @@ p{margin:0}
 .rel-card::after{content:"";position:absolute;right:-18%;top:-30%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);pointer-events:none}
 .rel-card .rk{display:inline-flex;align-items:center;gap:.4rem;font-size:.97rem;font-weight:700;opacity:.9}
 .rel-card .rk i{width:8px;height:8px;border-radius:50%;background:#5fe3a4;box-shadow:0 0 0 4px rgba(95,227,164,.25)}
-.rel-card h3{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:clamp(34px,4.6vw,56px);letter-spacing:-.03em;line-height:1.05;margin:.45rem 0 .5rem}
-.rel-card h3 span{font-family:Gunjoron,var(--f);font-weight:700;letter-spacing:0}
+.rel-card h3{font-family:var(--f);font-weight:800;font-size:clamp(34px,4.6vw,56px);letter-spacing:-.03em;line-height:1.05;margin:.45rem 0 .5rem}
+.rel-card h3 span{font-family:NotoSerifByGunjoron,var(--f);font-weight:700;letter-spacing:0}
 .rel-card .rm{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:1.02rem;opacity:.88;margin-bottom:1.5rem}
 .rel-card .cta .btn.p{--bg:#fff;--fg:#06204d}
 .rel-card .cta .btn.g{--fg:#fff;--bd:rgba(255,255,255,.4)}
@@ -284,7 +284,7 @@ p{margin:0}
 .np li::marker{color:var(--ink-3)}
 .clog{margin-top:clamp(28px,4vw,44px)}
 .clog-h{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.clog-h h3{font-family:Gunjoron,var(--f);font-size:clamp(24px,2.6vw,30px)}
+.clog-h h3{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(24px,2.6vw,30px)}
 .clamp{position:relative;max-height:520px;overflow:hidden}
 .clamp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(transparent,var(--paper));pointer-events:none}
 .clamp.open{max-height:none}.clamp.open::after{display:none}
@@ -297,7 +297,7 @@ p{margin:0}
 .orow summary{list-style:none;display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:.6rem 1.2rem;padding:.9rem 1.2rem;cursor:pointer}
 .orow summary::-webkit-details-marker{display:none}
 .orow summary:hover{background:var(--surface-2)}
-.orow .on b{font-family:"Plus Jakarta Sans",var(--f);font-weight:700}
+.orow .on b{font-family:var(--f);font-weight:700}
 .orow .on small{display:block;color:var(--ink-3);font-size:.95rem}
 .orow time,.orow .sz{color:var(--ink-2);font-size:.99rem;white-space:nowrap}
 .orow .chev{transition:transform .25s;color:var(--ink-3)}
@@ -311,7 +311,7 @@ p{margin:0}
 
 /* ---------- মতামত ---------- */
 .rv-top{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:1.6rem}
-.rv-avg{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;font-size:3rem;line-height:1;letter-spacing:-.03em}
+.rv-avg{font-family:var(--f);font-weight:800;font-size:3rem;line-height:1;letter-spacing:-.03em}
 .stars{color:var(--gold);letter-spacing:.08em;font-size:1.1rem;line-height:1}
 .rvs{columns:3 280px;column-gap:1rem}
 .rv{break-inside:avoid;margin:0 0 1rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:1.2rem 1.3rem}
@@ -331,7 +331,7 @@ p{margin:0}
 .acc .ab p+p{margin-top:.6rem}
 .acc .ab ol,.acc .ab ul{margin:.4rem 0 0;padding-left:1.3rem}
 .help-card{background:var(--navy);color:#fff;border-radius:var(--r-xl);padding:clamp(22px,3vw,34px);position:sticky;top:calc(var(--hdr) + 16px);overflow:hidden}
-.help-card h3{font-family:Gunjoron,var(--f);font-size:1.6rem;margin-bottom:.5rem}
+.help-card h3{font-family:NotoSerifByGunjoron,var(--f);font-size:1.6rem;margin-bottom:.5rem}
 .help-card p{opacity:.85;margin-bottom:1.1rem}
 .help-card ul{list-style:none;padding:0;margin:0 0 1.4rem;display:grid;gap:.5rem}
 .help-card li{display:flex;gap:.6rem;align-items:flex-start;opacity:.92}
@@ -340,7 +340,7 @@ p{margin:0}
 
 /* ---------- যোগাযোগ ব্যান্ড ---------- */
 .band{position:relative;overflow:hidden;border-radius:var(--r-xl);padding:clamp(28px,5vw,64px);background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:center}
-.band h2{font-family:Gunjoron,var(--f);font-size:clamp(30px,4vw,46px);line-height:1.2;margin-bottom:.6rem}
+.band h2{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(30px,4vw,46px);line-height:1.2;margin-bottom:.6rem}
 .band p{color:var(--ink-2)}
 .band-acts{display:grid;gap:.6rem}
 .band-acts a{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem;border-radius:var(--r-m);background:var(--paper);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:700;transition:border-color .2s,transform .2s}
@@ -356,8 +356,8 @@ p{margin:0}
 .fgrid{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:clamp(22px,3vw,40px)}
 .fbrand .fb-name{display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem}
 .fbrand .fb-name img{width:48px;height:48px;border-radius:50%}
-.fbrand .fb-name b{font-family:Gunjoron,var(--f);font-size:2rem;line-height:1;color:#fff}
-.fbrand .fb-name span{display:block;font-family:"Plus Jakarta Sans",var(--f);font-size:.92rem;opacity:.75}
+.fbrand .fb-name b{font-family:NotoSerifByGunjoron,var(--f);font-size:2rem;line-height:1;color:#fff}
+.fbrand .fb-name span{display:block;font-family:var(--f);font-size:.92rem;opacity:.75}
 .fbrand p{opacity:.8;max-width:26em;font-size:1.02rem}
 .fcol h4{font-size:1rem;color:#fff;margin-bottom:.8rem}
 .fcol ul{list-style:none;margin:0;padding:0;display:grid;gap:.45rem;font-size:1.02rem}
@@ -392,7 +392,7 @@ html.um-open{overflow:hidden}
 @keyframes cf{20%{opacity:1}to{opacity:0;transform:rotate(var(--a)) translateY(calc(-1 * var(--d)))}}
 .um-card h3{font-size:1.35rem;margin-bottom:.4rem}
 .um-d{color:var(--ink-2)}
-.um-v{display:flex;justify-content:center;align-items:center;gap:.5rem;margin:1rem 0 .2rem;font-family:"Plus Jakarta Sans",var(--f);font-weight:700}
+.um-v{display:flex;justify-content:center;align-items:center;gap:.5rem;margin:1rem 0 .2rem;font-family:var(--f);font-weight:700}
 .um-v span{padding:.2rem .7rem;border-radius:99px;background:var(--surface-2)}
 .um-v .n{background:var(--accent);color:var(--accent-ink)}
 .um-v:empty{display:none}
@@ -418,7 +418,7 @@ html.um-open{overflow:hidden}
 .crumb{display:flex;flex-wrap:wrap;gap:.4rem;font-size:.97rem;color:var(--ink-3);margin-bottom:.8rem}
 .crumb a{color:var(--ink-2);text-decoration:none}
 .crumb a:hover{text-decoration:underline}
-.ph h1{font-family:Gunjoron,var(--f);font-size:clamp(36px,5.4vw,60px);line-height:1.15;margin-bottom:.5rem}
+.ph h1{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(36px,5.4vw,60px);line-height:1.15;margin-bottom:.5rem}
 .ph p{color:var(--ink-2);font-size:clamp(16px,1.5vw,19px);max-width:40em}
 .doc{display:grid;grid-template-columns:240px minmax(0,1fr);gap:clamp(24px,4vw,64px);padding-top:clamp(32px,5vw,56px);padding-bottom:clamp(40px,6vw,72px)}
 .toc{position:sticky;top:calc(var(--hdr) + 20px);align-self:start;font-size:1rem}
@@ -474,15 +474,15 @@ html.um-open{overflow:hidden}
 .chk{display:flex;gap:.65rem;align-items:flex-start;font-size:1.02rem;color:var(--ink-2);cursor:pointer;margin:.2rem 0 1rem}
 .chk input{width:20px;height:20px;margin-top:.2rem;accent-color:var(--accent);flex:none}
 .appinfo{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:0 0 1.2rem;padding:.7rem .9rem;border-radius:14px;background:var(--accent-soft);font-size:.97rem;color:var(--ink-2)}
-.appinfo b{color:var(--ink);background:var(--surface);padding:.05rem .6rem;border-radius:99px;font-family:"Plus Jakarta Sans",var(--f);font-size:.95rem}
+.appinfo b{color:var(--ink);background:var(--surface);padding:.05rem .6rem;border-radius:99px;font-family:var(--f);font-size:.95rem}
 .hp-f{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0}
 .fsub{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1.2rem;margin-top:.4rem}
 .fsub p{color:var(--ink-3);font-size:.95rem;flex:1 1 220px}
 .done{text-align:center;padding:1.2rem .4rem}
 .done .um-ic{background:rgba(19,146,94,.12);color:var(--ok)}
-.done h2{font-family:Gunjoron,var(--f);font-size:2rem;margin-bottom:.4rem}
+.done h2{font-family:NotoSerifByGunjoron,var(--f);font-size:2rem;margin-bottom:.4rem}
 .done p{color:var(--ink-2)}
-.ticket{display:inline-flex;align-items:center;gap:.5rem;margin:1rem 0;padding:.5rem 1rem;border-radius:99px;background:var(--surface-2);font-family:"Plus Jakarta Sans",var(--f);font-weight:800}
+.ticket{display:inline-flex;align-items:center;gap:.5rem;margin:1rem 0;padding:.5rem 1rem;border-radius:99px;background:var(--surface-2);font-family:var(--f);font-weight:800}
 .aside{display:grid;gap:1rem;position:sticky;top:calc(var(--hdr) + 16px)}
 .acard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-l);padding:1.3rem 1.4rem}
 .acard h3{font-size:1.1rem;margin-bottom:.6rem}
@@ -505,8 +505,8 @@ html.um-open{overflow:hidden}
 
 /* ৪০৪ */
 .nf{min-height:70vh;display:grid;place-items:center;text-align:center;padding:calc(var(--hdr) + 40px) var(--gut) 40px}
-.nf b{font-family:"Plus Jakarta Sans",var(--f);font-size:clamp(80px,16vw,160px);line-height:1;font-weight:800;letter-spacing:-.05em;color:var(--accent)}
-.nf h1{font-family:Gunjoron,var(--f);font-size:clamp(28px,4vw,40px);margin:.4rem 0}
+.nf b{font-family:var(--f);font-size:clamp(80px,16vw,160px);line-height:1;font-weight:800;letter-spacing:-.05em;color:var(--accent)}
+.nf h1{font-family:NotoSerifByGunjoron,var(--f);font-size:clamp(28px,4vw,40px);margin:.4rem 0}
 .nf p{color:var(--ink-2);margin-bottom:1.4rem}
 
 /* ---------- রেসপনসিভ ---------- */
@@ -635,14 +635,14 @@ body{background:var(--paper)}
 
 /* হেডার: কাচ + অ্যাপের মতো নাম */
 .hdr::before{background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);box-shadow:0 1px 0 var(--glass-ln),0 10px 30px -24px rgba(0,38,87,.35)}
-.brand{gap:.7rem;font-family:Gunjoron,var(--f);margin-right:auto;min-width:0}
+.brand{gap:.7rem;font-family:NotoSerifByGunjoron,var(--f);margin-right:auto;min-width:0}
 .brand img{width:40px;height:40px;flex:none}
 .brand .bt{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .brand .bn{font-size:1.32rem;font-weight:400;letter-spacing:.01em;white-space:nowrap}
-.brand .bn b{font-family:Gunjoron,var(--f);font-size:1em;font-weight:700}
+.brand .bn b{font-family:NotoSerifByGunjoron,var(--f);font-size:1em;font-weight:700}
 .brand .bn .by{opacity:.8}
-.brand small{font-family:Gunjoron,var(--f);font-size:.9rem;font-weight:300;opacity:.66;letter-spacing:.02em;white-space:nowrap;margin-top:1px}
-.fbrand .fb-name b{font-size:1.9rem}.fbrand .fb-name em{font-style:normal;font-family:Gunjoron,var(--f);font-size:1.9rem;line-height:1;color:#fff;opacity:.78}
+.brand small{font-family:NotoSerifByGunjoron,var(--f);font-size:.9rem;font-weight:300;opacity:.66;letter-spacing:.02em;white-space:nowrap;margin-top:1px}
+.fbrand .fb-name b{font-size:1.9rem}.fbrand .fb-name em{font-style:normal;font-family:NotoSerifByGunjoron,var(--f);font-size:1.9rem;line-height:1;color:#fff;opacity:.78}
 
 /* আকাশ: সূর্যের পথ, সূর্য, চাঁদ, দিগন্তের আভা */
 .hglow{position:absolute;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(70% 55% at var(--gx) 96%,var(--gc),transparent 72%)}
@@ -654,7 +654,7 @@ body{background:var(--paper)}
   box-shadow:0 0 0 10px color-mix(in srgb,var(--sc,#ffe7a6) 22%,transparent),0 0 60px 26px color-mix(in srgb,var(--sc,#ffe7a6) 55%,transparent),0 0 180px 90px color-mix(in srgb,var(--sc,#ffe7a6) 22%,transparent)}
 .moon{width:clamp(34px,3.4vw,48px);aspect-ratio:1;opacity:var(--o,1);filter:drop-shadow(0 0 18px rgba(230,236,255,.45))}
 .moon svg{width:100%;height:100%;overflow:visible}
-.moon .mb{fill:rgba(205,214,235,.13)}
+.moon .mb{display:none}
 .moon .ml{fill:#f6f3e6}
 .tc-sun{display:flex;flex-wrap:wrap;gap:.2rem .8rem;margin-top:.15rem;font-size:.98rem;color:var(--ink-3)}
 .tc-sun b{color:var(--ink-2);font-weight:700}
@@ -709,7 +709,9 @@ body{background:var(--paper)}
   .band{padding:24px 20px;border-radius:26px}
   .ftr .fgrid{gap:26px}
 }
-@media (max-width:360px){.brand small{display:none}.brand .bn{font-size:1.08rem}.dock a{font-size:.79rem}}
+/* ছোট ফোন (≤৪০০px): হেডারে নাম ও স্লোগান দুটোই থাকে — স্ক্রিনের চওড়ার সাথে মাপ ছোট হয়, কোনো মাপেই স্লোগান লুকায় না */
+@media (max-width:400px){.hdr .bar{gap:.4rem}.brand{gap:.5rem}.brand .bn{font-size:clamp(15.5px,4.9vw,1.18rem)}.brand small{font-size:clamp(10px,3.3vw,.87rem)}.brand img{width:36px;height:36px}.dock a{font-size:.79rem}}
+@media (max-width:340px){.brand img{width:32px;height:32px}.brand .bn{font-size:15px}.brand small{font-size:10px}.hbtn{width:38px;height:38px}.dnb{width:38px!important;height:38px}}
 
 /* সূর্য/চাঁদ সবসময় ফোনের পেছনে থাকে */
 .sun,.moon{z-index:0}
@@ -935,7 +937,7 @@ body{background:var(--paper)}
 .tc-wxp{display:inline-flex;align-items:center;gap:.6rem;padding:.3rem .9rem .3rem .5rem;border-radius:16px;background:linear-gradient(150deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent);border:1px solid var(--glass-bd)}
 .tc-wxp .we{font-size:1.75rem;line-height:1}
 .tc-wxp .wv{display:flex;flex-direction:column;line-height:1.15}
-.tc-wxp .wv b{font-family:"Plus Jakarta Sans",var(--f);font-size:1.3rem;font-weight:800;color:var(--ink)}
+.tc-wxp .wv b{font-family:var(--f);font-size:1.3rem;font-weight:800;color:var(--ink)}
 .tc-wxp .wv small{font-size:.91rem;color:var(--ink-2)}
 .tc-mid{display:grid;grid-template-columns:minmax(230px,.75fr) minmax(0,2fr);gap:clamp(18px,3vw,40px);align-items:center;padding-top:22px;padding-bottom:22px}
 .tc-now{display:flex;flex-direction:column;gap:.35rem}
@@ -947,7 +949,7 @@ body{background:var(--paper)}
 .tc-prog i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--f,0));border-radius:inherit;background:linear-gradient(90deg,#5b8cff,#2159F5);transition:transform 1s linear}
 .tc-prog.fb i{background:linear-gradient(90deg,#ff8a8f,var(--ember))}
 .tc-cd{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .7rem;font-size:1.02rem;color:var(--ink-2)}
-.tc-cd .cd{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;color:var(--accent);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tc-cd .cd{font-family:var(--f);font-weight:800;color:var(--accent);font-size:1.05rem;font-variant-numeric:tabular-nums}
 .tc-cd .nx{color:var(--ink-3);font-size:.98rem}
 /* দিনের টাইমলাইন */
 .tl{position:relative;--pos:0}
@@ -1051,7 +1053,7 @@ body{background:var(--paper)}
 .fbot .fb-l{justify-self:end;text-align:right}
 .fbot .fb-r{justify-self:start;text-align:left}
 .fbot .fb-sep{opacity:.45;font-weight:300}
-.fbot .fb-dev{font-family:"Plus Jakarta Sans",var(--f);font-weight:800;color:#fff;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:4px;text-decoration-thickness:1.5px;transition:text-decoration-color .2s,color .2s}
+.fbot .fb-dev{font-family:var(--f);font-weight:800;color:#fff;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:4px;text-decoration-thickness:1.5px;transition:text-decoration-color .2s,color .2s}
 .fbot .fb-dev:hover,.fbot .fb-dev:focus-visible{color:#fff;text-decoration-color:#fff}
 @media (max-width:760px){.fbot{grid-template-columns:1fr;justify-items:center;text-align:center}.fbot .fb-l,.fbot .fb-r{justify-self:center;text-align:center}.fbot .fb-sep{display:none}}
 
@@ -1165,7 +1167,7 @@ html.dnm-on{overflow:hidden}
 .dnm-ms .mi{grid-row:1/3;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;color:#fff;background:var(--m);box-shadow:0 6px 14px -8px var(--m)}
 .dnm-ms .mi .i{width:20px;height:20px}
 .dnm-ms b{font-size:1.02rem;line-height:1.25}
-.dnm-ms small{font-size:.87rem;line-height:1.3;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Plus Jakarta Sans",var(--f)}
+.dnm-ms small{font-size:.87rem;line-height:1.3;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--f)}
 .dnm-ms button[aria-checked=true]{border-color:var(--m);background:color-mix(in srgb,var(--m) 10%,transparent);box-shadow:0 0 0 1px var(--m)}
 .dnm-ms button[aria-checked=true]::after{content:"";position:absolute;top:7px;right:7px;width:17px;height:17px;border-radius:50%;background:var(--m) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/11px no-repeat}
 .dnm-go{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;min-height:56px;margin-top:1.1rem;border:0;border-radius:18px;cursor:pointer;font-weight:800;font-size:1.06rem;color:#2A1A00;
@@ -1239,3 +1241,10 @@ html.dnm-on{overflow:hidden}
 :root:not([data-theme=dark]) .sky:not(.lt) .skyline .msq .sky-body path,
 :root:not([data-theme=dark]) .sky:not(.lt) .skyline .msq .sky-lines path{stroke:#1E3A6E}
 :root:not([data-theme=dark]) .sky:not(.lt) .skyline .gnd::after{border-top-color:#1E3A6E}
+
+/* ফিচার গাইড কার্ড: ওপরের ফিচার তালিকা থেকে অন্য অংশগুলোর মতোই ফাঁক (পিসি ও মোবাইল) */
+#fguide{margin-top:clamp(36px,5vw,64px)}
+
+/* ব্যাটারি/পারফরম্যান্স: ট্যাব লুকানো থাকলে সব অ্যানিমেশন থেমে থাকে; কম-গতির ডিভাইসে ভারী ব্লার হালকা */
+html.hid *,html.hid *::before,html.hid *::after{animation-play-state:paused!important}
+@media (max-width:760px) and (pointer:coarse){.sky .btn.g{backdrop-filter:none}}
