@@ -12,16 +12,33 @@ on:
 permissions:
   contents: write
 
+# একসাথে দুটো রান (যেমন published + released) এলে লাইনে দাঁড়াবে — গিট পুশে ধাক্কা লাগবে না
+concurrency:
+  group: releases-json
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
+      # ✅ মূল ফিক্স: Release ইভেন্টে ডিফল্টে ট্যাগ (detached HEAD) চেকআউট হয় — তখন শেষের git push ব্যর্থ হয় (লাল ✗)।
+      # তাই সবসময় main ব্রাঞ্চ চেকআউট করা হচ্ছে।
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - name: Build releases.json
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p patheyo/data
+          # রিলিজ প্রকাশের সময় APK আপলোড শেষ না-ও হতে পারে — সর্বোচ্চ ~১০ মিনিট অপেক্ষা
+          if [ "${{ github.event_name }}" = "release" ]; then
+            for i in $(seq 1 20); do
+              gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
+              if jq -e '[.[] | select((.draft|not) and (.prerelease|not))] | .[0].assets | map(select(.name|test("\\.apk$";"i"))) | length > 0' /tmp/releases.json >/dev/null; then break; fi
+              echo "APK এখনো আপলোড হয়নি ($i/20)…"; sleep 30
+            done
+          fi
           gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
           jq '[.[] | select(.draft | not) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > patheyo/data/releases.json
       # v18: অ্যাপের নিজস্ব আপডেটার এই ফাইল পড়ে (patheyo/data/update.json) — সর্বশেষ প্রকাশিত (non-prerelease) রিলিজ থেকে নিজে তৈরি হয়।
@@ -56,4 +73,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add patheyo/data/releases.json
           [ -f patheyo/data/update.json ] && git add patheyo/data/update.json || true
-          git diff --cached --quiet || (git commit -m "chore: update releases.json" && git pull --rebase origin main && git push)
+          if git diff --cached --quiet; then echo "কোনো পরিবর্তন নেই"; exit 0; fi
+          git commit -m "chore: update releases.json"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "পুশ ব্যর্থ, আবার চেষ্টা ($i/5)…"; sleep 5
+          done
+          exit 1
