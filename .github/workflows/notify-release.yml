@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: notify-release-${{ github.event.release.tag_name || github.event.inputs.tag || 'latest' }}
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -32,7 +36,7 @@ jobs:
           INPUT_TAG: ${{ github.event.inputs.tag }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$PUSH_HOOK_SECRET" ]; then
-            echo "SUPABASE_URL / PUSH_HOOK_SECRET secret দেওয়া নেই — নোটিফিকেশন বাদ দেওয়া হলো।"; exit 0
+            echo "::error::SUPABASE_URL / PUSH_HOOK_SECRET secret দেওয়া নেই — নোটিফিকেশন যাবে না! Settings → Secrets → Actions-এ দিন।"; exit 1
           fi
           TAG="${EVENT_TAG:-$INPUT_TAG}"
           # APK ফাইল আপলোড শেষ হওয়া পর্যন্ত অপেক্ষা (সর্বোচ্চ ~১০ মিনিট)
