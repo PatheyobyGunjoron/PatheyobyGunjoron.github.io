@@ -1,52 +1,93 @@
-name: Update releases.json
+name: Release → update.json + Notification
 
-# নতুন রিলিজ দিলে (বা সম্পাদনা/মুছলে) এবং প্রতি ৬ ঘণ্টায় ওয়েবসাইটের জন্য রিলিজ তালিকা (patheyo/data/releases.json) নতুন করে তৈরি করে।
-# এতে ডাউনলোড বাটন GitHub API-র রেট-লিমিটের ওপর নির্ভর করে না, সবার ফোনে ১০০% কাজ করে।
+# ─────────────────────────────────────────────────────────────────────────────
+# পাথেয় — রিলিজের পুরো অটোমেশন (একটাই workflow, আর কিছু করতে হয় না):
+#
+#   GitHub-এ নতুন Release (সাথে .apk) Publish করলে →
+#     ১) patheyo/data/releases.json ও patheyo/data/update.json নতুন করে তৈরি ও কমিট হয়
+#        (ওয়েবসাইটের ডাউনলোড বাটন + অ্যাপের আপডেট পপআপ এগুলো পড়ে)
+#     ২) তারপর সব ইউজারের ফোনে "নতুন আপডেট এসেছে" পুশ নোটিফিকেশন যায় (Firebase FCM, টপিক "all")
+#        — অ্যাপ বন্ধ থাকলেও আসে; একই ভার্সনে কখনো দুইবার যায় না (patheyo/data/notify-state.json)।
+#
+#   docs/update.json হাতে বদলে নতুন ভার্সন দিলেও একইভাবে নোটিফিকেশন যায়।
+#   প্রতি ঘণ্টায় একবার ব্যাকআপ চেক চলে — কোনো কারণে রিলিজ-ইভেন্ট মিস হলেও নোটিফিকেশন ঠিকই যাবে।
+#
+# দরকারি Secret (একবারই): FIREBASE_SERVICE_ACCOUNT_KEY  (Settings → Secrets and variables → Actions)
+# হাতে চালাতে: Actions → এই workflow → Run workflow (force = আবার পাঠাও, dry_run = শুধু পরীক্ষা)
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   release:
-    types: [published, edited, deleted, released, prereleased]
+    types: [published, edited, deleted]
+  push:
+    branches: [main]
+    paths:
+      - docs/update.json
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
+    inputs:
+      force:
+        description: "আগে পাঠানো হলেও সর্বশেষ ভার্সনের নোটিফিকেশন আবার পাঠাবো?"
+        type: boolean
+        default: false
+      dry_run:
+        description: "শুধু পরীক্ষা (কিছু পাঠাবে না, শুধু দেখাবে কী পাঠানো হতো)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
-# একসাথে দুটো রান (যেমন published + released) এলে লাইনে দাঁড়াবে — গিট পুশে ধাক্কা লাগবে না
+# সব রান এক লাইনে — একসাথে দুটো চললে গিট-পুশে ধাক্কা বা ডুপ্লিকেট নোটিফিকেশন হবে না
 concurrency:
-  group: releases-json
+  group: release-pipeline
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      # ✅ মূল ফিক্স: Release ইভেন্টে ডিফল্টে ট্যাগ (detached HEAD) চেকআউট হয় — তখন শেষের git push ব্যর্থ হয় (লাল ✗)।
-      # তাই সবসময় main ব্রাঞ্চ চেকআউট করা হচ্ছে।
+      # Release ইভেন্টে ডিফল্টে ট্যাগ (detached HEAD) চেকআউট হয় — তখন git push ব্যর্থ হতো (লাল ✗)।
+      # তাই সবসময় main ব্রাঞ্চ চেকআউট।
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: main
+          fetch-depth: 0
+
       - name: Build releases.json
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
         run: |
+          set -euo pipefail
           mkdir -p patheyo/data
+          fetch() { for i in 1 2 3 4 5; do gh api "repos/$REPO/releases?per_page=100" > /tmp/releases.json && return 0; echo "API ব্যর্থ, আবার ($i/5)…"; sleep 10; done; return 1; }
+          fetch
           # রিলিজ প্রকাশের সময় APK আপলোড শেষ না-ও হতে পারে — সর্বোচ্চ ~১০ মিনিট অপেক্ষা
-          if [ "${{ github.event_name }}" = "release" ]; then
+          if [ "$EVENT" = "release" ] && [ "$ACTION" = "published" ]; then
             for i in $(seq 1 20); do
-              gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
               if jq -e '[.[] | select((.draft|not) and (.prerelease|not))] | .[0].assets | map(select(.name|test("\\.apk$";"i"))) | length > 0' /tmp/releases.json >/dev/null; then break; fi
-              echo "APK এখনো আপলোড হয়নি ($i/20)…"; sleep 30
+              echo "APK এখনো আপলোড হয়নি ($i/20)…"; sleep 30; fetch
             done
           fi
-          gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
-          jq '[.[] | select(.draft | not) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > patheyo/data/releases.json
-      # v18: অ্যাপের নিজস্ব আপডেটার এই ফাইল পড়ে (patheyo/data/update.json) — সর্বশেষ প্রকাশিত (non-prerelease) রিলিজ থেকে নিজে তৈরি হয়।
-      # রিলিজে অবশ্যই একটি .apk ফাইল থাকতে হবে; ট্যাগের নাম অ্যাপের versionName-এর সমান হতে হবে (যেমন v1.6.0 ↔ versionName "1.6.0")।
+          jq '[.[] | select(.draft | not) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > /tmp/releases.out.json
+          # ঘণ্টার চেকে শুধু ডাউনলোড-সংখ্যা বদলালে প্রতিবার কমিট না করে ৬ ঘণ্টায় একবার করা হয় (অপ্রয়োজনীয় কমিট এড়াতে)
+          if [ "$EVENT" = "schedule" ] && [ -f patheyo/data/releases.json ] && [ $(( 10#$(date -u +%H) % 6 )) -ne 0 ]; then
+            if [ "$(jq -S 'del(.[].assets[].download_count)' patheyo/data/releases.json)" = "$(jq -S 'del(.[].assets[].download_count)' /tmp/releases.out.json)" ]; then
+              echo "শুধু ডাউনলোড-সংখ্যা বদলেছে — এই ঘণ্টায় releases.json আপডেট বাদ"; exit 0
+            fi
+          fi
+          cp /tmp/releases.out.json patheyo/data/releases.json
+
+      # অ্যাপের নিজস্ব আপডেটার এই ফাইল পড়ে (patheyo/data/update.json) — সর্বশেষ প্রকাশিত (non-prerelease) রিলিজ থেকে তৈরি।
+      # রিলিজে অবশ্যই একটি .apk থাকতে হবে; ট্যাগ = অ্যাপের versionName (যেমন v3.3.0 ↔ "3.3.0")।
       - name: Build update.json (for the app updater)
         run: |
-          # v154: release_notes_text = পুরো নোট (শিরোনাম + পয়েন্ট, কোনো লাইন-সীমা নেই) — অ্যাপের আপডেট পপআপ এটাই দেখায়।
-          #       release_notes (অ্যারে) পুরনো অ্যাপ ভার্সনের জন্য রাখা হলো (সেখানে আগের মতো প্রথম ৮ লাইন)।
+          set -uo pipefail
           jq '[.[] | select((.draft | not) and (.prerelease | not))] | .[0] as $r
             | ($r.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
             | select($r != null and $a != null)
@@ -66,17 +107,47 @@ jobs:
                published_at: $r.published_at,
                release_notes_text: ($lines | join("\n")),
                release_notes: ($lines | map(sub("^•\\s+"; "")) | .[0:8])}' /tmp/releases.json > /tmp/update.json || true
-          if [ -s /tmp/update.json ]; then cp /tmp/update.json patheyo/data/update.json; fi
-      - name: Commit if changed
+          if [ -s /tmp/update.json ] && jq -e '.versionName and .apk_url' /tmp/update.json >/dev/null; then
+            cp /tmp/update.json patheyo/data/update.json
+          else
+            echo "::warning::APK সহ কোনো প্রকাশিত রিলিজ পাওয়া যায়নি — update.json আগের মতোই থাকলো"
+          fi
+
+      - name: Commit update.json / releases.json
         run: |
+          set -uo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add patheyo/data/releases.json
-          [ -f patheyo/data/update.json ] && git add patheyo/data/update.json || true
+          git add patheyo/data/releases.json patheyo/data/update.json 2>/dev/null || true
           if git diff --cached --quiet; then echo "কোনো পরিবর্তন নেই"; exit 0; fi
           git commit -m "chore: update releases.json"
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
-            echo "পুশ ব্যর্থ, আবার চেষ্টা ($i/5)…"; sleep 5
+            git pull --rebase -X theirs origin main && git push origin HEAD:main && exit 0
+            echo "পুশ ব্যর্থ, আবার চেষ্টা ($i/5)…"; git rebase --abort 2>/dev/null || true; sleep $((i * 5))
           done
-          exit 1
+          echo "::error::৫ বার চেষ্টাতেও পুশ হয়নি"; exit 1
+
+      - name: Install notification dependencies
+        run: python3 -m pip install --quiet --disable-pip-version-check google-auth requests
+
+      - name: Send push notification to all users
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          FORCE: ${{ github.event.inputs.force || 'false' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python3 .github/scripts/notify_release.py
+
+      - name: Save notification state
+        if: always()
+        run: |
+          set -uo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add patheyo/data/notify-state.json 2>/dev/null || true
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore: notification sent"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main && git push origin HEAD:main && exit 0
+            echo "পুশ ব্যর্থ, আবার চেষ্টা ($i/5)…"; git rebase --abort 2>/dev/null || true; sleep $((i * 5))
+          done
+          echo "::error::notify-state.json পুশ হয়নি — পরের রানে একই ভার্সনে আবার নোটিফিকেশন যেতে পারে"; exit 1
