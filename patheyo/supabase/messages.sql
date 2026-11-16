@@ -5,7 +5,7 @@
 --   • ওয়েবসাইটের /patheyo/contact/ পেজ (অ্যাপ থেকেও খোলা যায়) থেকে বার্তা সরাসরি এই টেবিলে আসে
 --   • অ্যাডমিন প্যানেলের "বার্তা" ট্যাবে সব বার্তা দেখা, উত্তর লেখা, অবস্থা বদলানো, মুছে ফেলা
 --   • আপনার উত্তর ব্যবহারকারী ওয়েবসাইটের যোগাযোগ পেজেই দেখতে পান (তাঁর ফোন/ব্রাউজারে রাখা গোপন টিকিট দিয়ে)
---   • অনুমতি দেওয়া মতামত আপনি "ওয়েবসাইটে দেখান" চালু করলে হোমপেজের "ব্যবহারকারীরা যা বলছেন" অংশে আসে
+--   • যেকোনো বার্তায় আপনি "ওয়েবসাইটে দেখান" চালু করলে হোমপেজের "ব্যবহারকারীরা যা বলছেন" অংশে আসে
 -- নিরাপত্তা: সাধারণ মানুষ টেবিল সরাসরি পড়তে/লিখতে পারে না; শুধু নিচের যাচাইকৃত ফাংশন দিয়ে বার্তা জমা দেয়।
 
 create table if not exists contact_messages(
@@ -79,13 +79,18 @@ language sql security definer stable set search_path=public as $$
  select m.id,m.token,m.kind,m.subject,left(m.message,300),case when m.status='spam' then 'closed' else m.status end,m.reply,m.replied_at,m.created_at
  from contact_messages m where m.token = any(coalesce(p_tokens[1:30],'{}')) order by m.created_at desc$$;
 
--- ===== পাবলিক: ওয়েবসাইটে দেখানোর অনুমোদিত মতামত =====
+-- ===== পাবলিক: ওয়েবসাইটে দেখানোর মতামত (v2 — অ্যাডমিন যেটা "ওয়েবসাইটে দেখান" করেন; পুরো নাম) =====
 create or replace function public_reviews(p_limit int default 12) returns json language sql security definer stable set search_path=public as $$
  select json_build_object(
-  'reviews',coalesce((select json_agg(x) from (select split_part(coalesce(name,'একজন ব্যবহারকারী'),' ',1) as name,rating,message,app_version,created_at
-     from contact_messages where kind='feedback' and is_public and allow_public and status<>'spam' order by created_at desc limit least(greatest(coalesce(p_limit,12),1),30)) x),'[]'::json),
-  'count',(select count(*) from contact_messages where kind='feedback' and rating is not null and status<>'spam'),
-  'avg',(select round(avg(rating)::numeric,1) from contact_messages where kind='feedback' and rating is not null and status<>'spam'))$$;
+  'reviews',coalesce((select json_agg(x) from (
+     select coalesce(nullif(btrim(name),''),'একজন ব্যবহারকারী') as name,
+            rating, message, app_version, source, created_at
+     from contact_messages
+     where is_public and status<>'spam'
+     order by starred desc, created_at desc
+     limit least(greatest(coalesce(p_limit,12),1),30)) x),'[]'::json),
+  'count',(select count(*) from contact_messages where rating is not null and status<>'spam'),
+  'avg',(select round(avg(rating)::numeric,1) from contact_messages where rating is not null and status<>'spam'))$$;
 
 -- ===== অ্যাডমিন: সারসংক্ষেপ =====
 create or replace function admin_inbox_stats() returns json language plpgsql security definer stable set search_path=public as $$

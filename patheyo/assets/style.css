@@ -528,7 +528,8 @@ html.um-open{overflow:hidden}
   .help-card,.aside{position:static}
   .fgrid{grid-template-columns:1fr 1fr}
   .fbrand{grid-column:1/-1}
-  .doc{grid-template-columns:1fr}
+  .doc{grid-template-columns:minmax(0,1fr)}
+  .toc{min-width:0}.toc a{overflow-wrap:anywhere}
   .toc{position:static;padding:1rem 1.2rem;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line)}
 }
 @media (max-width:760px){
@@ -1248,3 +1249,51 @@ html.dnm-on{overflow:hidden}
 /* ব্যাটারি/পারফরম্যান্স: ট্যাব লুকানো থাকলে সব অ্যানিমেশন থেমে থাকে; কম-গতির ডিভাইসে ভারী ব্লার হালকা */
 html.hid *,html.hid *::before,html.hid *::after{animation-play-state:paused!important}
 @media (max-width:760px) and (pointer:coarse){.sky .btn.g{backdrop-filter:none}}
+
+/* ===== v2 রিভিউ কার্ড — পুরো নাম, রঙিন অবতার, উদ্ধৃতি চিহ্ন; মোবাইলে আঙুলে সরানো যায় এমন সারি ===== */
+.rv-top{margin-bottom:1.4rem}
+.rv-score{display:inline-flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-radius:var(--r-l);background:var(--glass);border:1px solid var(--glass-bd);box-shadow:var(--glass-sh)}
+.rv-cnt{display:block;margin-top:.3rem;color:var(--ink-2);font-size:.92rem}
+.stars{color:color-mix(in srgb,var(--ink-3) 35%,transparent);letter-spacing:.06em}
+.stars .on{color:var(--gold)}
+.rvs{columns:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;align-items:start}
+.rv{position:relative;margin:0;display:flex;flex-direction:column;gap:.15rem;padding:1.35rem 1.4rem 1.2rem;border-radius:var(--r-l);overflow:hidden}
+.rv::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--accent),var(--gold));opacity:.75}
+.rv-q{position:absolute;top:.9rem;right:1rem;width:38px;height:38px;fill:var(--accent);opacity:.12}
+.rv blockquote{margin:.55rem 0 .4rem;font-size:1.03rem;line-height:1.75;color:var(--ink);white-space:pre-line;overflow-wrap:anywhere}
+.rv.long:not(.open) blockquote{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.rv-more{align-self:flex-start;margin:0 0 .5rem;padding:.2rem 0;border:0;background:none;color:var(--accent);font:inherit;font-size:.92rem;font-weight:700;cursor:pointer}
+.rv-more:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.rv figcaption{margin-top:auto;padding-top:.85rem;border-top:1px solid var(--line);gap:.75rem;align-items:center}
+.rv .av{flex:none;width:44px;height:44px;font-size:1rem;letter-spacing:.02em;color:#fff;
+  background:linear-gradient(135deg,hsl(var(--h,220) 70% 52%),hsl(calc(var(--h,220) + 40) 75% 42%));box-shadow:0 4px 12px hsl(var(--h,220) 70% 40% / .28)}
+.rv-who{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.rv-who b{color:var(--ink);font-size:1.02rem;overflow-wrap:anywhere}
+.rv-who small{color:var(--ink-3);font-size:.84rem}
+.rv-ok{display:inline-grid;place-items:center;width:15px;height:15px;margin-right:.3rem;border-radius:50%;background:var(--ok);color:#fff;font-size:.62rem;font-style:normal;vertical-align:-.12em}
+@media (hover:hover){.rv:hover{transform:translateY(-3px)}}
+/* মোবাইল: কার্ডগুলো পাশাপাশি সারিতে, আঙুলে টেনে দেখা যায় (লম্বা পাতা হয় না) */
+@media (max-width:640px){
+  .rvs{display:flex;gap:.8rem;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    margin:0 -16px;padding:.2rem 16px 1rem;scroll-padding:0 16px}
+  .rvs::-webkit-scrollbar{display:none}
+  .rv{flex:0 0 86%;scroll-snap-align:start;padding:1.15rem 1.15rem 1rem}
+  .rv:only-child{flex-basis:100%}
+  .rv blockquote{font-size:1rem}
+  .rv-score{width:100%;justify-content:center}
+}
+
+/* ===== v2 মোবাইল পলিশ ===== */
+/* খুব ছোট ফোনে (৩২০–৩৬০px) কিছুই পাশে বেরিয়ে যায় না; লম্বা শব্দ/লিংক ভেঙে যায় */
+@media (max-width:420px){
+  .prose,.prose p,.prose li,.ab p{overflow-wrap:anywhere}
+  .prose table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .prose img,.prose video,.prose iframe{max-width:100%;height:auto}
+  .prose .btn,.wrap .btn{max-width:100%;white-space:normal;text-align:center}
+}
+/* টাচ ডিভাইসে ট্যাপের নীল ঝলক বন্ধ, আর বাটন/লিংকে দ্রুত সাড়া (৩০০ms দেরি নেই) */
+a,button,label,summary,[role=button]{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* যাঁরা ফোনে "কম অ্যানিমেশন" চালু রেখেছেন তাঁদের জন্য অ্যানিমেশন বন্ধ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}

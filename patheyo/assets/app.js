@@ -11,6 +11,8 @@ const REFRESH=[];new MutationObserver(()=>REFRESH.forEach(f=>f())).observe(root,
 /* ================= আজকের নামাজের সময় ও আকাশ ================= */
 const CITIES=[['ঢাকা',23.8103,90.4125],['চট্টগ্রাম',22.3569,91.7832],['সিলেট',24.8949,91.8687],['রাজশাহী',24.3745,88.6042],['খুলনা',22.8456,89.5403],['বরিশাল',22.701,90.3535],['রংপুর',25.7439,89.2752],['ময়মনসিংহ',24.7471,90.4203],['কুমিল্লা',23.4607,91.1809]];
 const WN={Fajr:'ফজর',Sunrise:'সূর্যোদয়',Dhuhr:'যোহর',Asr:'আসর',Maghrib:'মাগরিব',Isha:'এশা'};
+// অ্যাপের মতো: বৃহস্পতিবার মাগরিব (সূর্যাস্ত) থেকে শুক্রবার মাগরিব পর্যন্ত যোহরের জায়গায় "জুম’আ"
+let JUM=false;const wname=k=>k==='Dhuhr'&&JUM?'জুম’আ':WN[k];
 const DAYS=['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
 const GM=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 const toM=s=>{const p=String(s||'').split(':');return p.length===2?(+p[0])*60+(+p[1]):NaN};
@@ -105,6 +107,7 @@ function tick(force){
   const now=new Date(),key=now.toDateString()+LOC.lat+LOC.lng;
   if(force||key!==TDAY){TT=times(now);TDAY=key;renderWaqts()}
   if(!TT)return;const S=state(now,TT);
+  {const dw=now.getDay(),mg=toM(TT.Maghrib),j=(dw===4&&S.t>=mg)||(dw===5&&S.t<mg);if(j!==JUM){JUM=j;renderWaqts()}}
   // ঘড়ি
   const ck=$('#clock');if(ck){const h=now.getHours()%12||12;ck.innerHTML=`${String(h).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}<small>${now.getHours()<12?'AM':'PM'}</small>`}
   if(force||!tick._sk||Date.now()-tick._sk>15000){tick._sk=Date.now();SKY.update(now)}
@@ -114,9 +117,9 @@ function tick(force){
   // অবস্থা, অগ্রগতি ও কাউন্টডাউন
   const left=(S.ends-S.t)*60,nl=(S.nextAt-S.t)*60;let head,sub;
   if(S.forbid){head=`<span class="forbid">নিষিদ্ধ সময় · ${S.forbid}</span>`;sub=`শেষ হতে <b class="cd">${cd(left)}</b>`}
-  else if(S.w){head=`এখন <b>${WN[S.w]}</b>-এর ওয়াক্ত`;sub=`শেষ হতে <b class="cd">${cd(left)}</b>`}
-  else{head=`এখন <b>চাশতের</b> সময়`;sub=`যোহর শুরু হতে <b class="cd">${cd(nl)}</b>`}
-  if(S.next&&S.next!==S.w)sub+=`<span class="nx">পরবর্তী ${WN[S.next]} · ${h12(S.nextAt)}</span>`;
+  else if(S.w){head=`এখন <b>${wname(S.w)}</b>-এর ওয়াক্ত`;sub=`শেষ হতে <b class="cd">${cd(left)}</b>`}
+  else{head=`এখন <b>চাশতের</b> সময়`;sub=`${wname('Dhuhr')} শুরু হতে <b class="cd">${cd(nl)}</b>`}
+  if(S.next&&S.next!==S.w)sub+=`<span class="nx">পরবর্তী ${wname(S.next)} · ${h12(S.nextAt)}</span>`;
   const wn=$('#wnow');if(wn&&wn._h!==head){wn.innerHTML=head;wn._h=head}
   const wc=$('#wcd');if(wc)wc.innerHTML=sub;
   const pr=$('#wprog');if(pr){const f=Math.min(Math.max((S.t-S.st)/Math.max(S.ends-S.st,1),0),1);pr.style.setProperty('--f',f.toFixed(4));pr.classList.toggle('fb',!!S.forbid)}
@@ -130,7 +133,7 @@ function tick(force){
     {const m=hj&&String(hj).replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).match(/\d+/);window.PT_HDAY=m?+m[0]:0}   // চাঁদের আকার হিজরি তারিখ থেকে
     $('#dates').innerHTML=`<span class="dp"><small>${DAYS[now.getDay()]}</small>${bn(now.getDate())} ${GM[now.getMonth()]} ${bn(now.getFullYear())}</span>${hj?`<span class="dp"><small>হিজরি</small>${bn(hj).replace(/\s*হিজরি$/,'')}</span>`:''}<span class="dp"><small>বঙ্গাব্দ</small>${bn(bg)}</span>`}}
 function renderWaqts(){const ol=$('#waqts');if(!ol||!TT)return;lastWaqt='';
-  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><i class="dot" aria-hidden="true"></i><span class="wn">${WN[k]}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
+  ol.innerHTML=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].map(k=>`<li data-k="${k}" class="${k==='Sunrise'?'srw':''}"><i class="dot" aria-hidden="true"></i><span class="wn">${wname(k)}</span><span class="wt">${h12(toM(TT[k]))}</span></li>`).join('')}
 function prayerInit(){if(!W.PtPrayer||!$('#tcard'))return;LOC=loadLoc();locSelect();tick(true);wxInit();detectLoc();setInterval(()=>{if(!D.hidden)tick()},1000);D.addEventListener('visibilitychange',()=>{if(!D.hidden)tick(true)})}
 
 
@@ -197,6 +200,11 @@ const SKY=(function(){
       const alt=Math.asin(Math.sin(b.p)*Math.sin(b.dec)+Math.cos(b.p)*Math.cos(b.dec)*Math.cos(H))/R,q=place({H,H0:b.H0,alt,top:b.top});
       el.style.setProperty('--x',q.x.toFixed(2)+'%');el.style.setProperty('--y',q.y.toFixed(2)+'%');el.style.setProperty('--o',opac(alt).toFixed(2));
       if(k<1)requestAnimationFrame(f);else el.classList.remove('nt')})},350)};go();return true}
+  function riseMoon(el,H1,top,o1,dur){el.classList.add('nt');const q0=place({H:1,H0:1,top});
+    el.style.setProperty('--x',q0.x.toFixed(2)+'%');el.style.setProperty('--y',q0.y.toFixed(2)+'%');el.style.setProperty('--o','0');
+    const go=()=>{if(waiting()){setTimeout(go,120);return}setTimeout(()=>{const t0=performance.now();requestAnimationFrame(function f(now){const k=Math.min((now-t0)/dur,1),e=easeO(k),H=1+(H1-1)*e,q=place({H,H0:1,top});
+      el.style.setProperty('--x',q.x.toFixed(2)+'%');el.style.setProperty('--y',q.y.toFixed(2)+'%');el.style.setProperty('--o',(o1*Math.min(k*2.5,1)).toFixed(2));
+      if(k<1)requestAnimationFrame(f);else el.classList.remove('nt')})},350)};go()}
   let WX=null,last=null;
   function update(now){now=now||new Date();last=now;const sky=$('#sky');if(!sky||!LOC)return;if(!GK)geom();const lat=+LOC.lat,lng=+LOC.lng;
     const se=sunEq(now),sb=pos(se,now,lat,lng,-.833),me=moonEq(now),mb=pos(me,now,lat,lng,.125);
@@ -224,7 +232,9 @@ const SKY=(function(){
     const moon=$('#moon'),HH=mod(sb.H,2*Math.PI),nightOK=sb.H0>0&&sb.H0<Math.PI&&HH>=sb.H0&&HH<=2*Math.PI-sb.H0,
       nf=nightOK?(HH-sb.H0)/(2*Math.PI-2*sb.H0):0,mq=place({H:1-2*nf,H0:1,top:sb.top});
     if(moon){const mo=(Math.min(Math.max((-sb.alt-1)/3,0),1))*(!(hd>0)&&k<.03?0:1)*Math.max(0,1-ov*1.1)*(nightOK?1:0);
-      moon.style.setProperty('--x',mq.x.toFixed(2)+'%');moon.style.setProperty('--y',mq.y.toFixed(2)+'%');moon.style.setProperty('--o',mo.toFixed(2));
+      // পেজ খুললে/রিফ্রেশে চাঁদও সূর্যের মতো নিজের উদয়ের জায়গা (দিগন্ত) থেকে নিজের পথ ধরে এখনকার জায়গায় আসে — মাঝখান থেকে নয়
+      if(first&&mo>.02)riseMoon(moon,1-2*nf,sb.top,mo,2800);
+      else if(!moon.classList.contains('nt')){moon.style.setProperty('--x',mq.x.toFixed(2)+'%');moon.style.setProperty('--y',mq.y.toFixed(2)+'%');moon.style.setProperty('--o',mo.toFixed(2))}
       const ml=$('#mlit');ml&&ml.setAttribute('d',moonPath(k,waxing))}
     intro=false;sunPath(sb,now.toDateString()+lat.toFixed(2)+lng.toFixed(2)+GK);STARS.set&&STARS.set();CLOUDS.tint(sb.alt,ov);
     const si=$('#suninfo');if(si){const up=sb.alt>=-.83;
@@ -558,10 +568,18 @@ D.addEventListener('click',e=>{const b=e.target.closest('[data-url]');if(!b)retu
   if(q.has('update')||location.hash==='#update')setTimeout(()=>open($('#upd')),600)})();
 
 /* ================= ব্যবহারকারীদের মতামত ================= */
-async function reviews(){if(!SB_OK||!$('#reviews'))return;try{const d=await rpc('public_reviews',{p_limit:12});const rs=(d&&d.reviews)||[];if(!rs.length)return;
-  const st=n=>'★'.repeat(n||0)+'☆'.repeat(5-(n||0));
-  $('#rvtop').innerHTML=d.count>=3&&d.avg?`<span class="rv-avg">${bn(d.avg)}</span><div><div class="stars" aria-label="গড় রেটিং ${bn(d.avg)}">${st(Math.round(d.avg))}</div><span style="color:var(--ink-2);font-size:.92rem">${bn(d.count)} জনের রেটিংয়ের গড়</span></div>`:'';
-  $('#rvs').innerHTML=rs.map(r=>`<figure class="rv">${r.rating?`<div class="stars" aria-label="${bn(r.rating)} তারা">${st(r.rating)}</div>`:''}<blockquote>${esc(r.message)}</blockquote><figcaption><span class="av" aria-hidden="true">${esc((r.name||'?').slice(0,1))}</span><span><b>${esc(r.name||'একজন ব্যবহারকারী')}</b>${r.app_version?` · v${esc(r.app_version)}`:''}<br>${new Date(r.created_at).toLocaleDateString('bn-BD',{month:'long',year:'numeric'})}</span></figcaption></figure>`).join('');
+async function reviews(){if(!SB_OK||!$('#reviews'))return;try{const d=await rpc('public_reviews',{p_limit:24});const rs=(d&&d.reviews)||[];if(!rs.length)return;
+  const st=n=>{n=Math.max(0,Math.min(5,Math.round(n||0)));return'<span class="on">'+'★'.repeat(n)+'</span>'+'★'.repeat(5-n)};
+  const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.codePointAt(0))%360;return h};
+  const ini=s=>{const w=String(s).trim().split(/\s+/).filter(Boolean);return w.length>1?Array.from(w[0])[0]+Array.from(w[w.length-1])[0]:Array.from(w[0]||'?')[0]};
+  $('#rvtop').innerHTML=d.count>=3&&d.avg?`<div class="rv-score"><span class="rv-avg">${bn(d.avg)}</span><div><div class="stars" aria-label="গড় রেটিং ${bn(d.avg)}">${st(d.avg)}</div><span class="rv-cnt">${bn(d.count)} জনের রেটিংয়ের গড়</span></div></div>`:'';
+  $('#rvs').innerHTML=rs.map(r=>{const nm=String(r.name||'').trim()||'একজন ব্যবহারকারী',msg=String(r.message||'').trim(),long=msg.length>260;
+    let dt='';try{dt=new Date(r.created_at).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}catch{}
+    return`<figure class="rv${long?' long':''}"><svg class="rv-q" viewBox="0 0 32 32" aria-hidden="true"><path d="M13 7C7.5 9 4 13.6 4 19.4 4 23.3 6.4 26 9.7 26c2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6zm15 0c-5.5 2-9 6.6-9 12.4 0 3.9 2.4 6.6 5.7 6.6 2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6z"/></svg>`+
+      (r.rating?`<div class="stars" aria-label="${bn(r.rating)} তারা">${st(r.rating)}</div>`:'')+
+      `<blockquote>${esc(msg)}</blockquote>${long?'<button class="rv-more" type="button">আরও পড়ুন</button>':''}`+
+      `<figcaption><span class="av" style="--h:${hue(nm)}" aria-hidden="true">${esc(ini(nm))}</span><span class="rv-who"><b>${esc(nm)}</b><small>${r.source==='app'?'<i class="rv-ok" aria-hidden="true">✓</i>অ্যাপ ব্যবহারকারী':'পাথেয় ব্যবহারকারী'}${r.app_version?` · v${esc(r.app_version)}`:''}${dt?` · ${dt}`:''}</small></span></figcaption></figure>`}).join('');
+  $('#rvs').addEventListener('click',e=>{const b=e.target.closest('.rv-more');if(!b)return;const f=b.closest('.rv');const o=f.classList.toggle('open');b.textContent=o?'কম দেখুন':'আরও পড়ুন'});
   $('#reviews').hidden=false}catch{}}
 
 /* ================= প্রশ্নোত্তর: একটি খুললে বাকিগুলো বন্ধ ================= */
