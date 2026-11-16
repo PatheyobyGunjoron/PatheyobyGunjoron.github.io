@@ -208,6 +208,39 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
 @media (max-width:820px){nav.side button{font-size:.6rem;padding:.35rem .05rem}nav.side button svg{width:19px;height:19px}}
 .ibtn.site{display:inline-flex;align-items:center;gap:.45rem;height:40px;text-decoration:none;color:inherit;font-weight:700}
 @media (max-width:520px){.ibtn.site span{display:none}.ibtn.site{width:40px;justify-content:center;padding:0}}
+
+/* ===== ওয়েবসাইটের ভিডিও ===== */
+.vd-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;flex-wrap:wrap;margin-bottom:.9rem}
+.vd-list{display:grid;gap:.6rem}
+.vd-row{display:grid;grid-template-columns:auto 132px minmax(0,1fr) auto;gap:.9rem;align-items:center;padding:.7rem;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.vd-row.off{opacity:.62}
+.vd-ord{display:flex;flex-direction:column;align-items:center;gap:.2rem}.vd-ord b{font-size:.85rem;color:var(--mut)}
+.vd-ord .btn{min-width:34px;padding:.2rem .5rem}
+.vd-th{position:relative;width:132px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#0b2a5c,#235FFE);display:grid;place-items:center}
+.vd-th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vd-th span{position:relative;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);color:#235FFE;display:grid;place-items:center;font-size:.8rem;padding-left:2px}
+.vd-info{min-width:0}.vd-info b{display:block;margin-bottom:.3rem;overflow-wrap:anywhere}
+.vd-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.25rem}
+.vchips{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.45rem}
+.chip{border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:.25rem .7rem;font:inherit;font-size:.82rem;cursor:pointer}
+.chip:hover{border-color:currentColor}
+.hint.ok{color:var(--green)}.hint.bad{color:#d33}
+.vd-pv-wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:1rem;margin-top:.4rem}
+.vd-player{aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;display:grid;place-items:center;color:#9aa;font-size:.88rem;text-align:center;padding:0}
+.vd-player video,.vd-player iframe{width:100%;height:100%;border:0;display:block}
+.vd-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg);max-width:340px}
+.vd-card .vthumb{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#0b2a5c,#235FFE 60%,#4F86FF);display:grid;place-items:center}
+.vd-card .vthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vd-card .vthumb img.lg{position:static;width:56px;height:56px;border-radius:14px}
+.vd-card .vthumb i{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.92);color:#235FFE;display:grid;place-items:center;font-style:normal;padding-left:3px}
+.vd-card .vthumb em{position:absolute;left:8px;bottom:8px;font-style:normal;font-size:.75rem;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:99px;padding:.1rem .5rem}
+.vd-card .vbody{padding:.7rem .85rem .85rem;display:flex;flex-direction:column;gap:.15rem}
+.vd-card .vbody small{color:#235FFE;font-weight:700;font-size:.78rem}.vd-card .vbody span{color:var(--mut);font-size:.85rem}
+@media (max-width:820px){
+ .vd-row{grid-template-columns:auto 96px minmax(0,1fr)}.vd-th{width:96px}
+ .vd-row .acts{grid-column:1/-1}
+ .vd-pv-wrap{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -247,6 +280,7 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
       <button data-t="don"><svg viewBox="0 0 24 24" class="ic-fill"><path style="fill:currentColor;stroke:none" d="M 6.97,0.93 C 7.82,0.7 8.75,0.72 9.58,1.02 C 10.02,1.17 10.43,1.42 10.79,1.72 C 11.3,2.14 11.68,2.69 12,3.27 C 12.34,2.63 12.78,2.03 13.36,1.6 C 14.49,0.73 16.08,0.55 17.4,1.06 C 18.48,1.45 19.36,2.33 19.79,3.39 C 20.13,4.2 20.21,5.09 20.1,5.95 C 19.95,7.21 19.36,8.38 18.6,9.38 C 17.78,10.48 16.78,11.43 15.73,12.3 C 14.55,13.27 13.3,14.14 12,14.94 C 11.37,14.56 10.77,14.14 10.16,13.74 C 9.09,12.97 8.05,12.18 7.1,11.27 C 6.13,10.34 5.22,9.32 4.59,8.12 C 4.14,7.25 3.86,6.27 3.85,5.28 C 3.84,4.52 4,3.74 4.36,3.06 C 4.52,2.73 4.75,2.44 4.98,2.16 C 5.51,1.57 6.21,1.14 6.97,0.93 M 0.56,15.31 C 1.4,15.29 2.25,15.31 3.09,15.3 C 3.28,15.29 3.43,15.46 3.42,15.64 C 3.42,17.8 3.42,19.95 3.42,22.1 C 3.43,22.28 3.27,22.43 3.09,22.42 C 2.29,22.42 1.49,22.42 0.68,22.43 C 0.55,22.44 0.4,22.37 0.34,22.24 C 0.28,22.13 0.3,22.01 0.3,21.9 C 0.3,19.87 0.3,17.84 0.3,15.82 C 0.3,15.72 0.29,15.62 0.32,15.53 C 0.35,15.42 0.45,15.33 0.56,15.31 M 17.49,15.51 C 17.74,15.36 18.03,15.24 18.33,15.29 C 18.55,15.32 18.76,15.45 18.91,15.61 C 18.12,16.08 17.32,16.53 16.52,16.98 C 16.32,16.85 16.08,16.78 15.85,16.77 C 15.66,16.75 15.47,16.77 15.28,16.76 C 16.01,16.33 16.75,15.93 17.49,15.51 M 20.19,15.49 C 20.47,15.35 20.82,15.33 21.1,15.48 C 21.25,15.55 21.37,15.67 21.47,15.79 C 20.5,16.36 19.51,16.89 18.53,17.44 C 18.09,17.68 17.66,17.93 17.23,18.17 C 17.2,17.88 17.1,17.59 16.92,17.36 C 17.67,16.9 18.45,16.48 19.21,16.04 C 19.54,15.86 19.85,15.66 20.19,15.49 M 6.23,15.68 C 7,15.58 7.79,15.62 8.53,15.82 C 9.26,16 9.93,16.37 10.61,16.67 C 11.58,17.1 12.64,17.25 13.69,17.28 C 14.37,17.28 15.04,17.28 15.71,17.28 C 16.02,17.28 16.32,17.43 16.51,17.66 C 16.71,17.92 16.76,18.27 16.66,18.58 C 16.53,18.98 16.13,19.27 15.7,19.27 C 13.9,19.28 12.1,19.27 10.3,19.28 C 10.15,19.28 10.03,19.42 10.06,19.57 C 10.07,19.7 10.2,19.8 10.33,19.79 C 11.96,19.79 13.59,19.79 15.21,19.79 C 15.59,19.79 16,19.82 16.34,19.64 C 16.71,19.48 16.98,19.16 17.14,18.8 C 18.8,17.87 20.46,16.94 22.13,16.01 C 22.34,15.89 22.59,15.8 22.85,15.83 C 23.23,15.86 23.58,16.14 23.67,16.51 C 23.77,16.89 23.62,17.33 23.29,17.54 C 21.57,18.67 19.85,19.79 18.09,20.86 C 17.27,21.37 16.43,21.86 15.59,22.35 C 15.17,22.6 14.74,22.85 14.26,23 C 13.48,23.25 12.63,23.3 11.83,23.11 C 11.19,22.95 10.55,22.75 9.91,22.56 C 8.75,22.22 7.6,21.86 6.44,21.52 C 5.62,21.31 4.78,21.41 3.95,21.49 C 3.94,20.7 3.95,19.9 3.95,19.11 C 3.95,18.15 3.94,17.19 3.95,16.23 C 4.71,16.03 5.45,15.77 6.23,15.68"/></svg>ডোনেশন</button>
       <button data-t="push"><svg viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1 1 12 0v6l2 2H4zM10 21a2 2 0 0 0 4 0"/></svg>নোটিফিকেশন</button>
       <button data-t="ads"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15.5 8.5a5 5 0 0 1 0 7M18.2 5.8a9 9 0 0 1 0 12.4"/></svg>এড</button>
+      <button data-t="vid"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m10 9.2 5 2.8-5 2.8z" style="fill:currentColor"/></svg>ভিডিও</button>
       <button data-t="rel"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 20h14"/></svg>রিলিজ</button>
       <button data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>সেটআপ</button>
     </nav>
@@ -437,6 +471,43 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
       </section>
 
       <!-- রিলিজ -->
+      <section id="t-vid" hidden>
+        <div class="warn" id="vidWarn" hidden>ভিডিওর টেবিল পাওয়া যায়নি। Supabase → SQL Editor-এ <code>patheyo/supabase/videos.sql</code> পুরোটা একবার Run করুন।</div>
+        <div class="cards" id="vidCards"></div>
+
+        <div class="panel"><div class="vd-head"><div><h2>ওয়েবসাইটের ভিডিও</h2><p class="sub" style="margin:0">ওপরের ভিডিও ওয়েবসাইটে আগে দেখায়। ↑ ↓ চেপে ক্রম বদলান — সাথে সাথে ওয়েবসাইটে বদলে যায়।</p></div>
+          <div class="acts"><button class="btn p" type="button" id="vNew">＋ নতুন ভিডিও</button><button class="btn" type="button" id="vImport" hidden>⬇️ GitHub রিলিজ থেকে আনুন</button></div></div>
+          <div class="vd-list" id="vidList"></div></div>
+
+        <div class="panel" id="vidFormPanel"><h2 id="vfT">নতুন ভিডিও যোগ করুন</h2>
+          <p class="sub">ভিডিও যেকোনো জায়গায় রাখুন — YouTube, GitHub রিলিজ, Google Drive, Facebook, Vimeo বা যেকোনো .mp4 লিংক। শুধু লিংকটা এখানে বসান।</p>
+          <form id="vidForm"><input type="hidden" id="vId">
+            <label for="vUrl">ভিডিওর লিংক (https://)</label>
+            <input id="vUrl" type="url" required maxlength="1500" placeholder="যেমন: https://youtu.be/…  বা  https://github.com/…/releases/download/videos/intro.mp4" autocomplete="off">
+            <p class="hint" id="vUrlInfo">লিংক বসালেই নিচে ভিডিওটা চালিয়ে দেখা যাবে।</p>
+            <div class="row">
+              <div><label for="vTitle">শিরোনাম</label><input id="vTitle" required maxlength="150" placeholder="যেমন: পাথেয় অ্যাপের পরিচিতি"></div>
+              <div><label for="vCat">বিভাগ</label><input id="vCat" required maxlength="60" list="vCatList" placeholder="যেমন: ইনস্টল গাইড"><datalist id="vCatList"></datalist></div>
+            </div>
+            <div class="vchips" id="vCatChips"></div>
+            <label for="vDesc">ছোট বিবরণ (ঐচ্ছিক)</label>
+            <textarea id="vDesc" rows="2" maxlength="600" placeholder="যেমন: ডাউনলোড থেকে প্রথমবার খোলা পর্যন্ত — ধাপে ধাপে"></textarea>
+            <label for="vThumb">থাম্বনেইল (কভার ছবি) — ঐচ্ছিক</label>
+            <div class="imgrow"><input id="vThumb" type="url" maxlength="1500" placeholder="ছবির লিংক বসান অথবা আপলোড করুন"><button class="btn" type="button" id="vUp">⬆️ আপলোড</button><input type="file" id="vFile" accept="image/png,image/jpeg,image/webp" hidden></div>
+            <p class="hint" id="vThumbInfo">খালি রাখলে YouTube ও Google Drive-এর ছবি নিজে থেকে আসে; অন্যগুলোতে পাথেয়ের লোগো দেখায়। ১২৮০×৭২০ (১৬:৯) ছবি সবচেয়ে ভালো, সর্বোচ্চ ৩ MB।</p>
+            <div class="row">
+              <div><label for="vDur">সময়কাল (ঐচ্ছিক)</label><input id="vDur" maxlength="12" placeholder="যেমন: ২:৩৫"></div>
+              <div><label for="vActive">অবস্থা</label><select id="vActive"><option value="true">চালু — ওয়েবসাইটে দেখাবে</option><option value="false">বন্ধ — খসড়া, দেখাবে না</option></select></div>
+              <div><label for="vPos">কোথায় দেখাবে</label><select id="vPos"><option value="last">তালিকার শেষে</option><option value="first">সবার আগে</option><option value="keep">আগের জায়গাতেই</option></select></div>
+            </div>
+            <div class="vd-pv-wrap">
+              <div><label>ভিডিও চালিয়ে দেখুন</label><div class="vd-player" id="vPlayer"><span>লিংক বসালে এখানে ভিডিও দেখা যাবে</span></div></div>
+              <div><label>ওয়েবসাইটে যেমন দেখাবে</label><div class="vd-card" id="vCardPv"></div></div>
+            </div>
+            <p style="margin-top:1rem"><button class="btn p" id="vSave">💾 সেভ করুন</button> <button type="button" class="btn" id="vReset">পরিষ্কার / নতুন</button></p>
+          </form></div>
+      </section>
+
       <section id="t-rel" hidden>
         <div class="panel"><h2>রিলিজ নোট (ডাটাবেস)</h2><p class="sub">ওয়েবসাইটের পাবলিক পেজ আসল APK ও নোট পায় GitHub Releases থেকে। এখানকার তালিকা ঐচ্ছিক — আগের মতোই কাজ করে।</p>
           <div class="tw"><table><thead><tr><th>ভার্সন</th><th>তারিখ</th><th>অবস্থা</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div></div>
@@ -462,6 +533,7 @@ td input[type=checkbox],th input[type=checkbox]{width:16px;height:16px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../config.js"></script>
+<script src="../assets/video-src.js"></script>
 <script src="../assets/dialog.js"></script>
 <script>
 (function(){
@@ -505,13 +577,14 @@ $('#logoutBtn').onclick=async()=>{await sb.auth.signOut();SESSION=null;show(fals
 
 // ---- ট্যাব ----
 function go(t){tab=t;$$('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'page':'false'));
-  ['dash','msg','users','prem','don','push','ads','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
+  ['dash','msg','users','prem','don','push','ads','vid','rel','set'].forEach(x=>$('#t-'+x).hidden=x!==t);scrollTo(0,0);clearInterval(timer);
   if(t==='dash'){loadDash();timer=setInterval(()=>{if(!document.hidden)loadDash(true)},30000)}
   if(t==='users'){loadUsers(true)}
   if(t==='prem'){loadPrem()}
   if(t==='don'){loadDon()}
   if(t==='push'){initPush()}
   if(t==='ads'){loadAds()}
+  if(t==='vid'){loadVids()}
   if(t==='rel'){loadRel()}
   if(t==='set'){runChecks()}
   if(t==='msg'){loadMsgs(true);timer=setInterval(()=>{if(!document.hidden)msgBadge()},45000)}}
@@ -584,7 +657,7 @@ function setKind(k){KIND=k;$$('#kindSeg button').forEach(b=>b.setAttribute('aria
 $('#kindSeg').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)setKind(b.dataset.k)};
 async function loadLatest(){
   if(LATEST_REL)return LATEST_REL;
-  try{const r=await fetch('../data/releases.json?t='+Date.now());const a=(await r.json()).filter(x=>!x.draft&&!x.prerelease);const x=a[0];if(!x)return null;
+  try{const r=await fetch('../data/releases.json?t='+Date.now());const a=(await r.json()).filter(x=>!x.draft&&!x.prerelease&&(x.assets||[]).some(f=>/\.apk$/i.test(f.name)));const x=a[0];if(!x)return null;
     const f=(x.assets||[]).find(f=>/\.apk$/i.test(f.name))||(x.assets||[])[0];if(!f)return null;
     const notes=String(x.body||'').split(/\r?\n/).map(l=>l.replace(/^[#>*\-\s]+/,'').replace(/\*\*|`/g,'').trim()).filter(l=>l&&!/^full changelog/i.test(l)).slice(0,6).join('\n');
     LATEST_REL={version:String(x.tag_name).replace(/^v/i,''),apk:f.browser_download_url,size:(f.size/1048576).toFixed(1)+' MB',mb:Math.round(f.size/1048576),notes};return LATEST_REL}catch{return null}}
@@ -916,6 +989,96 @@ function drawAdChart(rows){
   const lab=rows.map((r,i)=>`<text x="${x(i)}" y="${H-11}" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">${String(r.day).slice(8,10)}/${String(r.day).slice(5,7)}</text>`).join('');
   $('#adChart').innerHTML=`<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="দৈনিক এড ভিউ, ক্লিক ও প্রমো কপির চার্ট" style="color:var(--fg)">${g}${bars}${line('clicks','#EC1C24')}${line('copies','#f0b429')}${lab}</svg>`}
 
+// ================= ওয়েবসাইটের ভিডিও =================
+// টেবিল: site_videos (supabase/videos.sql)। ছোট sort_order = আগে দেখায়।
+let VIDS=[],vidT=0;
+const VDEF=['অ্যাপ পরিচিতি','ইনস্টল গাইড','আপডেট গাইড','কীভাবে ব্যবহার করবেন'];
+const vParse=u=>window.PTVideo?PTVideo.parse(u):{kind:'file',src:u,label:'লিংক'};
+const vThumbOf=v=>v.thumb_url||vParse(v.video_url).thumb||'';
+async function loadVids(){
+  const{data,error}=await sb.from('site_videos').select('*').order('sort_order').order('created_at',{ascending:false});
+  if(error){$('#vidWarn').hidden=false;VIDS=[];$('#vidList').innerHTML='<p class="empty">ভিডিও সিস্টেম এখনো সেটআপ হয়নি — ওপরের নির্দেশনা দেখুন</p>';$('#vidCards').innerHTML='';return}
+  $('#vidWarn').hidden=true;VIDS=data||[];renderVids();vCats();vPv();
+  // GitHub রিলিজের ভিডিও (data/videos.json) থাকলে এক চাপে এখানে আনার বাটন
+  try{const r=await fetch('../data/videos.json?t='+Date.now());const d=r.ok?await r.json():null;const n=((d&&d.videos)||[]).filter(x=>!VIDS.some(v=>v.video_url===x.src)).length;
+    $('#vImport').hidden=!n;$('#vImport').textContent=`⬇️ GitHub রিলিজ থেকে আনুন (${num(n)})`;window._relVids=(d&&d.videos)||[]}catch{$('#vImport').hidden=true}}
+function renderVids(){
+  const on=VIDS.filter(v=>v.is_active).length,pl=VIDS.reduce((n,v)=>n+Number(v.views||0),0);
+  $('#vidCards').innerHTML=`<div class="card"><b>${num(VIDS.length)}</b><span>মোট ভিডিও</span></div><div class="card"><b>${num(on)}</b><span>ওয়েবসাইটে চালু</span><small>${num(VIDS.length-on)}টি বন্ধ</small></div><div class="card"><b>${num(pl)}</b><span>মোট প্লে</span><small>ওয়েবসাইটে কতবার চালানো হয়েছে</small></div>`;
+  if(!VIDS.length){$('#vidList').innerHTML='<p class="empty">এখনো কোনো ভিডিও নেই। “＋ নতুন ভিডিও” চেপে প্রথম ভিডিওটা যোগ করুন।</p>';return}
+  $('#vidList').innerHTML=VIDS.map((v,i)=>{const p=vParse(v.video_url),th=vThumbOf(v);
+    return `<div class="vd-row${v.is_active?'':' off'}" data-id="${esc(v.id)}">
+      <div class="vd-ord"><button class="btn sm" data-a="up" title="ওপরে নিন" aria-label="ওপরে নিন"${i?'':' disabled'}>↑</button><b>${num(i+1)}</b><button class="btn sm" data-a="dn" title="নিচে নিন" aria-label="নিচে নিন"${i<VIDS.length-1?'':' disabled'}>↓</button></div>
+      <div class="vd-th">${th?`<img src="${esc(th)}" alt="" loading="lazy" onerror="this.remove()">`:''}<span>▶</span></div>
+      <div class="vd-info"><b>${esc(v.title)}</b><div class="vd-tags"><span class="tag">${esc(v.category)}</span><span class="tag">${esc(p.label||'লিংক')}</span>${v.duration?`<span class="tag">⏱ ${esc(v.duration)}</span>`:''}<span class="tag ${v.is_active?'g':''}">${v.is_active?'চালু':'বন্ধ'}</span></div>
+        <small class="hint">${num(v.views||0)} বার প্লে · যোগ হয়েছে ${ago(v.created_at)}</small></div>
+      <div class="acts"><button class="btn sm" data-a="edit">এডিট</button><button class="btn sm" data-a="tog">${v.is_active?'বন্ধ করুন':'চালু করুন'}</button><a class="btn sm" href="../../#video/${encodeURIComponent(v.id)}" target="_blank" rel="noopener">ওয়েবসাইটে দেখুন</a><button class="btn d sm" data-a="del">মুছুন</button></div></div>`}).join('')}
+function vCats(){const all=[...new Set([...VIDS.map(v=>v.category),...VDEF])];
+  $('#vCatList').innerHTML=all.map(c=>`<option value="${esc(c)}">`).join('');
+  $('#vCatChips').innerHTML=all.map(c=>`<button type="button" class="chip" data-c="${esc(c)}">${esc(c)}</button>`).join('')}
+$('#vCatChips').onclick=e=>{const b=e.target.closest('[data-c]');if(b){$('#vCat').value=b.dataset.c;vPv()}};
+async function vReorder(list){const rs=await Promise.all(list.map((x,k)=>x.sort_order===(k+1)*10?{}:sb.from('site_videos').update({sort_order:(k+1)*10}).eq('id',x.id)));
+  if(rs.some(r=>r.error))toast('ক্রম বদলানো যায়নি',1);await loadVids()}
+$('#vidList').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const id=b.closest('.vd-row').dataset.id,v=VIDS.find(x=>x.id===id);if(!v)return;
+  const a=b.dataset.a;
+  if(a==='edit'){fillVid(v);return}
+  if(a==='tog'){const was=v.is_active,{error}=await sb.from('site_videos').update({is_active:!was}).eq('id',id);error?toast('বদলানো যায়নি',1):(toast(was?'ভিডিও লুকানো হয়েছে — ওয়েবসাইটে আর দেখাবে না':'✅ ভিডিও ওয়েবসাইটে চালু'),loadVids());return}
+  if(a==='del'){if(!await PTDialog.ask({tone:'danger',title:'ভিডিও মুছবেন?',message:'শুধু ওয়েবসাইটের তালিকা থেকে মুছবে — আসল ভিডিও (YouTube/GitHub ইত্যাদি) যেমন আছে তেমনই থাকবে।',quote:v.title,ok:'হ্যাঁ, মুছুন'}))return;
+    const{error}=await sb.from('site_videos').delete().eq('id',id);error?toast('মুছতে ব্যর্থ',1):(toast('মুছে ফেলা হয়েছে'),loadVids());return}
+  if(a==='up'||a==='dn'){const L=VIDS.slice(),i=L.findIndex(x=>x.id===id),j=i+(a==='up'?-1:1);if(j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];
+    $$('#vidList button').forEach(x=>x.disabled=true);await vReorder(L)}};
+$('#vNew').onclick=()=>{resetVid();$('#vidFormPanel').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#vUrl').focus(),400)};
+$('#vImport').onclick=async()=>{const L=(window._relVids||[]).filter(x=>!VIDS.some(v=>v.video_url===x.src));if(!L.length)return;
+  if(!await PTDialog.ask({title:`${num(L.length)}টি ভিডিও আনবেন?`,message:'GitHub-এর "videos" রিলিজের ভিডিওগুলো শিরোনাম, বিভাগ ও থাম্বনেইলসহ এই তালিকায় যোগ হবে। পরে এখান থেকেই বদলানো যাবে।',ok:'হ্যাঁ, আনুন'}))return;
+  const base=VIDS.reduce((m,v)=>Math.max(m,v.sort_order),0);
+  const{error}=await sb.from('site_videos').insert(L.map((x,k)=>({title:x.title,category:x.category||'অ্যাপ পরিচিতি',description:x.desc||null,video_url:x.src,thumb_url:x.poster||null,is_active:true,sort_order:base+(k+1)*10})));
+  error?toast('আনা যায়নি: '+error.message,1):(toast(`✅ ${num(L.length)}টি ভিডিও যোগ হয়েছে`),loadVids())};
+
+function resetVid(){$('#vidForm').reset();$('#vId').value='';$('#vfT').textContent='নতুন ভিডিও যোগ করুন';$('#vPos').value='last';$('#vPos').querySelector('[value=keep]').hidden=true;vPlay();vPv()}
+function fillVid(v){$('#vId').value=v.id;$('#vUrl').value=v.video_url;$('#vTitle').value=v.title;$('#vCat').value=v.category;$('#vDesc').value=v.description||'';
+  $('#vThumb').value=v.thumb_url||'';$('#vDur').value=v.duration||'';$('#vActive').value=String(v.is_active);
+  $('#vPos').querySelector('[value=keep]').hidden=false;$('#vPos').value='keep';$('#vfT').textContent='ভিডিও এডিট করুন';
+  vPlay();vPv();$('#vidFormPanel').scrollIntoView({behavior:'smooth'})}
+$('#vReset').onclick=resetVid;
+
+// লিংক বসালে: কোন ধরনের তা দেখানো + ছোট প্লেয়ারে চালানো + সময়কাল নিজে বের করা
+let vLast='';
+function vPlay(){const u=$('#vUrl').value.trim(),p=vParse(u),box=$('#vPlayer'),info=$('#vUrlInfo');if(u===vLast&&box.dataset.ok)return;vLast=u;box.dataset.ok='';
+  if(!u){info.className='hint';info.textContent='লিংক বসালেই নিচে ভিডিওটা চালিয়ে দেখা যাবে।';box.innerHTML='<span>লিংক বসালে এখানে ভিডিও দেখা যাবে</span>';return}
+  if(p.kind==='bad'){info.className='hint bad';info.textContent='⚠️ '+p.reason;box.innerHTML='<span>লিংক ঠিক করুন</span>';return}
+  box.dataset.ok='1';
+  info.className='hint ok';info.textContent='✅ '+p.label+' লিংক চেনা গেছে'+(p.kind==='file'?(p.unsure?' — সরাসরি ভিডিও ফাইলের লিংক কিনা নিচে চালিয়ে নিশ্চিত হোন':' — ওয়েবসাইটের নিজস্ব প্লেয়ারে চলবে'):' — '+p.label+'-এর প্লেয়ারে চলবে')+(p.thumb&&!$('#vThumb').value?' · থাম্বনেইল নিজে থেকে আসবে':'');
+  if(p.kind==='file'){box.innerHTML=`<video controls playsinline preload="metadata" src="${esc(p.src)}"></video>`;const vd=box.querySelector('video');
+    vd.onloadedmetadata=()=>{if(isFinite(vd.duration)&&vd.duration>0&&!$('#vDur').value){const s=Math.round(vd.duration);$('#vDur').value=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');vPv()}};
+    vd.onerror=()=>{info.className='hint bad';info.textContent='⚠️ এই লিংক থেকে ভিডিও চালানো যাচ্ছে না। লিংকটা সরাসরি .mp4 ফাইলের কিনা দেখুন (GitHub রিলিজে ফাইলের ওপর রাইট-ক্লিক → Copy link)।'}}
+  else box.innerHTML=`<iframe src="${esc(p.embed.replace('autoplay=1','autoplay=0').replace('autoplay=true','autoplay=false'))}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`}
+function vPv(){const u=$('#vUrl').value.trim(),p=vParse(u),th=$('#vThumb').value.trim()||p.thumb||'',t=$('#vTitle').value.trim()||'ভিডিওর শিরোনাম',c=$('#vCat').value.trim()||'বিভাগ',d=$('#vDesc').value.trim(),dur=$('#vDur').value.trim();
+  $('#vCardPv').innerHTML=`<div class="vthumb">${th?`<img src="${esc(th)}" alt="" onerror="this.remove()">`:'<img class="lg" src="../assets/icon-192.png" alt="">'}<i>▶</i>${dur?`<em>${esc(dur)}</em>`:''}</div><div class="vbody"><small>${esc(c)}</small><b>${esc(t)}</b>${d?`<span>${esc(d)}</span>`:''}</div>`}
+['vUrl','vTitle','vCat','vDesc','vThumb','vDur'].forEach(id=>$('#'+id).addEventListener('input',()=>{vPv();if(id==='vUrl'){clearTimeout(vidT);vidT=setTimeout(vPlay,500)}}));
+
+$('#vUp').onclick=()=>$('#vFile').click();
+$('#vFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('শুধু PNG / JPG / WebP ছবি দিন',1);
+  if(f.size>3*1048576)return toast('ছবি ৩ MB-এর বেশি — ছোট করে দিন',1);
+  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[f.type],path=`thumb-${Date.now()}.${ext}`;
+  $('#vUp').disabled=true;$('#vUp').textContent='আপলোড হচ্ছে…';
+  try{const{error}=await sb.storage.from('video-thumbs').upload(path,f,{contentType:f.type,cacheControl:'31536000',upsert:false});
+    if(error)throw error;const{data}=sb.storage.from('video-thumbs').getPublicUrl(path);$('#vThumb').value=data.publicUrl;vPv();toast('✅ থাম্বনেইল আপলোড হয়েছে')}
+  catch(err){toast('আপলোড ব্যর্থ — videos.sql Run করা হয়েছে কি? (অথবা ছবির লিংক বসান)',1)}
+  $('#vUp').disabled=false;$('#vUp').textContent='⬆️ আপলোড'};
+
+$('#vidForm').onsubmit=async e=>{e.preventDefault();
+  const u=$('#vUrl').value.trim(),p=vParse(u);if(p.kind==='bad'||p.kind==='none')return toast(p.reason||'ভিডিওর লিংক দিন',1);
+  const th=$('#vThumb').value.trim();if(th&&!/^https:\/\//i.test(th))return toast('থাম্বনেইলের লিংক https:// দিয়ে শুরু হতে হবে',1);
+  const id=$('#vId').value,pos=$('#vPos').value,min=VIDS.reduce((m,v)=>Math.min(m,v.sort_order),100),max=VIDS.reduce((m,v)=>Math.max(m,v.sort_order),0);
+  const row={video_url:u,title:$('#vTitle').value.trim(),category:$('#vCat').value.trim()||'অ্যাপ পরিচিতি',description:$('#vDesc').value.trim()||null,thumb_url:th||null,duration:$('#vDur').value.trim()||null,is_active:$('#vActive').value==='true'};
+  if(pos==='first')row.sort_order=min-10;else if(pos==='last'||!id)row.sort_order=max+10;
+  $('#vSave').disabled=true;
+  const{error}=await(id?sb.from('site_videos').update(row).eq('id',id):sb.from('site_videos').insert(row));
+  $('#vSave').disabled=false;
+  if(error)return toast('সেভ হয়নি: '+error.message,1);
+  toast(id?'✅ ভিডিও আপডেট হয়েছে':'✅ ভিডিও যোগ হয়েছে — ওয়েবসাইটে চলে গেছে');resetVid();await loadVids();$('#vidList').scrollIntoView({behavior:'smooth',block:'start'})};
+
 // ================= সেটআপ পরীক্ষা =================
 async function runChecks(){
   const out=[];const add=(s,t,d)=>out.push({s,t,d});
@@ -934,6 +1097,7 @@ async function runChecks(){
     if(r.data&&r.data.settings){const n=(r.data.ads||[]).length;add('ok','এড সিস্টেম (ads.sql)',`চালু — অ্যাপ এখন ${n}টি সক্রিয় এড পাচ্ছে${r.data.settings.enabled===false?' (মাস্টার সুইচ বন্ধ আছে)':''}`)}
     else add('no','এড সিস্টেম (ads.sql)','get_app_ads পাওয়া যায়নি — supabase/ads.sql Run করুন')}catch{add('no','এড সিস্টেম (ads.sql)','সংযোগ হয়নি')}
   try{const r=await sb.storage.from('ads').list('',{limit:1});add(r.error?'wa':'ok','এডের ছবি আপলোড (স্টোরেজ)',r.error?'বাকেট নেই — আপলোড বাটন কাজ করবে না; ads.sql-এর শেষ অংশ Run করুন (অথবা ছবির লিংক বসান)':'প্রস্তুত')}catch{add('wa','এডের ছবি আপলোড (স্টোরেজ)','যাচাই করা যায়নি')}
+  try{const r=await sb.rpc('public_videos');add(Array.isArray(r.data)?'ok':'no','ওয়েবসাইটের ভিডিও (videos.sql)',Array.isArray(r.data)?`চালু — ওয়েবসাইটে ${num(r.data.length)}টি ভিডিও দেখাচ্ছে`:'public_videos পাওয়া যায়নি — supabase/videos.sql Run করুন')}catch{add('no','ওয়েবসাইটের ভিডিও (videos.sql)','যাচাই করা যায়নি')}
   try{const r=await sb.rpc('admin_inbox_stats');add(r.data?'ok':'no','যোগাযোগ ও মতামত (messages.sql)',r.data?`চালু — ${num(r.data.total)}টি বার্তা, ${num(r.data.new)}টি নতুন`:'admin_inbox_stats পাওয়া যায়নি — supabase/messages.sql Run করুন')}catch{add('no','যোগাযোগ ও মতামত','সংযোগ হয়নি')}
   try{const r=await sb.rpc('admin_premium_summary');add(r.data?'ok':'no','প্রিমিয়াম হিসাব (premium.sql)',r.data?`চালু — ${num(r.data.active)} জন সক্রিয় সদস্য`:'admin_premium_summary পাওয়া যায়নি — supabase/premium.sql Run করুন')}catch{add('no','প্রিমিয়াম হিসাব','সংযোগ হয়নি')}
   try{const r=await pmFn({action:'ping'});add(r.ok?'ok':r.status===404?'no':'wa','প্রিমিয়াম ফাংশন (premium-admin)',r.ok?'ডিপ্লয় করা আছে ও অনুমতি কাজ করছে':r.status===404?'ডিপ্লয় করা নেই (Supabase → Edge Functions → premium-admin)':esc((r.j&&r.j.error)||('উত্তর '+r.status)))}catch{add('no','প্রিমিয়াম ফাংশন','পৌঁছানো যায়নি (ডিপ্লয় করা নেই?)')}

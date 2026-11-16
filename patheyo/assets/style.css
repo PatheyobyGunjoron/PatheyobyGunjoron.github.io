@@ -1297,3 +1297,70 @@ a,button,label,summary,[role=button]{-webkit-tap-highlight-color:transparent;tou
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* ===== ভিডিও গাইড ===== */
+.vtabs{display:flex;flex-wrap:wrap;gap:.45rem;margin:0 0 1.3rem;width:auto;background:none;border:0;padding:0;box-shadow:none}
+.vtabs button{display:inline-flex;align-items:center;gap:.45em;min-height:40px;padding:.4rem 1rem;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.vtabs button i{font-style:normal;font-size:.78rem;min-width:1.5em;padding:.05em .45em;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.vtabs button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.vtabs button[aria-pressed=true] i{background:rgba(255,255,255,.22);color:inherit}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.1rem}
+.vcard{display:flex;flex-direction:column;text-align:left;padding:0;border-radius:var(--r-l);overflow:hidden;cursor:pointer;font:inherit;color:inherit;
+  background:var(--glass);border:1px solid var(--glass-bd);box-shadow:var(--glass-sh);transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.vcard:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.vthumb{position:relative;display:block;aspect-ratio:16/9;background:linear-gradient(135deg,#0b2a5c,#235FFE 60%,#4F86FF);overflow:hidden}
+.vthumb>img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--ease)}
+.vph{position:absolute;inset:0;display:grid;place-items:center}
+.vph img{width:64px;height:64px;border-radius:18px;opacity:.9;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.vplay-ic{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.92);box-shadow:0 8px 28px rgba(0,20,60,.35);transition:transform .3s var(--ease)}
+.vplay-ic svg{width:28px;height:28px;margin-left:4px;fill:var(--accent)}
+.vthumb>img{position:relative;z-index:1}
+.vthumb.np .vplay-ic{top:auto;bottom:12px;left:auto;right:12px;margin:0;width:46px;height:46px}
+.vthumb.np .vplay-ic svg{width:22px;height:22px}
+.vplay-ic,.vsz,.vsrc{z-index:2}
+.vsrc{position:absolute;right:10px;top:10px;width:30px;height:30px;padding:4px;border-radius:9px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.25);display:grid;place-items:center}
+.vsrc svg{width:100%;height:100%}
+.vsz{position:absolute;left:10px;bottom:10px;padding:.15rem .55rem;border-radius:99px;background:rgba(0,0,0,.55);color:#fff;font-size:.78rem;font-weight:700;backdrop-filter:blur(6px)}
+.vbody{display:flex;flex-direction:column;gap:.25rem;padding:.95rem 1.1rem 1.15rem}
+.vcat{color:var(--accent);font-weight:700;font-size:.82rem}
+.vbody b{font-size:1.08rem;line-height:1.45;color:var(--ink)}
+.vdesc{color:var(--ink-2);font-size:.93rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (hover:hover){.vcard:hover{transform:translateY(-4px)}.vcard:hover .vthumb>img{transform:scale(1.04)}.vcard:hover .vplay-ic{transform:scale(1.1)}}
+/* ভিডিও প্লেয়ার (পপআপ) */
+.vmodal{padding:0;border:0;background:transparent;max-width:min(960px,100vw - 24px);width:100%;color:#fff;overflow:visible}
+.vmodal::backdrop{background:rgba(2,8,20,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.vmodal[open]{animation:vm-in .25s var(--ease)}
+@keyframes vm-in{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.vm-box{background:#071226;border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.vm-top{display:flex;align-items:center;gap:.5rem;padding:.7rem .7rem .7rem 1.1rem}
+.vm-tt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.vm-tt small{color:#8fb0ff;font-size:.8rem;font-weight:700}
+.vm-tt b{font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-btn{flex:none;width:42px;height:42px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.1);color:#fff;cursor:pointer}
+.vm-btn:hover{background:rgba(255,255,255,.2)}
+.vm-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#vplay{display:block;width:100%;max-height:min(72vh,72dvh);background:#000;aspect-ratio:16/9}
+#vplay[hidden],.vframe[hidden]{display:none}
+.vframe{position:relative;width:100%;aspect-ratio:16/9;max-height:min(72vh,72dvh);background:#000}
+.vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vm-box.vert .vframe,.vm-box.vert #vplay{aspect-ratio:9/16;width:auto;height:min(72vh,72dvh);max-width:100%;margin:0 auto}
+.vm-box.vert{max-width:min(440px,100%);margin:0 auto}
+.vm-desc{margin:0;padding:.8rem 1.1rem 1rem;color:#c5d3ea;font-size:.95rem;line-height:1.6}
+.vm-desc:empty{display:none}
+.vm-err{margin:0;padding:.8rem 1.1rem 0;color:#ffb4b4}
+.vm-err a{color:#8fb0ff;font-weight:700}
+html.vm-open{overflow:hidden}
+/* মোবাইল: কার্ডগুলো পাশাপাশি সারিতে (আঙুলে টেনে দেখা), প্লেয়ার প্রায় পুরো স্ক্রিন */
+@media (max-width:640px){
+  .vtabs{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 1rem;padding:0 16px .2rem;scrollbar-width:none}
+  .vtabs::-webkit-scrollbar{display:none}
+  .vtabs button{flex:none}
+  .vgrid{display:flex;gap:.8rem;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:.2rem 16px 1rem;scroll-padding:0 16px;scrollbar-width:none}
+  .vgrid::-webkit-scrollbar{display:none}
+  .vcard{flex:0 0 82%;scroll-snap-align:start}
+  .vcard:only-child{flex-basis:100%}
+  .vmodal{max-width:100vw;margin:auto 0}
+  .vm-box{border-radius:16px}
+  .vplay-ic{width:54px;height:54px;margin:-27px 0 0 -27px}
+}

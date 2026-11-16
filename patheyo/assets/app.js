@@ -438,8 +438,10 @@ async function anyShot(n,th){return(await shotFor(th||curTheme(),n))||(await sho
   D.addEventListener('pointerdown',e=>{if(!e.target.closest('#trk')&&held())clearHold()});
   vp.addEventListener('wheel',e=>{if(!n)return;if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(!wheeling){wheeling=true;freeze();clearHold()}tx-=e.deltaX;apply();mark();clearTimeout(wt);wt=setTimeout(()=>{wheeling=false;settle(tx)},140)},{passive:false});
   vp.addEventListener('keydown',e=>{if(!n)return;if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();freeze();clearHold();i+=e.key==='ArrowRight'?1:-1;trk.classList.remove('still');place();sched();restart()});
-  const load=()=>{const g=++gen,t=th||curTheme(),ks=[];for(let k=1;k<=SHOT_MAX;k++)ks.push(k);setSeg();
-    Promise.all(ks.map(k=>shotFor(t,k).then(u=>u?[k,u]:null))).then(r=>{if(g!==gen)return;const list=r.filter(Boolean);curK=null;build(list);vp.hidden=!list.length;if(list.length){trk.classList.add('still');place();void trk.offsetWidth;trk.classList.remove('still');restart()}})};
+  const scan=async t=>{const out=[];let miss=0;for(let k=1;k<=SHOT_MAX&&miss<3;k+=4){const ks=[];for(let j=k;j<k+4&&j<=SHOT_MAX;j++)ks.push(j);
+      const r=await Promise.all(ks.map(j=>shotFor(t,j).then(u=>u?[j,u]:null)));for(const x of r){if(x){out.push(x);miss=0}else miss++}}return out};
+  const load=()=>{const g=++gen,t=th||curTheme();setSeg();
+    scan(t).then(r=>{if(g!==gen)return;const list=r.filter(Boolean);curK=null;build(list);vp.hidden=!list.length;if(list.length){trk.classList.add('still');place();void trk.offsetWidth;trk.classList.remove('still');restart()}})};
   segs.forEach(b=>b.onclick=()=>{th=b.dataset.th;load()});
   REFRESH.push(()=>{if(fetched&&!th)load()});
   if('IntersectionObserver' in W)new IntersectionObserver((e,o)=>{if(e.some(z=>z.isIntersecting)){fetched=true;o.disconnect();load()}},{rootMargin:'900px 0px'}).observe(vp);else{fetched=true;load()}
@@ -463,7 +465,7 @@ async function stats(){if(!SB_OK)return;try{const s=await rpc('get_public_stats'
 /* ================= রিলিজ ================= */
 // ১) data/releases.json (GitHub Action বানায়)  ২) GitHub API  ৩) এই ফোনে আগে সেভ করা কপি
 const RELPAGE=`https://github.com/${C.GITHUB_REPO}/releases/latest`;
-const mapRel=raw=>{const a=raw.filter(x=>!x.draft);DL.gh=a.reduce((n,x)=>n+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
+const mapRel=raw=>{const a=raw.filter(x=>!x.draft&&(x.assets||[]).some(f=>/\.apk$/i.test(f.name)));DL.gh=a.reduce((n,x)=>n+(x.assets||[]).reduce((m,f)=>m+(f.download_count||0),0),0);showDl();
   return a.map((x,i)=>{const f=(x.assets||[]).find(f=>/\.apk$/i.test(f.name))||(x.assets||[])[0];return{version:String(x.tag_name).replace(/^v/i,''),release_date:x.published_at,download_url:f?f.browser_download_url:(x.html_url||RELPAGE),file_size:f?(f.size/1048576).toFixed(1)+' MB':null,is_latest:i===0&&!x.prerelease,body:x.body||''}})};
 const getJson=async(u,ms)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}};
 const gh=async()=>{let raw=null;
@@ -594,7 +596,60 @@ $$('#acc details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$$('#ac
   els.forEach(el=>io.observe(el))})();
 
 prayerInit();
-const REL=releases();stats();reviews();
+/* ================= ভিডিও গাইড =================
+   ভিডিওর তালিকা আসে অ্যাডমিন প্যানেলের "ভিডিও" ট্যাব থেকে (Supabase: public_videos)।
+   সেখানে কিছু না থাকলে GitHub-এর "videos" রিলিজ থেকে বানানো data/videos.json দেখায়।
+   লিংক যেকোনো ধরনের হতে পারে — YouTube, Google Drive, Facebook, Vimeo, GitHub রিলিজ, যেকোনো .mp4 (assets/video-src.js চেনে)।
+   ভিডিও শুধু চাপ দিলে লোড হয় — পেজ ভারী হয় না, ইউজারের ডেটাও খরচ হয় না।
+   লিংক: #videos (সেকশন), #videos/ইনস্টল গাইড (নির্দিষ্ট বিভাগ), #video/<id> (সরাসরি ভিডিও খোলে) */
+async function videos(){const sec=$('#videos');if(!sec)return;let V=[];
+  const P=u=>(W.PTVideo?W.PTVideo.parse(u):{kind:'file',src:u,open:u,type:'video/mp4'});
+  if(SB_OK){try{const a=await rpc('public_videos');if(Array.isArray(a))V=a}catch{}}
+  if(!V.length){try{const d=await getJson(BASE+'data/videos.json?v='+Math.floor(Date.now()/600000),8000);if(d&&Array.isArray(d.videos))V=d.videos}catch{}}
+  V=V.filter(v=>v&&v.src&&v.title).map(v=>{const p=P(v.src);return Object.assign({},v,{id:String(v.id),p,poster:v.poster||p.thumb||''})}).filter(v=>v.p.kind!=='bad'&&v.p.kind!=='none');
+  if(!V.length)return;
+  const cats=[...new Set(V.map(v=>v.category||'ভিডিও'))],tabs=$('#vtabs'),grid=$('#vgrid'),dlg=$('#vmodal'),pl=$('#vplay'),fr=$('#vframe'),box=dlg.querySelector('.vm-box');
+  const SRCI={youtube:'<svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><path fill="#fff" d="m9.6 15.6 6.3-3.6-6.3-3.6z"/></svg>',
+    facebook:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path fill="#fff" d="M13.4 19.5v-6.2h2.1l.3-2.5h-2.4V9.3c0-.7.2-1.2 1.2-1.2h1.3V5.9a17 17 0 0 0-1.9-.1c-1.9 0-3.2 1.1-3.2 3.3v1.8H8.7v2.5h2.1v6.2z"/></svg>'};
+  const card=v=>`<button class="vcard" type="button" data-id="${esc(v.id)}" aria-label="${esc(v.title)} — ভিডিও চালান">
+    <span class="vthumb${v.p.vertical?' vt':''}${v.poster?'':' np'}">${v.poster?`<img src="${esc(v.poster)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('np');this.remove()">`:''}<span class="vph" aria-hidden="true"><img src="${BASE}assets/icon-192.png" alt="" loading="lazy"></span>
+    <span class="vplay-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>${v.duration?`<span class="vsz">${esc(bn(v.duration))}</span>`:v.size_mb?`<span class="vsz">${bn(Math.max(1,Math.round(v.size_mb)))} MB</span>`:''}${SRCI[v.p.kind]?`<span class="vsrc" title="${esc(v.p.label)}">${SRCI[v.p.kind]}</span>`:''}</span>
+    <span class="vbody"><small class="vcat">${esc(v.category||'')}</small><b>${esc(v.title)}</b>${v.desc?`<span class="vdesc">${esc(v.desc)}</span>`:''}</span></button>`;
+  const show=c=>{grid.innerHTML=V.filter(v=>!c||v.category===c).map(card).join('');
+    $$('#vtabs button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.c||'')===c)))};
+  if(tabs){if(cats.length>1){tabs.hidden=false;tabs.innerHTML=`<button type="button" data-c="" aria-pressed="true">সব ভিডিও <i>${bn(V.length)}</i></button>`+cats.map(c=>`<button type="button" data-c="${esc(c)}" aria-pressed="false">${esc(c)} <i>${bn(V.filter(v=>v.category===c).length)}</i></button>`).join('');
+      tabs.onclick=e=>{const b=e.target.closest('button[data-c]');if(b){show(b.dataset.c);b.scrollIntoView({block:'nearest',inline:'nearest'})}}}else tabs.hidden=true}
+  show('');sec.hidden=false;$$('.vnav').forEach(a=>a.hidden=false);
+  // কতবার চালানো হলো — একই ব্রাউজারে একটি ভিডিও একবারই গোনা হয়
+  const seen=id=>{try{const k='pat_vv',s=JSON.parse(sessionStorage.getItem(k)||'[]');if(s.includes(id))return true;s.push(id);sessionStorage.setItem(k,JSON.stringify(s.slice(-50)))}catch{}return false};
+  const track=v=>{if(SB_OK&&/^[0-9a-f-]{36}$/i.test(v.id)&&!seen(v.id))rpc('track_video_view',{p_id:v.id}).catch(()=>{})};
+  let lastFocus=null;
+  const stop=()=>{try{pl.pause()}catch{}pl.removeAttribute('poster');pl.innerHTML='';try{pl.load()}catch{}fr.innerHTML='';};
+  const open=id=>{const v=V.find(x=>x.id===id);if(!v||!dlg)return;lastFocus=D.activeElement;stop();
+    $('#vmt').textContent=v.title;$('#vmd').textContent=v.desc||'';$('#vmc').textContent=v.category||'';
+    const er=$('#vmerr');er.hidden=true;er.querySelector('a').href=v.p.open||v.src;
+    box.classList.toggle('vert',!!v.p.vertical);
+    if(v.p.kind==='file'){fr.hidden=true;pl.hidden=false;if(v.poster)pl.poster=v.poster;
+      pl.innerHTML=`<source src="${esc(v.p.src)}" type="${esc(v.p.type||'video/mp4')}">`;pl.load();const p=pl.play();p&&p.catch(()=>{})}
+    else{pl.hidden=true;fr.hidden=false;fr.innerHTML=`<iframe src="${esc(v.p.embed)}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      er.hidden=false;er.firstChild.textContent='ভিডিও না চললে ';}
+    try{dlg.showModal()}catch{dlg.setAttribute('open','')}root.classList.add('vm-open');
+    try{history.replaceState(null,'','#video/'+encodeURIComponent(v.id))}catch{}track(v)};
+  const close=()=>{stop();root.classList.remove('vm-open');
+    if(dlg.open)try{dlg.close()}catch{dlg.removeAttribute('open')}
+    try{history.replaceState(null,'','#videos')}catch{}lastFocus&&lastFocus.focus&&lastFocus.focus()};
+  grid.addEventListener('click',e=>{const b=e.target.closest('.vcard');if(b)open(b.dataset.id)});
+  $('#vmx').onclick=close;dlg.addEventListener('cancel',e=>{e.preventDefault();close()});
+  dlg.addEventListener('click',e=>{if(e.target===dlg)close()});
+  pl.addEventListener('error',()=>{if(pl.querySelector('source')){const er=$('#vmerr');er.firstChild.textContent='ভিডিওটি এখানে চালু হচ্ছে না। ';er.hidden=false}},true);
+  const sh=$('#vmsh');if(sh)sh.onclick=async()=>{const u=location.href;try{if(navigator.share){await navigator.share({title:$('#vmt').textContent,url:u});return}await navigator.clipboard.writeText(u);snack&&snack('লিংক কপি হয়েছে')}catch{}};
+  // লিংক থেকে সরাসরি খোলা
+  const goSec=()=>{const y=sec.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||64);scrollTo({top:Math.max(0,y),behavior:'instant'})},goLater=()=>{goSec();setTimeout(goSec,500);setTimeout(goSec,1400)};
+  const route=()=>{const h=decodeURIComponent(location.hash||'');
+    if(h.startsWith('#video/')){const id=h.slice(7);setTimeout(()=>{goLater();open(id)},300)}
+    else if(h.startsWith('#videos/')){const c=h.slice(8);if(cats.includes(c))show(c);setTimeout(goLater,300)}};
+  route();addEventListener('hashchange',()=>{if(!dlg.open)route()})}
+const REL=releases();stats();reviews();videos();
 })(window,document);
 
 /* ট্যাব লুকানো থাকলে অ্যানিমেশন থামে (ব্যাটারি সাশ্রয়) */
