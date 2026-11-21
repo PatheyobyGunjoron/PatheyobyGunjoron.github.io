@@ -62,19 +62,22 @@ jobs:
           REPO: ${{ github.repository }}
           EVENT: ${{ github.event_name }}
           ACTION: ${{ github.event.action }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
           mkdir -p patheyo/data
           fetch() { for i in 1 2 3 4 5; do gh api "repos/$REPO/releases?per_page=100" > /tmp/releases.json && return 0; echo "API ব্যর্থ, আবার ($i/5)…"; sleep 10; done; return 1; }
           fetch
           # রিলিজ প্রকাশের সময় APK আপলোড শেষ না-ও হতে পারে — সর্বোচ্চ ~১০ মিনিট অপেক্ষা
-          if [ "$EVENT" = "release" ] && [ "$ACTION" = "published" ]; then
+          # (ভিডিওর রিলিজ — ট্যাগ "videos…" — হলে APK-এর অপেক্ষা লাগে না)
+          if [ "$EVENT" = "release" ] && [ "$ACTION" = "published" ] && ! printf '%s' "$TAG" | grep -qi '^video'; then
             for i in $(seq 1 20); do
-              if jq -e '[.[] | select((.draft|not) and (.prerelease|not))] | .[0].assets | map(select(.name|test("\\.apk$";"i"))) | length > 0' /tmp/releases.json >/dev/null; then break; fi
+              if jq -e --arg t "$TAG" '[.[] | select(.tag_name == $t)] | (.[0].assets // []) | map(select(.name|test("\\.apk$";"i"))) | length > 0' /tmp/releases.json >/dev/null; then break; fi
               echo "APK এখনো আপলোড হয়নি ($i/20)…"; sleep 30; fetch
             done
           fi
-          jq '[.[] | select(.draft | not) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > /tmp/releases.out.json
+          # শুধু APK থাকা রিলিজ (অ্যাপের ভার্সন) — ভিডিওর রিলিজ এখানে আসে না, তাই ডাউনলোড বাটন সবসময় অ্যাপের দিকেই থাকে
+          jq '[.[] | select((.draft | not) and any(.assets[]?; .name | test("\\.apk$"; "i"))) | {tag_name, name, draft, prerelease, published_at, html_url, body, assets: [.assets[] | {name, size, download_count, browser_download_url}]}]' /tmp/releases.json > /tmp/releases.out.json
           # ঘণ্টার চেকে শুধু ডাউনলোড-সংখ্যা বদলালে প্রতিবার কমিট না করে ৬ ঘণ্টায় একবার করা হয় (অপ্রয়োজনীয় কমিট এড়াতে)
           if [ "$EVENT" = "schedule" ] && [ -f patheyo/data/releases.json ] && [ $(( 10#$(date -u +%H) % 6 )) -ne 0 ]; then
             if [ "$(jq -S 'del(.[].assets[].download_count)' patheyo/data/releases.json)" = "$(jq -S 'del(.[].assets[].download_count)' /tmp/releases.out.json)" ]; then
@@ -88,7 +91,7 @@ jobs:
       - name: Build update.json (for the app updater)
         run: |
           set -uo pipefail
-          jq '[.[] | select((.draft | not) and (.prerelease | not))] | .[0] as $r
+          jq '[.[] | select((.draft | not) and (.prerelease | not) and any(.assets[]?; .name | test("\\.apk$"; "i")))] | .[0] as $r
             | ($r.assets | map(select(.name | test("\\.apk$"; "i"))) | .[0]) as $a
             | select($r != null and $a != null)
             | (($r.body // "") | split("\n")
@@ -113,12 +116,16 @@ jobs:
             echo "::warning::APK সহ কোনো প্রকাশিত রিলিজ পাওয়া যায়নি — update.json আগের মতোই থাকলো"
           fi
 
+      # ওয়েবসাইটের ভিডিও তালিকা — "videos" ট্যাগের রিলিজে আপলোড করা ভিডিও থেকে নিজে তৈরি (বিস্তারিত: .github/scripts/build_videos.py)
+      - name: Build videos.json (website videos)
+        run: python3 .github/scripts/build_videos.py /tmp/releases.json patheyo/data/videos.json
+
       - name: Commit update.json / releases.json
         run: |
           set -uo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add patheyo/data/releases.json patheyo/data/update.json 2>/dev/null || true
+          git add patheyo/data/releases.json patheyo/data/update.json patheyo/data/videos.json 2>/dev/null || true
           if git diff --cached --quiet; then echo "কোনো পরিবর্তন নেই"; exit 0; fi
           git commit -m "chore: update releases.json"
           for i in 1 2 3 4 5; do
