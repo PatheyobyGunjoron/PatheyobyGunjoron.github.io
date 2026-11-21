@@ -7,6 +7,8 @@
 --     শিরোনাম, বিভাগ, বিবরণ, থাম্বনেইল আর কোনটা আগে দেখাবে — সব ঠিক করা যায়
 --   • ওয়েবসাইটের "ভিডিও গাইড" অংশে সাথে সাথে দেখায় (কোড/ফাইল বদলাতে হয় না)
 --   • কোন ভিডিও কতবার চালানো হয়েছে তার হিসাব
+--   • টাইমকোড (অধ্যায়): ভিডিওর কোন অংশ কখন — ইউজার এক চাপে সেই জায়গা থেকে দেখতে পারেন (যেমন নিজের ফোনের ইনস্টল গাইড)
+--   (আগে একবার Run করে থাকলেও আবার Run করুন — নতুন "টাইমকোড" ঘর যোগ হবে, আগের ভিডিও সব থেকে যাবে)
 -- নিরাপত্তা: সাধারণ মানুষ শুধু চালু (প্রকাশিত) ভিডিওর তালিকা পড়তে পারে; যোগ/বদল/মোছা শুধু অ্যাডমিন।
 
 create table if not exists site_videos(
@@ -23,6 +25,10 @@ create table if not exists site_videos(
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now());
 create index if not exists site_videos_order on site_videos(is_active, sort_order, created_at desc);
+-- টাইমকোড: প্রতি লাইনে "সময় শিরোনাম", যেমন "0:00 শুরু" / "1:25 Samsung ফোনে ইনস্টল"
+alter table site_videos add column if not exists chapters text;
+alter table site_videos drop constraint if exists site_videos_chapters_len;
+alter table site_videos add constraint site_videos_chapters_len check(chapters is null or length(chapters)<=10000);
 
 create or replace function site_videos_touch() returns trigger language plpgsql as $$
 begin new.updated_at=now(); return new; end$$;
@@ -36,7 +42,7 @@ create policy "admin all videos" on site_videos for all using(is_admin()) with c
 -- ===== পাবলিক: ওয়েবসাইটে দেখানোর ভিডিও (শুধু চালু করাগুলো, ক্রম অনুযায়ী) =====
 create or replace function public_videos() returns json language sql security definer stable set search_path=public as $$
  select coalesce(json_agg(x),'[]'::json) from (
-   select id, title, category, description as "desc", video_url as src, thumb_url as poster, duration, created_at
+   select id, title, category, description as "desc", video_url as src, thumb_url as poster, duration, chapters, created_at
    from site_videos where is_active
    order by sort_order, created_at desc limit 200) x$$;
 

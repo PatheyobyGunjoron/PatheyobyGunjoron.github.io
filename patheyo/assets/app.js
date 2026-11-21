@@ -600,20 +600,22 @@ prayerInit();
    ভিডিওর তালিকা আসে অ্যাডমিন প্যানেলের "ভিডিও" ট্যাব থেকে (Supabase: public_videos)।
    সেখানে কিছু না থাকলে GitHub-এর "videos" রিলিজ থেকে বানানো data/videos.json দেখায়।
    লিংক যেকোনো ধরনের হতে পারে — YouTube, Google Drive, Facebook, Vimeo, GitHub রিলিজ, যেকোনো .mp4 (assets/video-src.js চেনে)।
+   টাইমকোড (অধ্যায়): ভিডিওর নিচে/পাশে অংশের তালিকা — চাপ দিলে সেই জায়গা থেকে চলে; এখন কোন অংশ চলছে তা জ্বলে থাকে।
    ভিডিও শুধু চাপ দিলে লোড হয় — পেজ ভারী হয় না, ইউজারের ডেটাও খরচ হয় না।
-   লিংক: #videos (সেকশন), #videos/ইনস্টল গাইড (নির্দিষ্ট বিভাগ), #video/<id> (সরাসরি ভিডিও খোলে) */
+   লিংক: #videos (সেকশন), #videos/ইনস্টল গাইড (নির্দিষ্ট বিভাগ), #video/<id> (সরাসরি ভিডিও), #video/<id>/95 (ভিডিওর ১:৩৫ থেকে) */
 async function videos(){const sec=$('#videos');if(!sec)return;let V=[];
-  const P=u=>(W.PTVideo?W.PTVideo.parse(u):{kind:'file',src:u,open:u,type:'video/mp4'});
+  const PV=W.PTVideo,P=u=>(PV?PV.parse(u):{kind:'file',src:u,open:u,type:'video/mp4'}),CH=t=>(PV&&t?PV.chapters(t):[]),FT=s=>PV?PV.fmt(s):String(s);
   if(SB_OK){try{const a=await rpc('public_videos');if(Array.isArray(a))V=a}catch{}}
   if(!V.length){try{const d=await getJson(BASE+'data/videos.json?v='+Math.floor(Date.now()/600000),8000);if(d&&Array.isArray(d.videos))V=d.videos}catch{}}
-  V=V.filter(v=>v&&v.src&&v.title).map(v=>{const p=P(v.src);return Object.assign({},v,{id:String(v.id),p,poster:v.poster||p.thumb||''})}).filter(v=>v.p.kind!=='bad'&&v.p.kind!=='none');
+  V=V.filter(v=>v&&v.src&&v.title).map(v=>{const p=P(v.src);return Object.assign({},v,{id:String(v.id),p,poster:v.poster||p.thumb||'',ch:CH(v.chapters)})}).filter(v=>v.p.kind!=='bad'&&v.p.kind!=='none');
   if(!V.length)return;
   const cats=[...new Set(V.map(v=>v.category||'ভিডিও'))],tabs=$('#vtabs'),grid=$('#vgrid'),dlg=$('#vmodal'),pl=$('#vplay'),fr=$('#vframe'),box=dlg.querySelector('.vm-box');
+  const chBox=$('#vmch'),chList=$('#vmchl'),chQ=$('#vmchq'),chNote=$('#vmchnote');
   const SRCI={youtube:'<svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><path fill="#fff" d="m9.6 15.6 6.3-3.6-6.3-3.6z"/></svg>',
     facebook:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path fill="#fff" d="M13.4 19.5v-6.2h2.1l.3-2.5h-2.4V9.3c0-.7.2-1.2 1.2-1.2h1.3V5.9a17 17 0 0 0-1.9-.1c-1.9 0-3.2 1.1-3.2 3.3v1.8H8.7v2.5h2.1v6.2z"/></svg>'};
   const card=v=>`<button class="vcard" type="button" data-id="${esc(v.id)}" aria-label="${esc(v.title)} — ভিডিও চালান">
     <span class="vthumb${v.p.vertical?' vt':''}${v.poster?'':' np'}">${v.poster?`<img src="${esc(v.poster)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('np');this.remove()">`:''}<span class="vph" aria-hidden="true"><img src="${BASE}assets/icon-192.png" alt="" loading="lazy"></span>
-    <span class="vplay-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>${v.duration?`<span class="vsz">${esc(bn(v.duration))}</span>`:v.size_mb?`<span class="vsz">${bn(Math.max(1,Math.round(v.size_mb)))} MB</span>`:''}${SRCI[v.p.kind]?`<span class="vsrc" title="${esc(v.p.label)}">${SRCI[v.p.kind]}</span>`:''}</span>
+    <span class="vplay-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>${v.duration?`<span class="vsz">${esc(bn(v.duration))}</span>`:v.size_mb?`<span class="vsz">${bn(Math.max(1,Math.round(v.size_mb)))} MB</span>`:''}${SRCI[v.p.kind]?`<span class="vsrc" title="${esc(v.p.label)}">${SRCI[v.p.kind]}</span>`:''}${v.ch.length>1?`<span class="vchc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg>${bn(v.ch.length)}টি অংশ</span>`:''}</span>
     <span class="vbody"><small class="vcat">${esc(v.category||'')}</small><b>${esc(v.title)}</b>${v.desc?`<span class="vdesc">${esc(v.desc)}</span>`:''}</span></button>`;
   const show=c=>{grid.innerHTML=V.filter(v=>!c||v.category===c).map(card).join('');
     $$('#vtabs button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.c||'')===c)))};
@@ -623,19 +625,40 @@ async function videos(){const sec=$('#videos');if(!sec)return;let V=[];
   // কতবার চালানো হলো — একই ব্রাউজারে একটি ভিডিও একবারই গোনা হয়
   const seen=id=>{try{const k='pat_vv',s=JSON.parse(sessionStorage.getItem(k)||'[]');if(s.includes(id))return true;s.push(id);sessionStorage.setItem(k,JSON.stringify(s.slice(-50)))}catch{}return false};
   const track=v=>{if(SB_OK&&/^[0-9a-f-]{36}$/i.test(v.id)&&!seen(v.id))rpc('track_video_view',{p_id:v.id}).catch(()=>{})};
+
+  // ---- অধ্যায় (টাইমকোড) ----
+  let cur=null,ctl=null,actI=-1;
+  const canSeek=v=>v.p.kind==='file'||!!v.p.seekable;
+  const setHash=(v,t)=>{try{history.replaceState(null,'','#video/'+encodeURIComponent(v.id)+(t>0?'/'+Math.floor(t):''))}catch{}};
+  const mark=t=>{if(!cur||!cur.ch.length)return;let i=-1;for(let k=0;k<cur.ch.length;k++)if(t+.4>=cur.ch[k].sec)i=k;if(i===actI)return;actI=i;
+    $$('#vmchl li').forEach(li=>{const on=+li.dataset.i===i;li.classList.toggle('on',on);if(on){const b=li.querySelector('button');b&&b.setAttribute('aria-current','true');
+      const l=chList,top=li.offsetTop-l.offsetTop;if(top<l.scrollTop||top+li.offsetHeight>l.scrollTop+l.clientHeight)l.scrollTo({top:Math.max(0,top-l.clientHeight/3),behavior:'smooth'})}else{const b=li.querySelector("button");b&&b.removeAttribute("aria-current")}})};
+  const seekTo=s=>{if(!cur)return;if(cur.p.kind==='file'){const go=()=>{try{pl.currentTime=s;const p=pl.play();p&&p.catch(()=>{})}catch{}};if(pl.readyState>=1)go();else pl.addEventListener('loadedmetadata',go,{once:true})}
+    else if(ctl)ctl.seek(s);mark(s);setHash(cur,s)};
+  const renderCh=v=>{actI=-1;const has=v.ch.length>1;chBox.hidden=!has;box.classList.toggle('has-ch',has);dlg.classList.toggle('wide',has);if(!has){chList.innerHTML='';return}
+    const ok=canSeek(v);$('#vmchn').textContent=`${bn(v.ch.length)}টি অংশ · ${ok?'যেটা দেখতে চান তাতে চাপ দিন':'সময় দেখে ভিডিওর স্লাইডার টেনে নিন'}`;
+    chNote.hidden=ok;chNote.textContent=ok?'':'এই ধরনের ভিডিওতে (Google Drive / Facebook) সরাসরি অংশে যাওয়া যায় না।';
+    chQ.hidden=v.ch.length<6;chQ.value='';
+    chList.innerHTML=v.ch.map((c,i)=>{const end=v.ch[i+1]?v.ch[i+1].sec:null,len=end!=null?end-c.sec:0;
+      return `<li data-i="${i}" data-q="${esc((c.label+' '+FT(c.sec)).toLowerCase())}">${ok?`<button type="button" data-s="${c.sec}">`:'<div class="nb">'}<span class="vm-t">${esc(bn(FT(c.sec)))}</span><span class="vm-l">${esc(c.label)}</span>${len>0?`<small>${esc(bn(FT(len)))}</small>`:''}${ok?'</button>':'</div>'}</li>`}).join('')};
+  chList.addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(b)seekTo(+b.dataset.s)});
+  chQ.addEventListener('input',()=>{const q=chQ.value.trim().toLowerCase();let n=0;$$('#vmchl li').forEach(li=>{const h=!!q&&!li.dataset.q.includes(q);li.hidden=h;if(!h)n++});chList.dataset.empty=n?'':'কিছু পাওয়া যায়নি'});
+  pl.addEventListener('timeupdate',()=>{if(cur&&cur.p.kind==='file')mark(pl.currentTime)});
+
   let lastFocus=null;
-  const stop=()=>{try{pl.pause()}catch{}pl.removeAttribute('poster');pl.innerHTML='';try{pl.load()}catch{}fr.innerHTML='';};
-  const open=id=>{const v=V.find(x=>x.id===id);if(!v||!dlg)return;lastFocus=D.activeElement;stop();
+  const stop=()=>{try{pl.pause()}catch{}pl.removeAttribute('poster');pl.innerHTML='';try{pl.load()}catch{}if(ctl){ctl.destroy();ctl=null}fr.innerHTML='';};
+  const open=(id,at)=>{const v=V.find(x=>x.id===id);if(!v||!dlg)return;lastFocus=D.activeElement;stop();cur=v;at=Math.max(0,+at||0);
     $('#vmt').textContent=v.title;$('#vmd').textContent=v.desc||'';$('#vmc').textContent=v.category||'';
     const er=$('#vmerr');er.hidden=true;er.querySelector('a').href=v.p.open||v.src;
-    box.classList.toggle('vert',!!v.p.vertical);
+    box.classList.toggle('vert',!!v.p.vertical);renderCh(v);
     if(v.p.kind==='file'){fr.hidden=true;pl.hidden=false;if(v.poster)pl.poster=v.poster;
-      pl.innerHTML=`<source src="${esc(v.p.src)}" type="${esc(v.p.type||'video/mp4')}">`;pl.load();const p=pl.play();p&&p.catch(()=>{})}
-    else{pl.hidden=true;fr.hidden=false;fr.innerHTML=`<iframe src="${esc(v.p.embed)}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      pl.innerHTML=`<source src="${esc(v.p.src)}" type="${esc(v.p.type||'video/mp4')}">`;pl.load();if(at)seekTo(at);else{const p=pl.play();p&&p.catch(()=>{})}}
+    else{pl.hidden=true;fr.hidden=false;let src=v.p.embed;if(at&&v.p.kind==='youtube')src=src.replace(/&start=\d+/,'')+'&start='+Math.floor(at);if(at&&v.p.kind==='vimeo')src+='#t='+Math.floor(at)+'s';
+      fr.innerHTML=`<iframe src="${esc(src)}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      if(v.p.seekable&&PV&&PV.control)ctl=PV.control(fr.querySelector('iframe'),v.p.kind,mark);if(at)mark(at);
       er.hidden=false;er.firstChild.textContent='ভিডিও না চললে ';}
-    try{dlg.showModal()}catch{dlg.setAttribute('open','')}root.classList.add('vm-open');
-    try{history.replaceState(null,'','#video/'+encodeURIComponent(v.id))}catch{}track(v)};
-  const close=()=>{stop();root.classList.remove('vm-open');
+    try{dlg.showModal()}catch{dlg.setAttribute('open','')}root.classList.add('vm-open');setHash(v,at);track(v)};
+  const close=()=>{stop();cur=null;root.classList.remove('vm-open');
     if(dlg.open)try{dlg.close()}catch{dlg.removeAttribute('open')}
     try{history.replaceState(null,'','#videos')}catch{}lastFocus&&lastFocus.focus&&lastFocus.focus()};
   grid.addEventListener('click',e=>{const b=e.target.closest('.vcard');if(b)open(b.dataset.id)});
@@ -646,7 +669,7 @@ async function videos(){const sec=$('#videos');if(!sec)return;let V=[];
   // লিংক থেকে সরাসরি খোলা
   const goSec=()=>{const y=sec.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(root).getPropertyValue('--hdr'))||64);scrollTo({top:Math.max(0,y),behavior:'instant'})},goLater=()=>{goSec();setTimeout(goSec,500);setTimeout(goSec,1400)};
   const route=()=>{const h=decodeURIComponent(location.hash||'');
-    if(h.startsWith('#video/')){const id=h.slice(7);setTimeout(()=>{goLater();open(id)},300)}
+    if(h.startsWith('#video/')){const[id,t]=h.slice(7).split('/');setTimeout(()=>{goLater();open(id,t)},300)}
     else if(h.startsWith('#videos/')){const c=h.slice(8);if(cats.includes(c))show(c);setTimeout(goLater,300)}};
   route();addEventListener('hashchange',()=>{if(!dlg.open)route()})}
 const REL=releases();stats();reviews();videos();
