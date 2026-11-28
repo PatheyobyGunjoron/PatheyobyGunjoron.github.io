@@ -1,6 +1,7 @@
 {
-  "last_notified_version": "3.2.0",
-  "notified_at": "2026-11-15T18:30:12Z",
+  "last_notified_version": "3.3.0",
+  "notified_at": "2026-11-28T12:50:01Z",
   "topic": "all",
-  "source": "initial"
+  "fcm_message": "projects/hijri-tarikh/messages/-5629222471953418504",
+  "source": "release"
 }
