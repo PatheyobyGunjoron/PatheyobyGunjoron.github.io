@@ -120,12 +120,19 @@ jobs:
       - name: Build videos.json (website videos)
         run: python3 .github/scripts/build_videos.py /tmp/releases.json patheyo/data/videos.json
 
+      # Google / Gemini / AI সার্চ যেন সবসময় সর্বশেষ ভার্সন জানে: HTML, JSON-LD, FAQ, sitemap, llms.txt, README — সব নিজে হালনাগাদ
+      # (বিস্তারিত: .github/scripts/seo_sync.py)। একই তথ্য থাকলে কিছুই বদলায় না।
+      - name: Sync latest version into website (Google / Gemini)
+        id: seo
+        run: python3 .github/scripts/seo_sync.py
+
       - name: Commit update.json / releases.json
         run: |
           set -uo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add patheyo/data/releases.json patheyo/data/update.json patheyo/data/videos.json 2>/dev/null || true
+          git add index.html patheyo/index.html sitemap.xml sitemap-patheyo.xml llms.txt README.md 2>/dev/null || true
           if git diff --cached --quiet; then echo "কোনো পরিবর্তন নেই"; exit 0; fi
           git commit -m "chore: update releases.json"
           for i in 1 2 3 4 5; do
@@ -133,6 +140,17 @@ jobs:
             echo "পুশ ব্যর্থ, আবার চেষ্টা ($i/5)…"; git rebase --abort 2>/dev/null || true; sleep $((i * 5))
           done
           echo "::error::৫ বার চেষ্টাতেও পুশ হয়নি"; exit 1
+
+      # নতুন ভার্সন এলে Bing / Copilot / ChatGPT সার্চকে সাথে সাথে জানানো (IndexNow)। Google এখানে নেই — Google sitemap-এর তারিখ দেখে নিজে আসে।
+      # ব্যর্থ হলেও কিছু আটকায় না।
+      - name: Tell search engines (IndexNow)
+        if: steps.seo.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          sleep 60   # GitHub Pages-এ নতুন পেজ লাইভ হওয়ার সময়
+          curl -sS -m 30 -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" \
+            --data '{"host":"patheyobygunjoron.github.io","key":"4ed9f1b4263e6f612fda75368d32af24","keyLocation":"https://patheyobygunjoron.github.io/4ed9f1b4263e6f612fda75368d32af24.txt","urlList":["https://patheyobygunjoron.github.io/","https://patheyobygunjoron.github.io/patheyo/","https://patheyobygunjoron.github.io/llms.txt","https://patheyobygunjoron.github.io/sitemap.xml"]}' \
+            -w "IndexNow HTTP %{http_code}\n" || true
 
       - name: Install notification dependencies
         run: python3 -m pip install --quiet --disable-pip-version-check google-auth requests
