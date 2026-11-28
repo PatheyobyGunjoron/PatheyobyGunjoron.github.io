@@ -6,14 +6,14 @@
 
 ## সর্বশেষ ভার্সন
 
-- ভার্সন: v3.3.0 (Latest version: 3.3.0)
+- ভার্সন: v3.4.0 (Latest version: 3.4.0)
 - প্রকাশ: ২৮ নভেম্বর, ২০২৬ (2026-11-28)
-- সাইজ: 8.5 MB · প্ল্যাটফর্ম: Android (APK) · মূল্য: বিনামূল্যে
+- সাইজ: 14.9 MB · প্ল্যাটফর্ম: Android (APK) · মূল্য: বিনামূল্যে
 - ডাউনলোড পেজ: https://patheyobygunjoron.github.io/#download
-- সরাসরি APK: https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/download/v3.3.0/Patheyo.v3.3.0.apk
-- মোট প্রকাশিত ভার্সন: ১১টি
+- সরাসরি APK: https://github.com/PatheyobyGunjoron/PatheyobyGunjoron.github.io/releases/download/v3.4.0/Patheyo.v3.4.0.apk
+- মোট প্রকাশিত ভার্সন: ১২টি
 
-### v3.3.0-এ যা নতুন
+### v3.4.0-এ যা নতুন
 
 - আসল মুসহাফ এখন আরও দ্রুত ও মসৃণ
 - নতুন সহায়ক টুল (হোমে ১৭টি)
@@ -24,11 +24,11 @@
 
 ## আগের ভার্সন (পুরনো — সর্বশেষ নয়)
 
+- v3.3.0 — 2026-11-28
 - v3.2.0 — 2026-11-15
 - v3.1.0 — 2026-11-12
 - v3.0.0 — 2026-10-26
 - v2.9.0 — 2026-10-26
-- v2.8.0 — 2026-10-26
 
 ## গুরুত্বপূর্ণ পেজ
 
