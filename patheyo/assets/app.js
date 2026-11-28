@@ -574,15 +574,25 @@ async function reviews(){if(!SB_OK||!$('#reviews'))return;try{const d=await rpc(
   const st=n=>{n=Math.max(0,Math.min(5,Math.round(n||0)));return'<span class="on">'+'★'.repeat(n)+'</span>'+'★'.repeat(5-n)};
   const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.codePointAt(0))%360;return h};
   const ini=s=>{const w=String(s).trim().split(/\s+/).filter(Boolean);return w.length>1?Array.from(w[0])[0]+Array.from(w[w.length-1])[0]:Array.from(w[0]||'?')[0]};
+  const Q='<svg class="rv-q" viewBox="0 0 32 32" aria-hidden="true"><path d="M13 7C7.5 9 4 13.6 4 19.4 4 23.3 6.4 26 9.7 26c2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6zm15 0c-5.5 2-9 6.6-9 12.4 0 3.9 2.4 6.6 5.7 6.6 2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6z"/></svg>';
   $('#rvtop').innerHTML=d.count>=3&&d.avg?`<div class="rv-score"><span class="rv-avg">${bn(d.avg)}</span><div><div class="stars" aria-label="গড় রেটিং ${bn(d.avg)}">${st(d.avg)}</div><span class="rv-cnt">${bn(d.count)} জনের রেটিংয়ের গড়</span></div></div>`:'';
-  $('#rvs').innerHTML=rs.map(r=>{const nm=String(r.name||'').trim()||'একজন ব্যবহারকারী',msg=String(r.message||'').trim(),long=msg.length>260;
-    let dt='';try{dt=new Date(r.created_at).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}catch{}
-    return`<figure class="rv${long?' long':''}"><svg class="rv-q" viewBox="0 0 32 32" aria-hidden="true"><path d="M13 7C7.5 9 4 13.6 4 19.4 4 23.3 6.4 26 9.7 26c2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6zm15 0c-5.5 2-9 6.6-9 12.4 0 3.9 2.4 6.6 5.7 6.6 2.9 0 5-2.2 5-5 0-2.7-1.9-4.7-4.5-4.9.5-2.8 2.6-5.2 5.6-6.6z"/></svg>`+
-      (r.rating?`<div class="stars" aria-label="${bn(r.rating)} তারা">${st(r.rating)}</div>`:'')+
-      `<blockquote>${esc(msg)}</blockquote>${long?'<button class="rv-more" type="button">আরও পড়ুন</button>':''}`+
-      `<figcaption><span class="av" style="--h:${hue(nm)}" aria-hidden="true">${esc(ini(nm))}</span><span class="rv-who"><b>${esc(nm)}</b><small>${r.source==='app'?'<i class="rv-ok" aria-hidden="true">✓</i>অ্যাপ ব্যবহারকারী':'পাথেয় ব্যবহারকারী'}${r.app_version?` · v${esc(r.app_version)}`:''}${dt?` · ${dt}`:''}</small></span></figcaption></figure>`}).join('');
-  $('#rvs').addEventListener('click',e=>{const b=e.target.closest('.rv-more');if(!b)return;const f=b.closest('.rv');const o=f.classList.toggle('open');b.textContent=o?'কম দেখুন':'আরও পড়ুন'});
-  $('#reviews').hidden=false}catch{}}
+  // সব কার্ড একই মাপের: তারা না থাকলেও তারার জায়গা থাকে, লেখা সর্বোচ্চ ৪ লাইন (বেশি হলে "আরও পড়ুন" → পুরোটা পপআপে),
+  // আর সবার জন্য একই "✓ পাথেয় ব্যবহারকারী" ব্যাজ (অ্যাপ থেকে পাঠালে সাথে ভার্সনও)
+  const who=(r,nm,dt)=>`<figcaption><span class="av" style="--h:${hue(nm)}" aria-hidden="true">${esc(ini(nm))}</span><span class="rv-who"><b>${esc(nm)}</b><small><i class="rv-ok" aria-hidden="true">✓</i>পাথেয় ব্যবহারকারী${r.app_version?` · v${esc(r.app_version)}`:''}${dt?` · ${dt}`:''}</small></span></figcaption>`;
+  const R=rs.map(r=>{const nm=String(r.name||'').trim()||'একজন ব্যবহারকারী',msg=String(r.message||'').trim();let dt='';try{dt=new Date(r.created_at).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}catch{}return{r,nm,msg,dt}});
+  $('#rvs').innerHTML=R.map((x,i)=>`<figure class="rv" data-i="${i}">${Q}`+
+      (x.r.rating?`<div class="stars" aria-label="${bn(x.r.rating)} তারা">${st(x.r.rating)}</div>`:'<div class="stars rv-nost" aria-hidden="true"></div>')+
+      `<blockquote>${esc(x.msg)}</blockquote><button class="rv-more" type="button" tabindex="-1" aria-hidden="true">আরও পড়ুন</button>`+who(x.r,x.nm,x.dt)+`</figure>`).join('');
+  // সত্যিই লেখা কাটা পড়লে তবেই "আরও পড়ুন" দেখায় (অক্ষর গুনে নয়, আসল মাপ দেখে)
+  const chk=()=>$$('#rvs .rv').forEach(f=>{const q=f.querySelector('blockquote'),b=f.querySelector('.rv-more'),cut=q.scrollHeight>q.clientHeight+2;f.classList.toggle('cut',cut);b.tabIndex=cut?0:-1;b.setAttribute('aria-hidden',String(!cut))});
+  chk();addEventListener('resize',()=>{clearTimeout(chk._t);chk._t=setTimeout(chk,200)});D.fonts&&D.fonts.ready&&D.fonts.ready.then(chk);
+  // পুরো মতামত পপআপে — কার্ডের মাপ বদলায় না
+  let dlg=$('#rvdlg');if(!dlg){dlg=D.createElement('dialog');dlg.id='rvdlg';dlg.className='rvdlg';dlg.setAttribute('aria-label','পুরো মতামত');D.body.appendChild(dlg);
+    dlg.addEventListener('click',e=>{if(e.target===dlg||e.target.closest('.rvdlg-x'))dlg.close()})}
+  $('#rvs').addEventListener('click',e=>{const b=e.target.closest('.rv-more');if(!b)return;const x=R[+b.closest('.rv').dataset.i];if(!x)return;
+    dlg.innerHTML=`<figure class="rv rv-full">${Q}<button class="rvdlg-x" type="button" aria-label="বন্ধ করুন">✕</button>${x.r.rating?`<div class="stars" aria-label="${bn(x.r.rating)} তারা">${st(x.r.rating)}</div>`:''}<blockquote>${esc(x.msg)}</blockquote>${who(x.r,x.nm,x.dt)}</figure>`;
+    try{dlg.showModal()}catch{dlg.setAttribute('open','')}});
+  $('#reviews').hidden=false;requestAnimationFrame(chk)}catch{}}
 
 /* ================= প্রশ্নোত্তর: একটি খুললে বাকিগুলো বন্ধ ================= */
 $$('#acc details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$$('#acc details').forEach(o=>{if(o!==d)o.open=false})}));

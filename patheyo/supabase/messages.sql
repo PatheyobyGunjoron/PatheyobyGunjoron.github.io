@@ -58,6 +58,8 @@ declare k text:=coalesce(p->>'kind','message'); msg text:=btrim(coalesce(p->>'me
 begin
  if k not in('message','feedback','bug','feature','content','deletion') then k:='message'; end if;
  if length(msg)<3 then raise exception 'message_too_short'; end if;
+ -- নাম বাধ্যতামূলক: অন্তত ২ অক্ষর, আর শুধু সংখ্যা/চিহ্ন দিয়ে নাম হবে না (বাংলা নাম ঠিকই চলে)
+ if length(btrim(coalesce(p->>'name','')))<2 or btrim(coalesce(p->>'name','')) ~ '^[[:space:][:digit:][:punct:]০-৯]+$' then raise exception 'name_required'; end if;
  if length(msg)>4000 then msg:=left(msg,4000); end if;
  r:=case when (p->>'rating') ~ '^[1-5]$' then (p->>'rating')::smallint end;
  -- স্প্যাম রোধ: একই নেটওয়ার্ক থেকে ১০ মিনিটে সর্বোচ্চ ৫টি, আর সারা সাইটে মিনিটে সর্বোচ্চ ৪০টি

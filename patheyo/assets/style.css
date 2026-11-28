@@ -1406,3 +1406,28 @@ html.vm-open{overflow:hidden}
   .vmodal{max-height:100dvh;overflow-y:auto}
   .vm-box.has-ch #vplay,.vm-box.has-ch .vframe{max-height:42vh;max-height:42dvh}
 }
+
+/* ===== v3 রিভিউ: সব কার্ড একই মাপের ===== */
+.rvs{align-items:stretch;grid-auto-rows:1fr}
+.rv{height:100%}
+.rv .stars{min-height:1.15rem}
+.rv-nost{visibility:hidden}
+.rv blockquote{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;min-height:calc(1.75em * 4);margin-bottom:.2rem}
+.rv .rv-more{visibility:hidden;min-height:1.9rem}
+.rv.cut .rv-more{visibility:visible}
+.rv.cut blockquote{-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent);mask-image:linear-gradient(180deg,#000 70%,transparent)}
+/* পুরো মতামতের পপআপ */
+.rvdlg{border:0;padding:0;background:transparent;width:min(620px,100vw - 32px);max-height:min(86vh,86dvh);overflow:auto}
+.rvdlg::backdrop{background:rgba(2,8,20,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.rvdlg[open]{animation:vm-in .22s var(--ease)}
+.rvdlg .rv-full{height:auto;background:var(--surface);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.rvdlg .rv-full blockquote{display:block;-webkit-line-clamp:unset;min-height:0;overflow:visible;font-size:1.06rem}
+.rvdlg-x{position:absolute;top:.8rem;right:.8rem;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:1rem;cursor:pointer}
+.rvdlg .rv-q{right:3.6rem}
+@media (max-width:640px){
+  .rvs{grid-auto-rows:auto}
+  .rv{height:auto}
+}
+
+/* বাধ্যতামূলক ঘরের লাল তারা */
+.fld .req{color:var(--ember);font-weight:800;margin-left:.15em}

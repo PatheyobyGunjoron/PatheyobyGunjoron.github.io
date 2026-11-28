@@ -37,7 +37,9 @@ applyKind();cnt();
 
 const err=(id,msg)=>{const fl=$('#'+id).closest('.fld');fl.classList.add('err');let m=fl.querySelector('.em');if(!m){m=D.createElement('div');m.className='em';m.id=id+'-err';fl.appendChild(m)}m.textContent=msg;$('#'+id).setAttribute('aria-describedby',id+'-err');$('#'+id).setAttribute('aria-invalid','true')};
 const clr=()=>$$('.fld.err').forEach(fl=>{fl.classList.remove('err');const m=fl.querySelector('.em');m&&m.remove();const i=fl.querySelector('input,textarea');i&&i.removeAttribute('aria-invalid')});
-function validate(){clr();const k=kind(),m=$('#message').value.trim(),c=$('#contact').value.trim();let bad=null;
+function validate(){clr();const k=kind(),m=$('#message').value.trim(),c=$('#contact').value.trim(),n=$('#name').value.trim();let bad=null;
+  // নাম বাধ্যতামূলক: অন্তত ২ অক্ষর, আর শুধু সংখ্যা/চিহ্ন হলে চলবে না
+  if(n.length<2||!/[\p{L}]/u.test(n)){err('name',!n?'আপনার নাম লিখুন — নাম ছাড়া বার্তা পাঠানো যাবে না।':n.length<2?'আপনার পুরো নাম লিখুন।':'সঠিক নাম লিখুন (শুধু সংখ্যা বা চিহ্ন দিলে হবে না)।');bad=bad||'name'}
   if(m.length<5){err('message',k==='feedback'?'অল্প কথায় হলেও অভিজ্ঞতাটা লিখুন।':'বার্তাটি লিখুন (অন্তত কয়েকটি শব্দ)।');bad=bad||'message'}
   if(c&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)&&!/^\+?[\d\s-]{10,16}$/.test(c)){err('contact','সঠিক ইমেইল বা ফোন নম্বর লিখুন, অথবা ঘরটি খালি রাখুন।');bad=bad||'contact'}
   if(k==='deletion'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)){err('contact','যে ইমেইল দিয়ে সাইন-ইন করেছিলেন, সেটি লিখুন।');bad=bad||'contact'}
@@ -66,6 +68,7 @@ f.addEventListener('submit',async e=>{e.preventDefault();if(!validate())return;
   catch(x){const m=String(x.message||'');
     if(/rate_limited/.test(m))snack('অল্প সময়ে অনেক বার্তা পাঠানো হয়েছে। কয়েক মিনিট পরে আবার চেষ্টা করুন।',[],9000,true);
     else if(/message_too_short/.test(m))err('message','বার্তাটি একটু বিস্তারিত লিখুন।');
+    else if(/name_required/.test(m)){err('name','আপনার নাম লিখুন — নাম ছাড়া বার্তা পাঠানো যাবে না।');$('#name').focus()}
     else if(x.status===404||/submit_contact/.test(m))fallback(p);
     else snack('বার্তা পাঠানো যায়নি — ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন। আপনার লেখা সংরক্ষিত আছে।',[{t:'আবার চেষ্টা',f:()=>f.requestSubmit()}],12000,true)}
   finally{b.disabled=false;b.lastChild.textContent=old}});
